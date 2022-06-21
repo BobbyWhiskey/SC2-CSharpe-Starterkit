@@ -13,6 +13,7 @@ namespace Bot
             
             foreach (var unit in bay)
             {
+                // TODO MC This is spammy af
                 unit.Ability(Abilities.RESEARCH_UPGRADE_INFANTRY_WEAPON);
                 unit.Ability(Abilities.RESEARCH_UPGRADE_INFANTRY_ARMOR);
             }

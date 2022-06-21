@@ -56,15 +56,16 @@ namespace Bot
 
         private void BuildResearch()
         {
-            if (!Controller.GetUnits(Units.ENGINEERING_BAY).Any())
+            if (!Controller.GetUnits(Units.ENGINEERING_BAY).Any()
+                && Controller.GetUnits(Units.BARRACKS, onlyCompleted:true).Count > 0)
             {
                 BuildIfPossible(Units.ENGINEERING_BAY);
             }
             
             if (Controller.GetUnits(Units.ARMORY).Count == 0
-                && Controller.GetUnits(Units.FACTORY).Count != 0)
+                && Controller.GetUnits(Units.FACTORY, onlyCompleted:true).Count > 0)
             {
-                BuildIfPossible(Units.FACTORY);
+                BuildIfPossible(Units.ARMORY);
             }
         }
 
@@ -139,13 +140,13 @@ namespace Bot
             }
 
             if (this.factoryTargetCount > Controller.GetTotalCount(Units.FACTORY)
-                && Controller.GetUnits(Units.BARRACKS).Any())
+                && Controller.GetUnits(Units.BARRACKS, onlyCompleted:true).Any())
             {
                 BuildIfPossible(Units.FACTORY);
             }
 
             if (this.starportTargetCount > Controller.GetTotalCount(Units.STARPORT)
-                && Controller.GetUnits(Units.FACTORY).Any())
+                && Controller.GetUnits(Units.FACTORY, onlyCompleted:true).Any())
             {
                 BuildIfPossible(Units.STARPORT);
             }

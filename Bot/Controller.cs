@@ -493,7 +493,7 @@ namespace Bot
             Logger.Info("Constructing: {0} @ {1} / {2}", GetUnitName(unitType), position.X, position.Y);
         }
 
-        public static void Construct(uint unitType, Vector3? startingSpot = null, int radius = 20)
+        public static void Construct(uint unitType, Vector3? startingSpot = null, int radius = 16)
         {
             var resourceCenters = GetUnits(Units.ResourceCenters);
             if (startingSpot == null && resourceCenters.Count > 0)
