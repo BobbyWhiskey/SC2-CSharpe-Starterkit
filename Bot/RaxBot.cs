@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using SC2APIProtocol;
 
 namespace Bot {
@@ -13,6 +14,8 @@ namespace Bot {
 
         private BuildingModule _buildingModule;
         private readonly SpawnerModule _spawnerModule;
+        private Vector3? _lastAttackPosition;
+        private ulong _lastAttackPositionUpdate;
 
         //the following will be called every frame
         //you can increase the amount of frames that get processed for each step at once in Wrapper/GameConnection.cs: stepSize  
@@ -49,15 +52,34 @@ namespace Bot {
             if (Controller.frame % 50 == 0)
                 Controller.DistributeWorkers();
 
-            this._buildingModule.OnFrame();
-            this._spawnerModule.OnFrame();
+            //if (Controller.frame % 50 == 0)
+                this._buildingModule.OnFrame();
+            
+            //if (Controller.frame % 50 == 0)
+                this._spawnerModule.OnFrame();
 
             //attack when we have enough units
             var army = Controller.GetUnits(Units.ArmyUnits);
-            if (army.Count > 15) {
-                if (Controller.enemyLocations.Count > 0)
+            
+            if (Controller.frame % 20 == 0
+             && army.Count > 25) {
+                if (Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).Any())
                 {
-                    Controller.Attack(army, Controller.enemyLocations[0].MidWay(resourceCenters.First().position).MidWay(Controller.enemyLocations[0]));
+                    _lastAttackPosition = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).First().position;
+                    Controller.Attack(army, _lastAttackPosition.Value);
+                }
+                else if (_lastAttackPosition.HasValue)
+                {
+                    if (Controller.frame - _lastAttackPositionUpdate > 500)
+                    {
+                        _lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
+                        _lastAttackPositionUpdate = Controller.frame;
+                    }
+                    Controller.Attack(army, _lastAttackPosition.Value);
+                }
+                else if (Controller.enemyLocations.Count > 0)
+                {
+                    _lastAttackPosition = Controller.enemyLocations[0].MidWay(resourceCenters.First().position);
                 }
             }            
 

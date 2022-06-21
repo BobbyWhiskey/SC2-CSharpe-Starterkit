@@ -23,30 +23,28 @@ namespace Bot
 
             BuildSupplyDepots();
 
-            BuildUnitProducers();
+            if(Controller.frame % 20 == 0)
+                BuildUnitProducers();
 
             BuildExpansion();
 
-            if (Controller.frame % 100 == 0)
+            BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>()
             {
-                BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>()
-                {
-                    Units.BARRACKS_TECHLAB,
-                    Units.BARRACKS_REACTOR
-                });
+                Units.BARRACKS_TECHLAB,
+                Units.BARRACKS_REACTOR
+            });
+            
+            BuildBuildingExtensions(Units.FACTORY, new HashSet<uint>()
+            {
+                Units.FACTORY_TECHLAB,
+                Units.FACTORY_REACTOR
+            });
 
-                BuildBuildingExtensions(Units.FACTORY, new HashSet<uint>()
-                {
-                    Units.FACTORY_TECHLAB,
-                    Units.FACTORY_REACTOR
-                });
-
-                BuildBuildingExtensions(Units.STARPORT, new HashSet<uint>()
-                {
-                    Units.STARPORT_REACTOR,
-                    Units.STARPORT_TECHLAB
-                });
-            }
+            BuildBuildingExtensions(Units.STARPORT, new HashSet<uint>()
+            {
+                Units.STARPORT_REACTOR,
+                Units.STARPORT_TECHLAB
+            });
         }
 
         private void BuildExpansion()
@@ -81,8 +79,6 @@ namespace Bot
                 var avgZ = cluster.Select(m => m.position.Z).Average();
                 
                 Controller.Construct(Units.COMMAND_CENTER, new Vector3(avgX, avgY, avgZ), 5);
-
-
                 // TODO Send SCV to build
             }
         }
@@ -96,29 +92,37 @@ namespace Bot
             {
                 foreach (var producer in producers)
                 {
+                    var extensionType = allowedExtensions.First();
                     // TODO MC Do also reactors some time ya know
-                    if (Controller.CanConstruct(allowedExtensions.First()))
+                    if (Controller.CanConstruct(extensionType) 
+                        && !(producer.buildProgress < 1)
+                        && producer.order.AbilityId == 0)
                     {
-                        producer.Train(allowedExtensions.First());                        
+                        producer.Train(extensionType);                        
                     }
                 }
             }
         }
 
-
         private void BuildUnitProducers()
         {
+            this.barrackTargetCount = 2 * (Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers) / 10);
+            this.factoryTargetCount = 1 * (Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers) / 10);
+            this.starportTargetCount = 1 * (Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers) / 10);
+            
             if (this.barrackTargetCount > Controller.GetTotalCount(Units.BARRACKS))
             {
                 BuildIfPossible(Units.BARRACKS);
             }
 
-            if (this.factoryTargetCount > Controller.GetTotalCount(Units.FACTORY))
+            if (this.factoryTargetCount > Controller.GetTotalCount(Units.FACTORY)
+                && Controller.GetUnits(Units.BARRACKS, onlyCompleted:true).Any())
             {
                 BuildIfPossible(Units.FACTORY);
             }
 
-            if (this.starportTargetCount > Controller.GetTotalCount(Units.STARPORT))
+            if (this.starportTargetCount > Controller.GetTotalCount(Units.STARPORT)
+                && Controller.GetUnits(Units.FACTORY, onlyCompleted:true).Any())
             {
                 BuildIfPossible(Units.STARPORT);
             }

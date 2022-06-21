@@ -32,6 +32,7 @@ namespace Bot
         public static uint vespene;
 
         public static readonly List<Vector3> enemyLocations = new List<Vector3>();
+        public static Vector3 startingLocation = new Vector3();
         public static readonly List<string> chatLog = new List<string>();
 
         public static void Pause()
@@ -87,6 +88,7 @@ namespace Bot
                 if (resourceCenters.Count > 0)
                 {
                     var rcPosition = resourceCenters[0].position;
+                    startingLocation = rcPosition;
 
                     foreach (var startLocation in gameInfo.StartRaw.StartLocations)
                     {
@@ -94,6 +96,7 @@ namespace Bot
                         var distance = Vector3.Distance(enemyLocation, rcPosition);
                         if (distance > 30)
                             enemyLocations.Add(enemyLocation);
+                        
                     }
                 }
             }
@@ -259,9 +262,6 @@ namespace Bot
                 //we need supply depots for the following structures
                 var depots = GetUnits(Units.SupplyDepots, onlyCompleted: true);
                 if (depots.Count == 0) return false;
-
-                if (unitType == Units.BARRACKS)
-                    return CanAfford(unitType);
             }
 
             //it's an actual unit
@@ -293,7 +293,7 @@ namespace Bot
         }
 
 
-        public static bool CanPlace(uint unitType, Vector3 targetPos)
+        public static bool CanPlace(uint unitType, Vector3 targetPos, bool withExtention = true)
         {
             //Note: this is a blocking call! Use it sparingly, or you will slow down your execution significantly!
             var abilityID = Abilities.GetID(unitType);
@@ -310,7 +310,43 @@ namespace Bot
 
             var result = Program.gc.SendQuery(requestQuery.Query);
             if (result.Result.Placements.Count > 0)
-                return (result.Result.Placements[0].Result == ActionResult.Success);
+            {
+                if (result.Result.Placements[0].Result == ActionResult.Success)
+                {
+                    if (withExtention && 
+                        (unitType == Units.BARRACKS || unitType == Units.FACTORY || unitType == Units.STARPORT))
+                    {
+                        var extensionAbilityId = Abilities.GetID(Units.FACTORY_REACTOR);
+                        queryBuildingPlacement = new RequestQueryBuildingPlacement();
+                        queryBuildingPlacement.AbilityId = extensionAbilityId;
+                        queryBuildingPlacement.TargetPos = new Point2D();
+                        queryBuildingPlacement.TargetPos.X = (float)(targetPos.X + 1.5);
+                        queryBuildingPlacement.TargetPos.Y = targetPos.Y;
+                    
+                        requestQuery = new Request();
+                        requestQuery.Query = new RequestQuery();
+                        requestQuery.Query.Placements.Add(queryBuildingPlacement);
+
+                        result = Program.gc.SendQuery(requestQuery.Query);
+                        
+                        if (result.Result.Placements.Count > 0
+                            && result.Result.Placements[0].Result == ActionResult.Success)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+                
+            }
+                
             return false;
         }
 
@@ -459,7 +495,7 @@ namespace Bot
         {
             var resourceCenters = GetUnits(Units.ResourceCenters);
             if (startingSpot == null && resourceCenters.Count > 0)
-                startingSpot = resourceCenters[0].position;
+                startingSpot = startingLocation;
             else
             {
                 //Logger.Error("Unable to construct: {0}. No resource center was found.", GetUnitName(unitType));

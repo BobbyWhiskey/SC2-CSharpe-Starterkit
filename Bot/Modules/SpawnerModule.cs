@@ -1,18 +1,32 @@
-﻿using Bot.Queries;
+﻿using System;
+using Bot.Queries;
 
 namespace Bot
 {
     public class SpawnerModule
     {
+        private Random _random = new Random();
         public void OnFrame()
         {
             if (!IsTimeForExpandQuery.Get())
             {
+                // TODO NEed to handle if building has a reactor wink wink
                 foreach (var barracks in Controller.GetUnits(Units.BARRACKS, onlyCompleted:true)) {
-                    if (Controller.CanConstruct(Units.MARINE) && barracks.order.AbilityId == 0)
+                    if (_random.Next() > int.MaxValue * 0.7)
                     {
-                        barracks.Train(Units.MARINE);
+                        if (Controller.CanConstruct(Units.MARAUDER) && barracks.order.AbilityId == 0)
+                        {
+                            barracks.Train(Units.MARAUDER);
+                        }    
                     }
+                    else
+                    {
+                        if (Controller.CanConstruct(Units.MARINE) && barracks.order.AbilityId == 0)
+                        {
+                            barracks.Train(Units.MARINE);
+                        }
+                    }
+                    
                 }
             
                 foreach (var factory in Controller.GetUnits(Units.FACTORY, onlyCompleted:true)) {

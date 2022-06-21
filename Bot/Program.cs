@@ -14,7 +14,7 @@ namespace Bot {
         private static readonly string mapName = "ThunderbirdLE.SC2Map";
 
         private static readonly Race opponentRace = Race.Random;
-        private static readonly Difficulty opponentDifficulty = Difficulty.VeryEasy;
+        private static readonly Difficulty opponentDifficulty = Difficulty.Hard;
 
         public static GameConnection gc;
 
