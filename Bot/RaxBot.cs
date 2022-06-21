@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Numerics;
 using SC2APIProtocol;
+using Action = SC2APIProtocol.Action;
 
 namespace Bot {
     internal class RaxBot : Bot

@@ -434,8 +434,6 @@ namespace Bot
         {
             // TODO MC Use method parameter
             var workers = GetUnits(Units.Workers).Where(w => w.order.AbilityId == Abilities.GATHER_MINERALS);
-            workers.Min(x => (x.position - targetPosition).LengthSquared());
-
             return workers.FirstOrDefault();
         }
 

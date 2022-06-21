@@ -19,6 +19,7 @@ namespace Bot {
         public static GameConnection gc;
 
         public static void Main(string[] args) {
+            Logger.Info("Staring bot!!! pew pew");
             try {
                 gc = new GameConnection();
                 if (args.Length == 0){

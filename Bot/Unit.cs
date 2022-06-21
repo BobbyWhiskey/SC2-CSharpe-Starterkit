@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Google.Protobuf.Collections;
 using SC2APIProtocol;
+using Action = SC2APIProtocol.Action;
 
 // ReSharper disable MemberCanBePrivate.Global
 
