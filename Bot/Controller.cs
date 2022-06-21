@@ -417,7 +417,14 @@ namespace Bot
                 if (refinery.assignedWorkers < refinery.idealWorkers)
                 {
                     var scv = GetFirstInRange(refinery.position, GetUnits(Units.SCV), 7);
-                    scv.Smart(refinery);
+                    if (scv != null)
+                    {
+                        scv.Smart(refinery);
+                    }
+                    else
+                    {
+                        Logger.Info("Cant find SCV for refinery :*(");
+                    }
                 }
             }
         }
@@ -426,15 +433,10 @@ namespace Bot
         public static Unit GetAvailableWorker(Vector3 targetPosition)
         {
             // TODO MC Use method parameter
-            var workers = GetUnits(Units.Workers);
-            foreach (var worker in workers)
-            {
-                if (worker.order.AbilityId != Abilities.GATHER_MINERALS) continue;
+            var workers = GetUnits(Units.Workers).Where(w => w.order.AbilityId == Abilities.GATHER_MINERALS);
+            workers.Min(x => (x.position - targetPosition).LengthSquared());
 
-                return worker;
-            }
-
-            return null;
+            return workers.FirstOrDefault();
         }
 
         public static bool IsInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
@@ -491,7 +493,7 @@ namespace Bot
             Logger.Info("Constructing: {0} @ {1} / {2}", GetUnitName(unitType), position.X, position.Y);
         }
 
-        public static void Construct(uint unitType, Vector3? startingSpot = null, int radius = 12)
+        public static void Construct(uint unitType, Vector3? startingSpot = null, int radius = 20)
         {
             var resourceCenters = GetUnits(Units.ResourceCenters);
             if (startingSpot == null && resourceCenters.Count > 0)

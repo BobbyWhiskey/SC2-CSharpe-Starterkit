@@ -12,7 +12,7 @@ namespace Bot
             {
                 // TODO NEed to handle if building has a reactor wink wink
                 foreach (var barracks in Controller.GetUnits(Units.BARRACKS, onlyCompleted:true)) {
-                    if (_random.Next() > int.MaxValue * 0.7)
+                    if (_random.NextDouble() > 0.7)
                     {
                         if (Controller.CanConstruct(Units.MARAUDER) && barracks.order.AbilityId == 0)
                         {

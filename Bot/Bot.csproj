@@ -51,6 +51,7 @@
     <Compile Include="Controller.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Modules\BuildingModule.cs" />
+    <Compile Include="Modules\ResearchModule.cs" />
     <Compile Include="Modules\SpawnerModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Protocol\Common.cs" />

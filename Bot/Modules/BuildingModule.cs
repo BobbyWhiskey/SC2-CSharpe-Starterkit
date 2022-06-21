@@ -19,32 +19,53 @@ namespace Bot
 
         public void OnFrame()
         {
-            BuildRefineries();
+            if(Controller.frame % 50 == 0)
+                BuildRefineries();
 
             BuildSupplyDepots();
+
+            if (Controller.frame % 20 == 0)
+                BuildResearch();
 
             if(Controller.frame % 20 == 0)
                 BuildUnitProducers();
 
             BuildExpansion();
 
-            BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>()
+            if (Controller.frame % 50 == 0)
             {
-                Units.BARRACKS_TECHLAB,
-                Units.BARRACKS_REACTOR
-            });
-            
-            BuildBuildingExtensions(Units.FACTORY, new HashSet<uint>()
-            {
-                Units.FACTORY_TECHLAB,
-                Units.FACTORY_REACTOR
-            });
+                BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>()
+                {
+                    Units.BARRACKS_TECHLAB,
+                    Units.BARRACKS_REACTOR
+                });
 
-            BuildBuildingExtensions(Units.STARPORT, new HashSet<uint>()
+                BuildBuildingExtensions(Units.FACTORY, new HashSet<uint>()
+                {
+                    Units.FACTORY_TECHLAB,
+                    Units.FACTORY_REACTOR
+                });
+
+                BuildBuildingExtensions(Units.STARPORT, new HashSet<uint>()
+                {
+                    Units.STARPORT_REACTOR,
+                    Units.STARPORT_TECHLAB
+                });
+            }
+        }
+
+        private void BuildResearch()
+        {
+            if (!Controller.GetUnits(Units.ENGINEERING_BAY).Any())
             {
-                Units.STARPORT_REACTOR,
-                Units.STARPORT_TECHLAB
-            });
+                BuildIfPossible(Units.ENGINEERING_BAY);
+            }
+            
+            if (Controller.GetUnits(Units.ARMORY).Count == 0
+                && Controller.GetUnits(Units.FACTORY).Count != 0)
+            {
+                BuildIfPossible(Units.FACTORY);
+            }
         }
 
         private void BuildExpansion()
@@ -106,9 +127,11 @@ namespace Bot
 
         private void BuildUnitProducers()
         {
-            this.barrackTargetCount = 2 * (Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers) / 10);
-            this.factoryTargetCount = 1 * (Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers) / 10);
-            this.starportTargetCount = 1 * (Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers) / 10);
+            var nbRcs = Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers);
+            
+            this.barrackTargetCount = 2 * (nbRcs / 10);
+            this.factoryTargetCount = 1 * (nbRcs / 10);
+            this.starportTargetCount = 1 * (nbRcs / 10);
             
             if (this.barrackTargetCount > Controller.GetTotalCount(Units.BARRACKS))
             {
@@ -116,13 +139,13 @@ namespace Bot
             }
 
             if (this.factoryTargetCount > Controller.GetTotalCount(Units.FACTORY)
-                && Controller.GetUnits(Units.BARRACKS, onlyCompleted:true).Any())
+                && Controller.GetUnits(Units.BARRACKS).Any())
             {
                 BuildIfPossible(Units.FACTORY);
             }
 
             if (this.starportTargetCount > Controller.GetTotalCount(Units.STARPORT)
-                && Controller.GetUnits(Units.FACTORY, onlyCompleted:true).Any())
+                && Controller.GetUnits(Units.FACTORY).Any())
             {
                 BuildIfPossible(Units.STARPORT);
             }
@@ -146,11 +169,11 @@ namespace Bot
             foreach (var cc in ccs)
             {
                 var refCount = refineries.Count(r => (r.position - cc.position).Length() < 8);
-                if (cc.assignedWorkers > 12 && refCount < 1)
+                if (cc.assignedWorkers > 13 && refCount < 1)
                 {
                     BuildRefinery(cc.position);
                 } 
-                if (cc.assignedWorkers > 15 && refCount < 2)
+                else if (cc.assignedWorkers > 15 && refCount < 2)
                 {
                     BuildRefinery(cc.position);
                 } 

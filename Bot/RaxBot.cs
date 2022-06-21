@@ -10,9 +10,11 @@ namespace Bot {
         {
             _buildingModule = new BuildingModule();
             _spawnerModule = new SpawnerModule();
+            _researchModule = new ResearchModule();
         }
 
         private BuildingModule _buildingModule;
+        private ResearchModule _researchModule;
         private readonly SpawnerModule _spawnerModule;
         private Vector3? _lastAttackPosition;
         private ulong _lastAttackPositionUpdate;
@@ -51,6 +53,8 @@ namespace Bot {
 
             if (Controller.frame % 50 == 0)
                 Controller.DistributeWorkers();
+            
+            this._researchModule.OnFrame();
 
             //if (Controller.frame % 50 == 0)
                 this._buildingModule.OnFrame();

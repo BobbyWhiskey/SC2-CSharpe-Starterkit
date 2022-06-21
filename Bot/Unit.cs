@@ -51,6 +51,16 @@ namespace Bot {
         public double GetDistance(Vector3 location) {
             return Vector3.Distance(position, location);
         }
+
+        public void Ability(int abilityID)
+        {
+            var action = Controller.CreateRawUnitCommand(abilityID);
+            action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+            Controller.AddAction(action);
+
+            var targetName = Controller.GetUnitName(unitType);
+            Logger.Info("Started research on {0}", targetName);
+        }
         
         public void Train(uint unitType, bool queue=false) {            
             if (!queue && orders.Count > 0)
