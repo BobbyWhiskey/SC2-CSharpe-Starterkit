@@ -2,7 +2,7 @@
 using SC2APIProtocol;
 
 namespace Bot {
-    internal class Program {
+    public class Program {
         // Settings for your bot.
         private static readonly Bot bot = new RaxBot();
         private const Race race = Race.Terran;
@@ -18,7 +18,7 @@ namespace Bot {
 
         public static GameConnection gc;
 
-        private static void Main(string[] args) {
+        public static void Main(string[] args) {
             try {
                 gc = new GameConnection();
                 if (args.Length == 0){
