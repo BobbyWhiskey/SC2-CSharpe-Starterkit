@@ -50,6 +50,8 @@
     <Compile Include="Abilities.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Modules\BuildingModule.cs" />
+    <Compile Include="Modules\SpawnerModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Protocol\Common.cs" />
     <Compile Include="Protocol\Data.cs" />
@@ -61,7 +63,9 @@
     <Compile Include="Protocol\Score.cs" />
     <Compile Include="Protocol\Spatial.cs" />
     <Compile Include="Protocol\Ui.cs" />
+    <Compile Include="Queries\IsTimeForExpandQuery.cs" />
     <Compile Include="Unit.cs" />
+    <Compile Include="Vector3Extensions.cs" />
     <Compile Include="Wrapper\Interface.cs" />
     <Compile Include="Wrapper\CommandLine.cs" />
     <Compile Include="Wrapper\GameConnection.cs" />

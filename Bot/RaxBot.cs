@@ -1,9 +1,19 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SC2APIProtocol;
 
 namespace Bot {
-    internal class RaxBot : Bot {
-        
+    internal class RaxBot : Bot
+    {
+        public RaxBot()
+        {
+            _buildingModule = new BuildingModule();
+            _spawnerModule = new SpawnerModule();
+        }
+
+        private BuildingModule _buildingModule;
+        private readonly SpawnerModule _spawnerModule;
+
         //the following will be called every frame
         //you can increase the amount of frames that get processed for each step at once in Wrapper/GameConnection.cs: stepSize  
         public IEnumerable<Action> OnFrame() {
@@ -29,40 +39,26 @@ namespace Bot {
 
             var resourceCenters = Controller.GetUnits(Units.ResourceCenters);
             foreach (var rc in resourceCenters) {
-                if (Controller.CanConstruct(Units.SCV))
+                // Bad condition
+                if (rc.assignedWorkers < rc.idealWorkers && Controller.CanConstruct(Units.SCV))
+                {
                     rc.Train(Units.SCV);
+                }
             }
-            
-            
-            //keep on buildings depots if supply is tight
-            if (Controller.maxSupply - Controller.currentSupply <= 5)
-                if (Controller.CanConstruct(Units.SUPPLY_DEPOT))
-                    if (Controller.GetPendingCount(Units.SUPPLY_DEPOT) == 0)                    
-                        Controller.Construct(Units.SUPPLY_DEPOT);
 
-            
-            //distribute workers optimally every 10 frames
-            if (Controller.frame % 10 == 0)
+            if (Controller.frame % 50 == 0)
                 Controller.DistributeWorkers();
-            
-            
 
-            //build up to 4 barracks at once
-            if (Controller.CanConstruct(Units.BARRACKS)) 
-                if (Controller.GetTotalCount(Units.BARRACKS) < 4)                
-                    Controller.Construct(Units.BARRACKS);          
-            
-            //train marine
-            foreach (var barracks in Controller.GetUnits(Units.BARRACKS, onlyCompleted:true)) {
-                if (Controller.CanConstruct(Units.MARINE))
-                    barracks.Train(Units.MARINE);
-            }
+            this._buildingModule.OnFrame();
+            this._spawnerModule.OnFrame();
 
             //attack when we have enough units
             var army = Controller.GetUnits(Units.ArmyUnits);
-            if (army.Count > 20) {
+            if (army.Count > 15) {
                 if (Controller.enemyLocations.Count > 0)
-                    Controller.Attack(army, Controller.enemyLocations[0]);
+                {
+                    Controller.Attack(army, Controller.enemyLocations[0].MidWay(resourceCenters.First().position).MidWay(Controller.enemyLocations[0]));
+                }
             }            
 
             return Controller.CloseFrame();
