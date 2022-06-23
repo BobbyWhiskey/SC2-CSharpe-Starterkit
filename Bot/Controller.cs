@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Numerics;
-using System.Security.Cryptography;
-using System.Threading;
+﻿using System.Numerics;
 using SC2APIProtocol;
 using Action = SC2APIProtocol.Action;
 
@@ -19,6 +13,7 @@ namespace Bot
 
         //don't edit
         private static readonly List<Action> actions = new List<Action>();
+        private static readonly List<DebugCommand> debugCommands = new List<DebugCommand>();
         private static readonly Random random = new Random();
         private const double FRAMES_PER_SECOND = 22.4;
 
@@ -50,9 +45,9 @@ namespace Bot
         }
 
 
-        public static List<Action> CloseFrame()
+        public static (IEnumerable<Action>, IEnumerable<DebugCommand>) CloseFrame()
         {
-            return actions;
+            return (actions, debugCommands);
         }
 
 
@@ -71,6 +66,7 @@ namespace Bot
             }
 
             actions.Clear();
+            debugCommands.Clear();
 
             foreach (var chat in obs.Chat)
                 chatLog.Add(chat.Message);
@@ -116,6 +112,10 @@ namespace Bot
             actions.Add(action);
         }
 
+        public static void AddDebugCommand(DebugCommand command)
+        {
+            debugCommands.Add(command);
+        }
 
         public static void Chat(string message, bool team = false)
         {
@@ -491,7 +491,7 @@ namespace Bot
             Logger.Info("Constructing: {0} @ {1} / {2}", GetUnitName(unitType), position.X, position.Y);
         }
 
-        public static void Construct(uint unitType, Vector3? startingSpot = null, int radius = 16)
+        public static void Construct(uint unitType, Vector3? startingSpot = null, int radius = 17)
         {
             var resourceCenters = GetUnits(Units.ResourceCenters);
             if (startingSpot == null && resourceCenters.Count > 0)
@@ -505,11 +505,37 @@ namespace Bot
             //trying to find a valid construction spot
             var mineralFields = GetUnits(Units.MineralFields, onlyVisible: true, alliance: Alliance.Neutral);
             Vector3 constructionSpot;
+            int nbRetry = 0;
             while (true)
             {
                 constructionSpot = new Vector3(startingSpot.Value.X + random.Next(-radius, radius + 1),
-                    startingSpot.Value.Y + random.Next(-radius, radius + 1), 0);
+                    startingSpot.Value.Y + random.Next(-radius, radius + 1), startingSpot.Value.Z);
 
+                if (nbRetry > 200)
+                {
+                    Controller.AddDebugCommand(new DebugCommand()
+                    {
+                        Draw = new DebugDraw()
+                        {
+                            Boxes =
+                            {
+                                new DebugBox()
+                                {
+                                    Max = (startingSpot.Value + new Vector3(radius, radius, 2))
+                                        .ToPoint(),
+                                    Min = (startingSpot.Value - new Vector3(radius, radius, 0))
+                                        .ToPoint()
+
+                                }
+                            }
+                        }
+                    });
+                    
+                    // TODO This is just temporary so we don't have infinite loop. Fix this
+                    Logger.Warning("Could not find space for building " + unitType);
+                    break;
+                }
+                
                 //avoid building in the mineral line
                 if (IsInRange(constructionSpot, mineralFields, 5)) continue;
 
