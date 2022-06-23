@@ -1,49 +1,36 @@
-﻿using System;
-using Bot.Queries;
+﻿using Bot.Queries;
 
-namespace Bot
+namespace Bot;
+
+public class SpawnerModule
 {
-    public class SpawnerModule
+    private readonly Random _random = new();
+
+    public void OnFrame()
     {
-        private Random _random = new Random();
-        public void OnFrame()
+        if (!IsTimeForExpandQuery.Get())
         {
-            if (!IsTimeForExpandQuery.Get())
-            {
-                // TODO NEed to handle if building has a reactor wink wink
-                foreach (var barracks in Controller.GetUnits(Units.BARRACKS, onlyCompleted:true)) {
-                    if (_random.NextDouble() > 0.7)
-                    {
-                        if (Controller.CanConstruct(Units.MARAUDER) && barracks.order.AbilityId == 0)
-                        {
-                            barracks.Train(Units.MARAUDER);
-                        }    
-                    }
-                    else
-                    {
-                        if (Controller.CanConstruct(Units.MARINE) && barracks.order.AbilityId == 0)
-                        {
-                            barracks.Train(Units.MARINE);
-                        }
-                    }
-                    
+            // TODO NEed to handle if building has a reactor wink wink
+            foreach (var barracks in Controller.GetUnits(Units.BARRACKS, onlyCompleted: true))
+                if (_random.NextDouble() > 0.7)
+                {
+                    if (Controller.CanConstruct(Units.MARAUDER) && barracks.order.AbilityId == 0)
+                        barracks.Train(Units.MARAUDER);
                 }
-            
-                foreach (var factory in Controller.GetUnits(Units.FACTORY, onlyCompleted:true)) {
-                    if (Controller.CanConstruct(Units.SIEGE_TANK) 
-                        && factory.order.AbilityId == 0)
-                    {
-                        factory.Train(Units.SIEGE_TANK);
-                    }
+                else
+                {
+                    if (Controller.CanConstruct(Units.MARINE) && barracks.order.AbilityId == 0)
+                        barracks.Train(Units.MARINE);
                 }
-            
-                foreach (var starport in Controller.GetUnits(Units.STARPORT, onlyCompleted:true)) {
-                    if (Controller.CanConstruct(Units.MEDIVAC) && starport.order.AbilityId == 0)
-                    {
-                        starport.Train(Units.MEDIVAC);
-                    }
-                }
-            }
+
+            foreach (var factory in Controller.GetUnits(Units.FACTORY, onlyCompleted: true))
+                if (Controller.CanConstruct(Units.SIEGE_TANK)
+                    && factory.order.AbilityId == 0)
+                    factory.Train(Units.SIEGE_TANK);
+
+            foreach (var starport in Controller.GetUnits(Units.STARPORT, onlyCompleted: true))
+                if (Controller.CanConstruct(Units.MEDIVAC) && starport.order.AbilityId == 0)
+                    starport.Train(Units.MEDIVAC);
         }
     }
 }
