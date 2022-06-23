@@ -366,8 +366,8 @@ public static class Controller
         {
             //let's see if we can distribute between bases                
             var resourceCenters = GetUnits(Units.ResourceCenters, onlyCompleted: true);
-            Unit transferFrom = null;
-            Unit transferTo = null;
+            Unit? transferFrom = null;
+            Unit? transferTo = null;
 
             transferFrom = GetUnits(Units.ResourceCenters)
                 .FirstOrDefault(x => x.assignedWorkers > x.idealWorkers);
@@ -410,7 +410,7 @@ public static class Controller
     }
 
 
-    public static Unit GetAvailableWorker(Vector3 targetPosition)
+    public static Unit? GetAvailableWorker(Vector3 targetPosition)
     {
         // TODO MC Use method parameter
         var workers = GetUnits(Units.Workers).Where(w => w.order.AbilityId == Abilities.GATHER_MINERALS);
@@ -422,7 +422,7 @@ public static class Controller
         return GetFirstInRange(targetPosition, units, maxDistance) != null;
     }
 
-    public static Unit GetFirstInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
+    public static Unit? GetFirstInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
     {
         //squared distance is faster to calculate
         var maxDistanceSqr = maxDistance * maxDistance;

@@ -81,6 +81,7 @@ public class BuildingModule
             var avgY = mineralCluster.Concat(gasGeyser).Select(m => m.position.Y).Average();
             var avgZ = mineralCluster.Concat(gasGeyser).Select(m => m.position.Z).Average();
 
+            // TODO MC probably not the method to call, we need something more specific for how to place a CC correctly
             Controller.Construct(Units.COMMAND_CENTER, new Vector3(avgX, avgY, avgZ), 6);
         }
     }

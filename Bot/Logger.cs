@@ -6,35 +6,46 @@ namespace Bot;
 
 public static class Logger
 {
-    private static string logFile;
-    private static bool stdoutClosed;
+    private static string? _logFile;
+    private static bool _stdoutClosed;
 
     private static void Initialize()
     {
-        logFile = "Logs/" + DateTime.UtcNow.ToString("yyyy-MM-dd HH.mm.ss") + ".log";
-        Directory.CreateDirectory(Path.GetDirectoryName(logFile));
+        _logFile = "Logs/" + DateTime.UtcNow.ToString("yyyy-MM-dd HH.mm.ss") + ".log";
+        var path = Path.GetDirectoryName(_logFile);
+        if (path != null)
+        {
+            Directory.CreateDirectory(path);
+        }
     }
 
 
     private static void WriteLine(string type, string line, params object[] parameters)
     {
-        if (logFile == null)
+        if (_logFile == null)
+        {
             Initialize();
+        }
+
+        if (_logFile == null)
+        {
+            throw new Exception("Could not get logfile");
+        }
 
         var msg = "[" + DateTime.UtcNow.ToString("HH:mm:ss") + " " + type + "] " + string.Format(line, parameters);
 
-        var file = new StreamWriter(logFile, true);
+        var file = new StreamWriter(_logFile, true);
         file.WriteLine(msg);
         file.Close();
         // do not write to stdout if it is closed (LadderServer on linux)
-        if (!stdoutClosed)
+        if (!_stdoutClosed)
             try
             {
                 Console.WriteLine(msg, parameters);
             }
             catch
             {
-                stdoutClosed = true;
+                _stdoutClosed = true;
             }
     }
 

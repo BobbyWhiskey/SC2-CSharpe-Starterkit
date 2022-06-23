@@ -11,7 +11,15 @@ public class ArmyMovementModule
     public void OnFrame()
     {
         var army = Controller.GetUnits(Units.ArmyUnits);
-        if (army.Count > 25)
+        var attackingUnits = GetCloseToBaseArmy().ToList();
+        if (attackingUnits.Any())
+        {
+            // Defend against an attacking unit
+            _lastAttackPosition = attackingUnits.First().position;
+            _lastAttackPositionUpdate = Controller.frame;
+            Controller.Attack(army, _lastAttackPosition.Value);
+        }
+        else if (army.Count > 20 && GetOwnArmyValue() > GetEnemyArmyValue())
         {
             if (Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).Any())
             {
@@ -64,5 +72,24 @@ public class ArmyMovementModule
                 Controller.Attack(army, rallyPoint);
             }
         }
+    }
+
+    private IEnumerable<Unit> GetCloseToBaseArmy()
+    {
+        var enemyArmy = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible: true);
+        var resourceCenters = Controller.GetResourceCenters();
+        return enemyArmy.Where(unit => resourceCenters.Any(rc => (rc.position - unit.position).Length() < 25));
+    }
+
+    private int GetOwnArmyValue()
+    {
+        var myArmy = Controller.GetUnits(Units.ArmyUnits);
+        return (int)myArmy.Sum(u => Controller.gameData.Units[(int)u.unitType].MineralCost);
+    }
+    
+    private int GetEnemyArmyValue()
+    {
+        var units = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible:true);
+        return (int)units.Sum(u => Controller.gameData.Units[(int)u.unitType].MineralCost);
     }
 }
