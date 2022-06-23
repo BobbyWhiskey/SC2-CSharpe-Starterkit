@@ -23,11 +23,12 @@ namespace Bot {
 
         public static void Main(string[] args) {
             Logger.Info("Staring bot!!! pew pew");
-            var mapName = PickRandomMap();
+            
             try {
                 gc = new GameConnection();
                 if (args.Length == 0){
                     gc.readSettings();
+                    var mapName = PickRandomMap();
                     gc.RunSinglePlayer(bot, mapName, race, opponentRace, opponentDifficulty).Wait();
                 }
                 else
