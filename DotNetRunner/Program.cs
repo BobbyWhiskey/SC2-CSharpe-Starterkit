@@ -1,13 +1,10 @@
 ﻿using System;
 
-namespace DotNetRunner
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Starting ToastyTerran bot");
-            Bot.Program.Main(args);
-        }
+        Console.WriteLine("Starting ToastyTerran bot");
+        Bot.Program.Main(args);
     }
 }

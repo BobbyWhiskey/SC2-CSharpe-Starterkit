@@ -22,7 +22,7 @@ namespace Bot {
 
         //the following will be called every frame
         //you can increase the amount of frames that get processed for each step at once in Wrapper/GameConnection.cs: stepSize  
-        public IEnumerable<Action> OnFrame() {
+        public (IEnumerable<Action>, IEnumerable<DebugCommand>) OnFrame() {
             Controller.OpenFrame();
 
             if (Controller.frame == 0) {
@@ -55,40 +55,76 @@ namespace Bot {
             if (Controller.frame % 50 == 0)
                 Controller.DistributeWorkers();
             
-            this._researchModule.OnFrame();
+            if (Controller.frame % 50 == 0)
+                this._researchModule.OnFrame();
 
             //if (Controller.frame % 50 == 0)
                 this._buildingModule.OnFrame();
             
             //if (Controller.frame % 50 == 0)
+            if(Controller.GetUnits(Units.ArmyUnits).Count < 25) // Temporary of course
                 this._spawnerModule.OnFrame();
 
             //attack when we have enough units
             var army = Controller.GetUnits(Units.ArmyUnits);
-            
-            if (Controller.frame % 20 == 0
-             && army.Count > 25) {
-                if (Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).Any())
+
+            if (Controller.frame % 20 == 0)
+            {
+                if (army.Count > 25)
                 {
-                    _lastAttackPosition = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).First().position;
-                    Controller.Attack(army, _lastAttackPosition.Value);
-                }
-                else if (_lastAttackPosition.HasValue)
-                {
-                    if (Controller.frame - _lastAttackPositionUpdate > 500)
+                    if (Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).Any())
                     {
-                        _lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
+                        _lastAttackPosition = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).First().position;
+                        _lastAttackPositionUpdate = Controller.frame;
+                        Controller.Attack(army, _lastAttackPosition.Value);
+                    }
+                    else if (_lastAttackPosition.HasValue)
+                    {
+                        if (Controller.frame - _lastAttackPositionUpdate > 500)
+                        {
+                            var enemies = Controller.GetUnits(Units.All, Alliance.Enemy);
+                            if (enemies.Any())
+                            {
+                                _lastAttackPosition = enemies.First().position;
+                                _lastAttackPositionUpdate = Controller.frame;
+                            }
+                            else
+                            {
+                                _lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
+                                _lastAttackPositionUpdate = Controller.frame;
+                            }
+                        }
+
+                        Controller.Attack(army, _lastAttackPosition.Value);
+                    }
+                    else if (Controller.enemyLocations.Count > 0)
+                    {
+                        _lastAttackPosition = Controller.enemyLocations[0].MidWay(resourceCenters.First().position);
                         _lastAttackPositionUpdate = Controller.frame;
                     }
-                    Controller.Attack(army, _lastAttackPosition.Value);
                 }
-                else if (Controller.enemyLocations.Count > 0)
+                else
                 {
-                    _lastAttackPosition = Controller.enemyLocations[0].MidWay(resourceCenters.First().position);
-                }
-            }            
+                    // Rally point
+                    var rcs = Controller.GetUnits(Units.ResourceCenters)
+                        .OrderBy(rc => (rc.position - Controller.enemyLocations[0]).LengthSquared());
+                    if (rcs.Any())
+                    {
+                        // Dirty way to just have a Rally point somewhere useful
+                        var avgX = rcs.Select(m => m.position.X).Average();
+                        var avgY = rcs.Select(m => m.position.Y).Average();
+                        var avgZ = rcs.Select(m => m.position.Z).Average();
+                        var avg = new Vector3(avgX, avgY, avgZ);
+                        
+                        var rallyPoint = avg +
+                                         (Controller.enemyLocations[0] - avg) * (float)0.15;
 
-            return Controller.CloseFrame();
+                        Controller.Attack(army, rallyPoint);
+                    }
+                }
+            }
+
+            return (Controller.CloseFrame());
         }
     }
 }

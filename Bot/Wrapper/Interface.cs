@@ -4,6 +4,6 @@ using Action = SC2APIProtocol.Action;
 
 namespace Bot {
     public interface Bot {
-        IEnumerable<Action> OnFrame();
+        (IEnumerable<Action>, IEnumerable<DebugCommand>) OnFrame();
     }
 }
