@@ -11,15 +11,19 @@ namespace Bot {
 //        private static string mapName = "AbyssalReefLE.SC2Map";
 //        private static string mapName = "AbiogenesisLE.SC2Map";
 //        private static string mapName = "FrostLE.SC2Map";
-        private static readonly string mapName = "ThunderbirdLE.SC2Map";
+        //private static readonly string mapName = "BlackburnAIE.SC2Map"; //"WorldofSleepersLE.SC2Map";// "ThunderbirdLE.SC2Map";
+        //private static readonly string mapName = "WorldofSleepersLE.SC2Map";// "ThunderbirdLE.SC2Map";
+        //private static readonly string mapName = "ThunderbirdLE.SC2Map";
+        //private static readonly string mapName = "CuriousMindsAIE.SC2Map";
 
         private static readonly Race opponentRace = Race.Random;
-        private static readonly Difficulty opponentDifficulty = Difficulty.Hard;
+        private static readonly Difficulty opponentDifficulty = Difficulty.VeryEasy;
 
         public static GameConnection gc;
 
         public static void Main(string[] args) {
             Logger.Info("Staring bot!!! pew pew");
+            var mapName = PickRandomMap();
             try {
                 gc = new GameConnection();
                 if (args.Length == 0){
@@ -34,6 +38,15 @@ namespace Bot {
             }
 
             Logger.Info("Terminated.");
+        }
+
+        private static string PickRandomMap()
+        {
+            // D:\Games\BattleNet\StarCraft II\Maps
+            var files = Directory.GetFiles(@"D:\Games\BattleNet\StarCraft II\Maps");
+            var random = new Random();
+            var randomFileName = files[random.NextInt64(0, files.Length)];
+            return randomFileName.Substring(randomFileName.LastIndexOf("\\") + 1);
         }
     }
 }
