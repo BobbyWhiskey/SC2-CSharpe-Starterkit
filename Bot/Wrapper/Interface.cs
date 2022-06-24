@@ -5,5 +5,5 @@ namespace Bot;
 
 public interface Bot
 {
-    (IEnumerable<Action>, IEnumerable<DebugCommand>) OnFrame();
+    Task<(IEnumerable<Action>, IEnumerable<DebugCommand>)> OnFrame();
 }

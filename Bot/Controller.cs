@@ -289,7 +289,7 @@ public static class Controller
     }
 
 
-    public static bool CanPlace(uint unitType, Vector3 targetPos, bool withExtention = true)
+    public static async Task<bool> CanPlace(uint unitType, Vector3 targetPos, bool withExtention = true)
     {
         //Note: this is a blocking call! Use it sparingly, or you will slow down your execution significantly!
         var abilityID = Abilities.GetID(unitType);
@@ -304,9 +304,9 @@ public static class Controller
         requestQuery.Query = new RequestQuery();
         requestQuery.Query.Placements.Add(queryBuildingPlacement);
 
-        var result = Program.gc.SendQuery(requestQuery.Query);
-        if (result.Result.Placements.Count > 0)
-            if (result.Result.Placements[0].Result == ActionResult.Success)
+        var result = await GetQueryWithTimeout(requestQuery);
+        if (result?.Placements.Count > 0)
+            if (result.Placements[0].Result == ActionResult.Success)
             {
                 if (withExtention &&
                     (unitType == Units.BARRACKS || unitType == Units.FACTORY || unitType == Units.STARPORT))
@@ -322,10 +322,10 @@ public static class Controller
                     requestQuery.Query = new RequestQuery();
                     requestQuery.Query.Placements.Add(queryBuildingPlacement);
 
-                    result = Program.gc.SendQuery(requestQuery.Query);
+                    result = await GetQueryWithTimeout(requestQuery);
 
-                    if (result.Result.Placements.Count > 0
-                        && result.Result.Placements[0].Result == ActionResult.Success)
+                    if (result?.Placements.Count > 0
+                        && result?.Placements[0].Result == ActionResult.Success)
                         return true;
                     return false;
                 }
@@ -334,6 +334,20 @@ public static class Controller
             }
 
         return false;
+    }
+
+    private static async Task<ResponseQuery?> GetQueryWithTimeout(Request requestQuery)
+    {
+        int timeout = 500;
+        var task = Program.gc.SendQuery(requestQuery.Query);
+        if (await Task.WhenAny(task, Task.Delay(timeout)) == task) {
+            // task completed within timeout
+            return task.Result;
+        } else { 
+            // timeout logic
+            Logger.Error("Query TIMEOUT!!!");
+            return null;
+        }
     }
 
 
@@ -463,7 +477,7 @@ public static class Controller
         Logger.Info("Constructing: {0} @ {1} / {2}", GetUnitName(unitType), position.X, position.Y);
     }
 
-    public static void Construct(uint unitType, Vector3? startingSpot = null, int radius = 17)
+    public static async Task Construct(uint unitType, Vector3? startingSpot = null, int radius = 17)
     {
         var resourceCenters = GetUnits(Units.ResourceCenters);
         if (startingSpot == null && resourceCenters.Count > 0) startingSpot = startingLocation;
@@ -507,7 +521,7 @@ public static class Controller
             if (IsInRange(constructionSpot, mineralFields, 5)) continue;
 
             //check if the building fits
-            if (!CanPlace(unitType, constructionSpot)) continue;
+            if (!(await CanPlace(unitType, constructionSpot))) continue;
 
             //ok, we found a spot
             break;

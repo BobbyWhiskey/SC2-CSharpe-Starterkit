@@ -235,7 +235,7 @@ public class GameConnection
             }
 
             Controller.obs = observation;
-            var (actions, debugCommands) = bot.OnFrame();
+            var (actions, debugCommands) = await bot.OnFrame();
 
 
             if (debugCommands.Any())

@@ -23,7 +23,7 @@ internal class RaxBot : Bot
 
     //the following will be called every frame
     //you can increase the amount of frames that get processed for each step at once in Wrapper/GameConnection.cs: stepSize  
-    public (IEnumerable<Action>, IEnumerable<DebugCommand>) OnFrame()
+    public async Task<(IEnumerable<Action>, IEnumerable<DebugCommand>)> OnFrame()
     {
         Controller.OpenFrame();
 
@@ -58,7 +58,7 @@ internal class RaxBot : Bot
             _researchModule.OnFrame();
 
         //if (Controller.frame % 50 == 0)
-        _buildingModule.OnFrame();
+        await _buildingModule.OnFrame();
 
         //if (Controller.frame % 50 == 0)
         //if(Controller.GetUnits(Units.ArmyUnits).Count < 25) // Temporary of course

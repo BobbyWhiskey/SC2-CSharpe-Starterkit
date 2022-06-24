@@ -10,53 +10,54 @@ public class BuildingModule
     private int factoryTargetCount = 1;
     private int starportTargetCount = 1;
 
-    public void OnFrame()
+    public async Task OnFrame()
     {
-        if (Controller.frame % 50 == 0) BuildRefineries();
-
-
-        BuildSupplyDepots();
-
-        if (Controller.frame % 20 == 0) BuildResearch();
-
-        if (Controller.frame % 20 == 0) BuildUnitProducers();
-
-        BuildExpansion();
-
-        if (Controller.frame % 50 == 0)
+        if (Controller.frame % 50 != 0)
         {
-            BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>
-            {
-                Units.BARRACKS_TECHLAB,
-                Units.BARRACKS_REACTOR
-            });
-
-            BuildBuildingExtensions(Units.FACTORY, new HashSet<uint>
-            {
-                Units.FACTORY_TECHLAB,
-                Units.FACTORY_REACTOR
-            });
-
-            BuildBuildingExtensions(Units.STARPORT, new HashSet<uint>
-            {
-                Units.STARPORT_REACTOR,
-                Units.STARPORT_TECHLAB
-            });
+            return;
         }
+
+        await BuildRefineries();
+
+        await BuildSupplyDepots();
+
+        await BuildResearch();
+
+        await BuildUnitProducers();
+
+        await BuildExpansion();
+
+        BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>
+        {
+            Units.BARRACKS_TECHLAB,
+            Units.BARRACKS_REACTOR
+        });
+
+        BuildBuildingExtensions(Units.FACTORY, new HashSet<uint>
+        {
+            Units.FACTORY_TECHLAB,
+            Units.FACTORY_REACTOR
+        });
+
+        BuildBuildingExtensions(Units.STARPORT, new HashSet<uint>
+        {
+            Units.STARPORT_REACTOR,
+            Units.STARPORT_TECHLAB
+        });
     }
 
-    private void BuildResearch()
+    private async Task BuildResearch()
     {
-        if (!Controller.GetUnits(Units.ENGINEERING_BAY).Any()
+        if (Controller.GetUnits(Units.ENGINEERING_BAY).Count == 0
             && Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Count > 0)
-            BuildIfPossible(Units.ENGINEERING_BAY);
+            await BuildIfPossible(Units.ENGINEERING_BAY);
 
         if (Controller.GetUnits(Units.ARMORY).Count == 0
             && Controller.GetUnits(Units.FACTORY, onlyCompleted: true).Count > 0)
-            BuildIfPossible(Units.ARMORY);
+            await BuildIfPossible(Units.ARMORY);
     }
 
-    private void BuildExpansion()
+    private async Task BuildExpansion()
     {
         if (IsTimeForExpandQuery.Get()
             && Controller.CanAfford(Units.COMMAND_CENTER))
@@ -82,7 +83,7 @@ public class BuildingModule
             var avgZ = mineralCluster.Concat(gasGeyser).Select(m => m.position.Z).Average();
 
             // TODO MC probably not the method to call, we need something more specific for how to place a CC correctly
-            Controller.Construct(Units.COMMAND_CENTER, new Vector3(avgX, avgY, avgZ), 6);
+            await Controller.Construct(Units.COMMAND_CENTER, new Vector3(avgX, avgY, avgZ), 6);
         }
     }
 
@@ -99,11 +100,13 @@ public class BuildingModule
                 if (Controller.CanConstruct(extensionType)
                     && !(producer.buildProgress < 1)
                     && producer.order.AbilityId == 0)
+                {
                     producer.Train(extensionType);
+                }
             }
     }
 
-    private void BuildUnitProducers()
+    private async Task BuildUnitProducers()
     {
         var nbRcs = Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers);
 
@@ -111,26 +114,35 @@ public class BuildingModule
         factoryTargetCount = 1 * (nbRcs / 15);
         starportTargetCount = 1 * (nbRcs / 15);
 
-        if (barrackTargetCount > Controller.GetTotalCount(Units.BARRACKS)) BuildIfPossible(Units.BARRACKS);
+        if (barrackTargetCount > Controller.GetTotalCount(Units.BARRACKS))
+        {
+            await BuildIfPossible(Units.BARRACKS);
+        }
 
         if (factoryTargetCount > Controller.GetTotalCount(Units.FACTORY)
             && Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Any())
-            BuildIfPossible(Units.FACTORY);
+        {
+            await BuildIfPossible(Units.FACTORY);
+        }
 
         if (starportTargetCount > Controller.GetTotalCount(Units.STARPORT)
             && Controller.GetUnits(Units.FACTORY, onlyCompleted: true).Any())
-            BuildIfPossible(Units.STARPORT);
+        {
+            await BuildIfPossible(Units.STARPORT);
+        }
     }
 
-    private void BuildSupplyDepots()
+    private async Task BuildSupplyDepots()
     {
         //keep on buildings depots if supply is tight
         if (Controller.maxSupply - Controller.currentSupply <= 8
             && Controller.GetPendingCount(Units.SUPPLY_DEPOT) == 0)
-            BuildIfPossible(Units.SUPPLY_DEPOT);
+        {
+            await BuildIfPossible(Units.SUPPLY_DEPOT);
+        }
     }
 
-    private void BuildRefineries()
+    private async Task BuildRefineries()
     {
         var ccs = Controller.GetUnits(Units.COMMAND_CENTER);
         var refineries = Controller.GetUnits(Units.REFINERY);
@@ -139,23 +151,31 @@ public class BuildingModule
         {
             var refCount = refineries.Count(r => (r.position - cc.position).Length() < 8);
             if (cc.assignedWorkers > 13 && refCount < 1)
-                BuildRefinery(cc.position);
-            else if (cc.assignedWorkers > 15 && refCount < 2) BuildRefinery(cc.position);
+            {
+                await BuildRefinery(cc.position);
+            }
+            else if (cc.assignedWorkers > 15 && refCount < 2)
+            {
+                await BuildRefinery(cc.position);
+            }
         }
     }
 
-    private void BuildIfPossible(uint unit)
+    private async Task BuildIfPossible(uint unit)
     {
-        if (Controller.CanConstruct(unit)) Controller.Construct(unit);
+        if (Controller.CanConstruct(unit))
+        {
+            await Controller.Construct(unit);
+        }
     }
 
-    private void BuildRefinery(Vector3 basePosition)
+    private async Task BuildRefinery(Vector3 basePosition)
     {
         var geysers = Controller.GetUnits(Units.GasGeysers, Alliance.Neutral)
             .Where(r => (r.position - basePosition).Length() < 12);
 
         foreach (var geyser in geysers)
-            if (Controller.CanPlace(Units.REFINERY, geyser.position))
+            if (await Controller.CanPlace(Units.REFINERY, geyser.position))
             {
                 Controller.ConstructGas(Units.REFINERY, geyser);
                 return;

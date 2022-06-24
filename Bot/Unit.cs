@@ -63,8 +63,8 @@ public class Unit
         action.ActionRaw.UnitCommand.UnitTags.Add(tag);
         Controller.AddAction(action);
 
-        var targetName = Controller.GetUnitName(unitType);
-        Logger.Info("Started research on {0}", targetName);
+        //var targetName = Controller.GetUnitName(unitType);
+        //Logger.Info("Started research on {0}", targetName);
     }
 
     public void Train(uint unitType, bool queue = false)
