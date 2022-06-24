@@ -57,15 +57,14 @@ internal class RaxBot : Bot
         if (Controller.frame % 50 == 0)
             _researchModule.OnFrame();
 
-        //if (Controller.frame % 50 == 0)
-        await _buildingModule.OnFrame();
+        if (Controller.frame % 50 == 0)
+            await _buildingModule.OnFrame();
 
-        //if (Controller.frame % 50 == 0)
-        //if(Controller.GetUnits(Units.ArmyUnits).Count < 25) // Temporary of course
-        _spawnerModule.OnFrame();
+        if (Controller.frame % 50 == 0)
+            _spawnerModule.OnFrame();
 
-
-        if (Controller.frame % 20 == 0) _armyMovementModule.OnFrame();
+        if (Controller.frame % 20 == 0) 
+            _armyMovementModule.OnFrame();
 
         return Controller.CloseFrame();
     }

@@ -492,7 +492,7 @@ public static class Controller
         {
             constructionSpot = new Vector3(startingSpot.Value.X + random.Next(-radius, radius + 1),
                 startingSpot.Value.Y + random.Next(-radius, radius + 1), startingSpot.Value.Z);
-
+            nbRetry++;
             if (nbRetry > 200)
             {
                 AddDebugCommand(new DebugCommand

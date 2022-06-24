@@ -12,11 +12,6 @@ public class BuildingModule
 
     public async Task OnFrame()
     {
-        if (Controller.frame % 50 != 0)
-        {
-            return;
-        }
-
         await BuildRefineries();
 
         await BuildSupplyDepots();
@@ -26,6 +21,8 @@ public class BuildingModule
         await BuildUnitProducers();
 
         await BuildExpansion();
+
+        UpgradeCommandCenter();
 
         BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>
         {
@@ -46,15 +43,31 @@ public class BuildingModule
         });
     }
 
+    private void UpgradeCommandCenter()
+    {
+        var ccs = Controller.GetUnits(Units.COMMAND_CENTER);
+        foreach (var cc in ccs)
+        {
+            if (Controller.CanAfford(Units.ORBITAL_COMMAND))
+            {
+                cc.Train(Units.ORBITAL_COMMAND);    
+            }
+        }
+    }
+
     private async Task BuildResearch()
     {
         if (Controller.GetUnits(Units.ENGINEERING_BAY).Count == 0
             && Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Count > 0)
+        {
             await BuildIfPossible(Units.ENGINEERING_BAY);
+        }
 
         if (Controller.GetUnits(Units.ARMORY).Count == 0
             && Controller.GetUnits(Units.FACTORY, onlyCompleted: true).Count > 0)
+        {
             await BuildIfPossible(Units.ARMORY);
+        }
     }
 
     private async Task BuildExpansion()
@@ -114,21 +127,21 @@ public class BuildingModule
         factoryTargetCount = 1 * (nbRcs / 15);
         starportTargetCount = 1 * (nbRcs / 15);
 
-        if (barrackTargetCount > Controller.GetTotalCount(Units.BARRACKS))
+        if (starportTargetCount > Controller.GetTotalCount(Units.STARPORT)
+            && Controller.GetUnits(Units.FACTORY, onlyCompleted: true).Any())
         {
-            await BuildIfPossible(Units.BARRACKS);
+            await BuildIfPossible(Units.STARPORT);
         }
-
+        
         if (factoryTargetCount > Controller.GetTotalCount(Units.FACTORY)
             && Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Any())
         {
             await BuildIfPossible(Units.FACTORY);
         }
 
-        if (starportTargetCount > Controller.GetTotalCount(Units.STARPORT)
-            && Controller.GetUnits(Units.FACTORY, onlyCompleted: true).Any())
+        if (barrackTargetCount > Controller.GetTotalCount(Units.BARRACKS))
         {
-            await BuildIfPossible(Units.STARPORT);
+            await BuildIfPossible(Units.BARRACKS);
         }
     }
 
