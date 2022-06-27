@@ -73,8 +73,16 @@ public class BuildingModule
         }
         else if (nextUnit == Units.REFINERY)
         {
-            var cc = Controller.GetResourceCenters().First(cc => cc.buildProgress >= 1);
-            await BuildRefinery(cc.position);
+            var cc = Controller.GetResourceCenters().FirstOrDefault(cc => cc.buildProgress >= 1);
+            if (cc == null)
+            {
+                Logger.Warning("Trying to build refinery from build order but could not find CC. Are we loosing? :(");                
+            }
+            else
+            {
+                await BuildRefinery(cc.position);    
+            }
+            
             //await BuildRefineries();
         }
         else if (nextUnit == Units.BARRACKS_TECHLAB || nextUnit == Units.BARRACKS_REACTOR)
