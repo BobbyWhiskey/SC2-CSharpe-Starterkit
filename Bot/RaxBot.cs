@@ -1,4 +1,5 @@
 ﻿using Bot.Modules;
+using Bot.Queries;
 using SC2APIProtocol;
 using Action = SC2APIProtocol.Action;
 
@@ -45,26 +46,32 @@ internal class RaxBot : Bot
                 if (!Controller.chatLog.Contains("gg"))
                     Controller.Chat("gg");
 
+        // TODO This should be moved into spawner?
         var resourceCenters = Controller.GetUnits(Units.ResourceCenters);
-        foreach (var rc in resourceCenters)
-            // Bad condition
-            if (rc.assignedWorkers < rc.idealWorkers && Controller.CanConstruct(Units.SCV))
-                rc.Train(Units.SCV);
+        var nextBuildOrder = BuildOrderQueries.GetNextBuildOrderUnit();
+        var canBuildOrbital = Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Any();
+        var stopScvProduction = (!nextBuildOrder.HasValue || nextBuildOrder.Value == Units.ORBITAL_COMMAND ) && canBuildOrbital;
+        
+        //var totalAssign
+        var totalAssigned = resourceCenters.Sum(rc => rc.assignedWorkers);
+        var totalIdeal = resourceCenters.Sum(rc => rc.idealWorkers);
 
-        if (Controller.frame % 50 == 0)
+        if (totalIdeal > totalAssigned  && Controller.CanConstruct(Units.SCV)  && !stopScvProduction)
+        {
+            foreach (var rc in resourceCenters)
+            { 
+                rc.Train(Units.SCV); 
+            }
+        }
+
+        if (Controller.frame % 5 == 0)
+        {
             Controller.DistributeWorkers();
-
-        if (Controller.frame % 50 == 0)
             _researchModule.OnFrame();
-
-        if (Controller.frame % 50 == 0)
             await _buildingModule.OnFrame();
-
-        if (Controller.frame % 50 == 0)
             _spawnerModule.OnFrame();
-
-        if (Controller.frame % 20 == 0) 
             _armyMovementModule.OnFrame();
+        }
 
         return Controller.CloseFrame();
     }

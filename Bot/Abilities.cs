@@ -12,6 +12,8 @@ internal static class Abilities
 
     public static int RESEARCH_UPGRADE_INFANTRY_ARMOR = 3697; //656; //;  
     public static int RESEARCH_UPGRADE_INFANTRY_WEAPON = 3698; // 652; //;  
+    
+    public static int COMMAND_CENTER_ORBITAL_UPGRADE = 1516;
 
     public static int CANCEL_CONSTRUCTION = 314;
     public static int CANCEL = 3659;

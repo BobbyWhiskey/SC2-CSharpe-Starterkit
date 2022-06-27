@@ -12,35 +12,87 @@ public class BuildingModule
 
     public async Task OnFrame()
     {
-        await BuildRefineries();
-
-        await BuildSupplyDepots();
-
-        await BuildResearch();
-
-        await BuildUnitProducers();
-
-        await BuildExpansion();
-
-        UpgradeCommandCenter();
-
-        BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>
+        if (!BuildOrderQueries.IsBuildOrderCompleted())
         {
-            Units.BARRACKS_TECHLAB,
-            Units.BARRACKS_REACTOR
-        });
-
-        BuildBuildingExtensions(Units.FACTORY, new HashSet<uint>
+            await AdvanceBuildOrder(); 
+        }
+        else
         {
-            Units.FACTORY_TECHLAB,
-            Units.FACTORY_REACTOR
-        });
+            await BuildRefineries();
 
-        BuildBuildingExtensions(Units.STARPORT, new HashSet<uint>
+            await BuildSupplyDepots();
+
+            await BuildResearch();
+
+            await BuildUnitProducers();
+
+            await BuildExpansion();
+
+            UpgradeCommandCenter();
+
+
+            BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>
+            {
+                Units.BARRACKS_TECHLAB,
+                Units.BARRACKS_REACTOR
+            });
+
+            BuildBuildingExtensions(Units.FACTORY, new HashSet<uint>
+            {
+                Units.FACTORY_TECHLAB,
+                Units.FACTORY_REACTOR
+            });
+
+            BuildBuildingExtensions(Units.STARPORT, new HashSet<uint>
+            {
+                Units.STARPORT_REACTOR,
+                Units.STARPORT_TECHLAB
+            });
+        }
+    }
+
+
+    private async Task AdvanceBuildOrder()
+    {
+        var nextBuildOrderResult = BuildOrderQueries.GetNextBuildOrderUnit();
+        if (!nextBuildOrderResult.HasValue)
         {
-            Units.STARPORT_REACTOR,
-            Units.STARPORT_TECHLAB
-        });
+            Logger.Error("u should have value here");
+            return;
+        }
+
+        var nextUnit = nextBuildOrderResult.Value;
+        if (nextUnit == Units.ORBITAL_COMMAND)
+        {
+            // TODO MC Maybe we can cancel SCV currently training to make orbital faster?
+            UpgradeCommandCenter();
+        }
+        else if (nextUnit == Units.COMMAND_CENTER)
+        {
+            await BuildExpansion();
+        }
+        else if (nextUnit == Units.REFINERY)
+        {
+            var cc = Controller.GetResourceCenters().First(cc => cc.buildProgress >= 1);
+            await BuildRefinery(cc.position);
+            //await BuildRefineries();
+        }
+        else if (nextUnit == Units.BARRACKS_TECHLAB || nextUnit == Units.BARRACKS_REACTOR)
+        {
+            BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint> { nextUnit });
+        }
+        else if (nextUnit == Units.FACTORY_TECHLAB || nextUnit == Units.FACTORY_REACTOR)
+        {
+            BuildBuildingExtensions(Units.FACTORY, new HashSet<uint> { nextUnit });
+        }
+        else if (nextUnit == Units.STARPORT_TECHLAB || nextUnit == Units.STARPORT_REACTOR)
+        {
+            BuildBuildingExtensions(Units.STARPORT, new HashSet<uint> { nextUnit });
+        }
+        else
+        {
+            await BuildIfPossible(nextUnit);
+        }
     }
 
     private void UpgradeCommandCenter()
@@ -50,7 +102,7 @@ public class BuildingModule
         {
             if (Controller.CanAfford(Units.ORBITAL_COMMAND))
             {
-                cc.Train(Units.ORBITAL_COMMAND);    
+                cc.Train(Units.ORBITAL_COMMAND);
             }
         }
     }
@@ -115,6 +167,8 @@ public class BuildingModule
                     && producer.order.AbilityId == 0)
                 {
                     producer.Train(extensionType);
+
+                    return;
                 }
             }
     }
@@ -132,7 +186,7 @@ public class BuildingModule
         {
             await BuildIfPossible(Units.STARPORT);
         }
-        
+
         if (factoryTargetCount > Controller.GetTotalCount(Units.FACTORY)
             && Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Any())
         {

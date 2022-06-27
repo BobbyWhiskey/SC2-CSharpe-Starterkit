@@ -1,4 +1,6 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
+using Bot.Queries;
 using SC2APIProtocol;
 using Action = SC2APIProtocol.Action;
 
@@ -11,7 +13,7 @@ public static class Controller
     private const double FRAMES_PER_SECOND = 22.4;
 
     //editable
-    private static readonly int frameDelay = 0; //too fast? increase this to e.g. 20
+    private static readonly int frameDelay = 5; //too fast? increase this to e.g. 20
 
     //don't edit
     private static readonly List<Action> actions = new();
@@ -97,8 +99,31 @@ public static class Controller
             }
         }
 
+        AddDebugDataOnScreen();
+
         if (frameDelay > 0)
             Thread.Sleep(frameDelay);
+    }
+
+    private static void AddDebugDataOnScreen()
+    {
+        var nextBuildOrder = BuildOrderQueries.GetNextBuildOrderUnit();
+        AddDebugCommand(new DebugCommand()
+        {
+            Draw = new DebugDraw()
+            {
+                Text =
+                {
+                    new []
+                    {
+                        new DebugText()
+                        {
+                            Text = "Next build order : " + (nextBuildOrder.HasValue ? Controller.GetUnitName(nextBuildOrder.Value): "NA"),
+                        }
+                    }
+                }
+            }
+        });
     }
 
 
