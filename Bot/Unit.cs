@@ -46,6 +46,17 @@ public class Unit
         supply = (int)unitTypeData.FoodRequired;
     }
 
+    public ulong GetAddonTag()
+    {
+        return this.original.AddOnTag;
+    }
+
+    public uint? GetAddonType()
+    {
+        var tag = GetAddonTag();
+        var unit = Controller.GetUnits(Units.AddOns).FirstOrDefault(x => x.tag == tag);
+        return unit?.unitType;
+    }
 
     public double GetDistance(Unit otherUnit)
     {

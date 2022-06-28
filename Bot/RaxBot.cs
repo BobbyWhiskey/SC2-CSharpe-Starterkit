@@ -50,7 +50,7 @@ internal class RaxBot : Bot
         var resourceCenters = Controller.GetUnits(Units.ResourceCenters);
         var nextBuildOrder = BuildOrderQueries.GetNextBuildOrderUnit();
         var canBuildOrbital = Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Any();
-        var stopScvProduction = (!nextBuildOrder.HasValue || nextBuildOrder.Value == Units.ORBITAL_COMMAND ) && canBuildOrbital;
+        var stopScvProduction = nextBuildOrder.HasValue && nextBuildOrder.Value == Units.ORBITAL_COMMAND && canBuildOrbital;
         
         //var totalAssign
         var totalAssigned = resourceCenters.Sum(rc => rc.assignedWorkers);
@@ -64,11 +64,15 @@ internal class RaxBot : Bot
             }
         }
 
-        if (Controller.frame % 5 == 0)
+        if (Controller.frame % 50 == 0)
+        {
+            await _buildingModule.OnFrame();
+        }
+
+        if (Controller.frame % 10 == 0)
         {
             Controller.DistributeWorkers();
             _researchModule.OnFrame();
-            await _buildingModule.OnFrame();
             _spawnerModule.OnFrame();
             _armyMovementModule.OnFrame();
         }

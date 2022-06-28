@@ -116,9 +116,11 @@ public static class Controller
                 {
                     new []
                     {
-                        new DebugText()
+                        new DebugText() 
                         {
-                            Text = "Next build order : " + (nextBuildOrder.HasValue ? Controller.GetUnitName(nextBuildOrder.Value): "NA"),
+                            Text = "Next build order : " + (nextBuildOrder.HasValue ? Controller.GetUnitName(nextBuildOrder.Value): "NA") +"\n" +
+                                    "Waiting for expand : " + IsTimeForExpandQuery.Get(),
+                            Size = 6
                         }
                     }
                 }
@@ -156,6 +158,11 @@ public static class Controller
     public static bool ConstructGas(uint buildingToConstruct, Unit geyser)
     {
         var worker = GetAvailableWorker(geyser.position);
+        if (worker == null)
+        {
+            return false;
+        }
+        
         var abilityID = GetAbilityID(buildingToConstruct);
         var constructAction = CreateRawUnitCommand(abilityID);
         constructAction.ActionRaw.UnitCommand.UnitTags.Add(worker.tag);
@@ -261,7 +268,12 @@ public static class Controller
     public static bool CanAfford(uint unitType)
     {
         var unitData = gameData.Units[(int)unitType];
-        return minerals >= unitData.MineralCost && vespene >= unitData.VespeneCost;
+        var baseCost = (uint)0;
+        if (unitType == Units.ORBITAL_COMMAND)
+        {
+            baseCost = gameData.Units[(int)Units.COMMAND_CENTER].MineralCost;
+        }
+        return minerals >= (unitData.MineralCost - baseCost) && vespene >= unitData.VespeneCost;
     }
 
 
@@ -515,10 +527,13 @@ public static class Controller
         var nbRetry = 0;
         while (true)
         {
-            constructionSpot = new Vector3(startingSpot.Value.X + random.Next(-radius, radius + 1),
-                startingSpot.Value.Y + random.Next(-radius, radius + 1), startingSpot.Value.Z);
+            var adjustedRadius = radius + (nbRetry / 300);
+            
+            constructionSpot = new Vector3(startingSpot.Value.X + random.Next(-adjustedRadius, adjustedRadius + 1),
+                startingSpot.Value.Y + random.Next(-adjustedRadius, adjustedRadius + 1), startingSpot.Value.Z);
             nbRetry++;
-            if (nbRetry > 200)
+
+            if (nbRetry > 600)
             {
                 AddDebugCommand(new DebugCommand
                 {
@@ -528,9 +543,9 @@ public static class Controller
                         {
                             new DebugBox
                             {
-                                Max = (startingSpot.Value + new Vector3(radius, radius, 2))
+                                Max = (startingSpot.Value + new Vector3(radius, radius, 3))
                                     .ToPoint(),
-                                Min = (startingSpot.Value - new Vector3(radius, radius, 0))
+                                Min = (startingSpot.Value - new Vector3(radius, radius, 1))
                                     .ToPoint()
                             }
                         }

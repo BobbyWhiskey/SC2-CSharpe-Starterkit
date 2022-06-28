@@ -29,7 +29,7 @@ public class ArmyMovementModule
             }
             else if (_lastAttackPosition.HasValue)
             {
-                if (Controller.frame - _lastAttackPositionUpdate > 500)
+                if (Controller.frame - _lastAttackPositionUpdate > 300)
                 {
                     var enemies = Controller.GetUnits(Units.All, Alliance.Enemy);
                     if (enemies.Any())
@@ -48,7 +48,9 @@ public class ArmyMovementModule
             }
             else if (Controller.enemyLocations.Count > 0)
             {
-                _lastAttackPosition = Controller.enemyLocations[0].MidWay(Controller.GetResourceCenters().First().position);
+                _lastAttackPosition = Controller.startingLocation +
+                                      Vector3.Multiply(0.3f, Controller.enemyLocations[0] - Controller.startingLocation);
+               // _lastAttackPosition = Controller.enemyLocations[0].MidWay(Controller.GetResourceCenters().First().position);
                 _lastAttackPositionUpdate = Controller.frame;
             }
         }

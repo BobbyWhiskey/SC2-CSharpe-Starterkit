@@ -807,6 +807,24 @@ internal static class Units
         STARPORT_TECHLAB,
         STARPORT_REACTOR
     };
+    
+    public static readonly HashSet<uint> BarrackAddOns = new()
+    {
+        BARRACKS_REACTOR,
+        BARRACKS_TECHLAB,
+    };
+    
+    public static readonly HashSet<uint> FactoryAddOns = new()
+    {
+        FACTORY_TECHLAB,
+        FACTORY_REACTOR,
+    };
+    
+    public static readonly HashSet<uint> StarportAddOns = new()
+    {
+        STARPORT_TECHLAB,
+        STARPORT_REACTOR
+    };
 
     public static readonly HashSet<uint> SupplyDepots = new()
     {

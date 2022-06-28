@@ -6,12 +6,9 @@ namespace Bot;
 
 public class BuildingModule
 {
-    private int barrackTargetCount = 2;
-    private int factoryTargetCount = 1;
-    private int starportTargetCount = 1;
-
     public async Task OnFrame()
     {
+        // TODO MC Not sure if here, but repair damaged buildings 
         if (!BuildOrderQueries.IsBuildOrderCompleted())
         {
             await AdvanceBuildOrder(); 
@@ -26,7 +23,10 @@ public class BuildingModule
 
             await BuildUnitProducers();
 
-            await BuildExpansion();
+            if (IsTimeForExpandQuery.Get())
+            {
+                await BuildExpansion();
+            }
 
             UpgradeCommandCenter();
 
@@ -132,8 +132,7 @@ public class BuildingModule
 
     private async Task BuildExpansion()
     {
-        if (IsTimeForExpandQuery.Get()
-            && Controller.CanAfford(Units.COMMAND_CENTER))
+        if (Controller.CanAfford(Units.COMMAND_CENTER))
         {
             var allMinerals = Controller.GetUnits(Units.MineralFields, Alliance.Neutral);
             var allOwnedMinerals = new List<Unit>();
@@ -156,7 +155,7 @@ public class BuildingModule
             var avgZ = mineralCluster.Concat(gasGeyser).Select(m => m.position.Z).Average();
 
             // TODO MC probably not the method to call, we need something more specific for how to place a CC correctly
-            await Controller.Construct(Units.COMMAND_CENTER, new Vector3(avgX, avgY, avgZ), 6);
+            await Controller.Construct(Units.COMMAND_CENTER, new Vector3(avgX, avgY, avgZ), 5);
         }
     }
 
@@ -165,9 +164,14 @@ public class BuildingModule
         var producers = Controller.GetUnits(building).ToList();
         var extensions = Controller.GetUnits(allowedExtensions).ToList();
 
-        if (extensions.Count < producers.Count)
+        if (extensions.Count < producers.Count) 
             foreach (var producer in producers)
             {
+                if (producer.GetAddonType().HasValue)
+                {
+                    continue;
+                }
+                
                 var extensionType = allowedExtensions.First();
                 // TODO MC Do also reactors some time ya know
                 if (Controller.CanConstruct(extensionType)
@@ -185,9 +189,9 @@ public class BuildingModule
     {
         var nbRcs = Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers);
 
-        barrackTargetCount = 1 * (nbRcs / 8);
-        factoryTargetCount = 1 * (nbRcs / 15);
-        starportTargetCount = 1 * (nbRcs / 15);
+        var barrackTargetCount = 1 * (nbRcs / 10);
+        var factoryTargetCount = 1 * (nbRcs / 20);
+        var starportTargetCount = 1 * (nbRcs / 20);
 
         if (starportTargetCount > Controller.GetTotalCount(Units.STARPORT)
             && Controller.GetUnits(Units.FACTORY, onlyCompleted: true).Any())

@@ -2,33 +2,67 @@
 
 public static class BuildOrderQueries
 {
-    public static ICollection<uint> buildOrder = new List<uint>
+    public static ICollection<IBuildStep> buildOrder = new List<IBuildStep>
     {
-        Units.SUPPLY_DEPOT,
-        Units.BARRACKS,
-        Units.REFINERY,
+        new BuildingStep(Units.SUPPLY_DEPOT),
+        new BuildingStep(Units.BARRACKS),
+        new BuildingStep(Units.REFINERY),
 // Scout
-        Units.ORBITAL_COMMAND,
+        new BuildingStep(Units.ORBITAL_COMMAND),
 // Reaper scout/harrass
-        Units.COMMAND_CENTER,
-        Units.BARRACKS,
-        Units.BARRACKS_REACTOR,
-        Units.SUPPLY_DEPOT,
-        Units.REFINERY,
-        Units.FACTORY,
-        Units.BARRACKS_TECHLAB,
+        new BuildingStep(Units.COMMAND_CENTER),
+        new BuildingStep(Units.BARRACKS),
+        new BuildingStep(Units.BARRACKS_REACTOR),
+        new BuildingStep(Units.SUPPLY_DEPOT),
+        new BuildingStep(Units.REFINERY),
+        new BuildingStep(Units.FACTORY),
+        new BuildingStep(Units.BARRACKS_TECHLAB),
 // Research stim
-        Units.SUPPLY_DEPOT,// Added by myself
-        Units.STARPORT,
-        Units.FACTORY_TECHLAB, // Should be reactor now to switch with starport but not implemented yet
+        new BuildingStep(Units.SUPPLY_DEPOT),// Added by myself
+        new BuildingStep(Units.STARPORT),
+        new BuildingStep(Units.FACTORY_TECHLAB), // Should be reactor now to switch with starport but not implemented yet
     };
+
+
+    public interface IBuildStep
+    {
+        
+    }
+
+    public class BuildingStep: IBuildStep
+    {
+        public BuildingStep(uint buildingType)
+        {
+            BuildingType = buildingType;
+        }
+
+        public uint BuildingType { get; set; }
+    }
+    
+    public class ResearchStep:IBuildStep
+    {
+        public ResearchStep(uint researchId)
+        {
+            ResearchId = researchId;
+        }
+
+        public uint ResearchId { get; set; }
+    }
 
     public static bool IsBuildOrderCompleted()
     {
-        var groups = buildOrder.GroupBy(x => x);
+        var groups = buildOrder.GroupBy(x => ((BuildingStep)x).BuildingType);
         foreach (var buildOrderGrouping in groups)
         {
-            if (Controller.GetUnits(buildOrderGrouping.First()).Count < buildOrderGrouping.Count())
+            HashSet<uint> unitTypes = new HashSet<uint> { buildOrderGrouping.Cast<BuildingStep>().First().BuildingType };
+
+            if (unitTypes.First() == Units.COMMAND_CENTER)
+            {
+                unitTypes = Units.ResourceCenters;
+            }
+            
+            // TODO MC Update this with ResearchStep also
+            if (Controller.GetUnits(unitTypes).Count < buildOrderGrouping.Count())
             {
                 return false;
             }
@@ -42,8 +76,10 @@ public static class BuildOrderQueries
         var countDic = new Dictionary<uint, int>();
         countDic[Units.COMMAND_CENTER] = 1; // We already start with a command center, so its not included in the build order
         
-        foreach (var u in buildOrder)
+        foreach (var step in buildOrder)
         {
+            // TODO Fix with UpgradeStep
+            var u = ((BuildingStep)step).BuildingType;
             if (!countDic.TryGetValue(u, out var targetCount))
             {
                 targetCount = 1;
