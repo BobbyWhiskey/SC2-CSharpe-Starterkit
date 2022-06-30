@@ -196,7 +196,7 @@ public class BuildingModule
     {
         var nbRcs = Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers);
 
-        var barrackTargetCount = 1 * (nbRcs / 12);
+        var barrackTargetCount = 1 * (nbRcs / 10);
         var factoryTargetCount = 1 * (nbRcs / 22);
         var starportTargetCount = 1 * (nbRcs / 22);
 

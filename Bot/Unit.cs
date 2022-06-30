@@ -13,6 +13,8 @@ public class Unit
     public float buildProgress;
     public int idealWorkers;
     public float integrity;
+    public float energy;
+    public float energyMax;
     public bool isVisible;
 
     public string name;
@@ -38,6 +40,8 @@ public class Unit
         buildProgress = unit.BuildProgress;
         idealWorkers = unit.IdealHarvesters;
         assignedWorkers = unit.AssignedHarvesters;
+        energy = unit.Energy;
+        energyMax = unit.EnergyMax;
 
         order = unit.Orders.Count > 0 ? unit.Orders[0] : new UnitOrder();
         orders = unit.Orders;
@@ -72,6 +76,30 @@ public class Unit
     {
         var action = Controller.CreateRawUnitCommand(abilityID);
         action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+        Controller.AddAction(action);
+
+        //var targetName = Controller.GetUnitName(unitType);
+        //Logger.Info("Started research on {0}", targetName);
+    }
+    
+    public void Ability(int abilityID, Vector3 target)
+    {
+        var action = Controller.CreateRawUnitCommand(abilityID);
+        action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+        action.ActionRaw.UnitCommand.TargetWorldSpacePos = new Point2D();
+        action.ActionRaw.UnitCommand.TargetWorldSpacePos.X = target.X;
+        action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;
+        Controller.AddAction(action);
+
+        //var targetName = Controller.GetUnitName(unitType);
+        //Logger.Info("Started research on {0}", targetName);
+    }    
+    
+    public void Ability(int abilityID, Unit target)
+    {
+        var action = Controller.CreateRawUnitCommand(abilityID);
+        action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+        action.ActionRaw.UnitCommand.TargetUnitTag = target.tag;
         Controller.AddAction(action);
 
         //var targetName = Controller.GetUnitName(unitType);

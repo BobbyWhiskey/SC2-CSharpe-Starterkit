@@ -8,24 +8,14 @@ namespace Bot;
 
 internal class RaxBot : Bot
 {
-    private readonly SpawnerModule _spawnerModule;
-    private readonly ArmyMovementModule _armyMovementModule;
+    private readonly SpawnerModule _spawnerModule = new();
+    private readonly ArmyMovementModule _armyMovementModule = new();
 
-    private readonly BuildingModule _buildingModule;
-    private readonly ResearchModule _researchModule;
-    private readonly MarineMicro _marineMicro;
-    private readonly TankMicro _tankMicro;
-
-    public RaxBot()
-    {
-        _buildingModule = new BuildingModule();
-        _spawnerModule = new SpawnerModule();
-        _researchModule = new ResearchModule();
-        _armyMovementModule = new ArmyMovementModule();
-        _marineMicro = new MarineMicro();
-        _tankMicro = new TankMicro();
-    }
-
+    private readonly BuildingModule _buildingModule = new();
+    private readonly ResearchModule _researchModule = new();
+    private readonly MarineMicro _marineMicro = new();
+    private readonly TankMicro _tankMicro = new();
+    private readonly MuleModule _muleModule = new();
 
     //the following will be called every frame
     //you can increase the amount of frames that get processed for each step at once in Wrapper/GameConnection.cs: stepSize  
@@ -86,6 +76,7 @@ internal class RaxBot : Bot
         {
             _marineMicro.OnFrame();
             _tankMicro.OnFrame();
+            _muleModule.OnFrame();
         }
 
         return Controller.CloseFrame();
