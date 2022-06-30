@@ -13,7 +13,7 @@ public static class Controller
     private const double FRAMES_PER_SECOND = 22.4;
 
     //editable
-    private static readonly int frameDelay = 5; //too fast? increase this to e.g. 20
+    private static readonly int frameDelay = 0; //too fast? increase this to e.g. 20
 
     //don't edit
     private static readonly List<Action> actions = new();
@@ -32,6 +32,9 @@ public static class Controller
     public static readonly List<Vector3> enemyLocations = new();
     public static Vector3 startingLocation;
     public static readonly List<string> chatLog = new();
+    
+    // Debug data
+    private static uint nextUnitToTrain;
 
     public static void Pause()
     {
@@ -105,6 +108,11 @@ public static class Controller
             Thread.Sleep(frameDelay);
     }
 
+    public  static void SetDebugPriorityUnitToTrain(uint unit)
+    {
+        nextUnitToTrain = unit;
+    }
+
     private static void AddDebugDataOnScreen()
     {
         var nextBuildOrder = BuildOrderQueries.GetNextBuildOrderUnit();
@@ -119,7 +127,9 @@ public static class Controller
                         new DebugText() 
                         {
                             Text = "Next build order : " + (nextBuildOrder.HasValue ? Controller.GetUnitName(nextBuildOrder.Value): "NA") +"\n" +
-                                    "Waiting for expand : " + IsTimeForExpandQuery.Get(),
+                                    "Waiting for expand : " + IsTimeForExpandQuery.Get() + "\n" +
+                                    "Next unit to train : " +  GetUnitName(nextUnitToTrain),
+                            
                             Size = 6
                         }
                     }
@@ -209,6 +219,8 @@ public static class Controller
         var abilityID = Abilities.GetID(unitType);
 
         var counter = 0;
+        
+        // TODO Fix this method. If we are constructing one building, it returns 2
 
         //count workers that have been sent to build this structure
         foreach (var worker in workers)
@@ -274,6 +286,25 @@ public static class Controller
             baseCost = gameData.Units[(int)Units.COMMAND_CENTER].MineralCost;
         }
         return minerals >= (unitData.MineralCost - baseCost) && vespene >= unitData.VespeneCost;
+    }
+
+    public static uint GetProducerBuildingType(uint unitType)
+    {
+        if (Units.FromBarracks.Contains(unitType))
+        {
+            return Units.BARRACKS;
+        }
+        if (Units.FromFactory.Contains(unitType))
+        {
+            return Units.FACTORY;
+        }
+        if (Units.FromStarport.Contains(unitType))
+        {
+            return Units.STARPORT;
+        }
+        
+        Logger.Error("GetProducerBuildingType cannot find producer building");
+        return 0;
     }
 
 
@@ -573,5 +604,21 @@ public static class Controller
     public static List<Unit> GetResourceCenters()
     {
         return GetUnits(Units.ResourceCenters);
+    }
+
+    public static bool CanBuildingTrainUnit(Unit building, uint unitType)
+    {
+        if (Units.NeedsTechLab.Contains(unitType))
+        {
+            if (building.GetAddonType().HasValue 
+                && Units.TechLabs.Contains(building.GetAddonType()!.Value))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        return true;
     }
 }

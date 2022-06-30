@@ -712,6 +712,18 @@ internal static class Units
         PROBE,
         DRONE
     };
+    
+    public static readonly HashSet<uint> NeedsTechLab = new()
+    {
+        // TODO MC Is list complete?
+        MARAUDER,
+        GHOST,
+        SIEGE_TANK,
+        THOR,
+        RAVEN,
+        BANSHEE,
+        BATTLECRUISER
+    };
 
 
     public static readonly HashSet<uint> Mechanical = new()
@@ -790,6 +802,7 @@ internal static class Units
     public static readonly HashSet<uint> FromStarport = new()
     {
         VIKING_FIGHTER,
+        MEDIVAC,
         RAVEN,
         BANSHEE,
         BATTLECRUISER,
@@ -830,5 +843,18 @@ internal static class Units
     {
         SUPPLY_DEPOT,
         SUPPLY_DEPOT_LOWERED
+    };
+
+    public static HashSet<uint> Reactors =  new()
+    {
+        FACTORY_REACTOR,
+        BARRACKS_REACTOR,
+        STARPORT_REACTOR
+    };
+    public static HashSet<uint> TechLabs =  new()
+    {
+        FACTORY_TECHLAB,
+        BARRACKS_TECHLAB,
+        STARPORT_TECHLAB
     };
 }

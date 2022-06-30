@@ -1,60 +1,40 @@
-﻿namespace Bot.Queries;
+﻿using Bot.BuildOrders;
+
+namespace Bot.Queries;
 
 public static class BuildOrderQueries
 {
-    public static ICollection<IBuildStep> buildOrder = new List<IBuildStep>
-    {
-        new BuildingStep(Units.SUPPLY_DEPOT),
-        new BuildingStep(Units.BARRACKS),
-        new BuildingStep(Units.REFINERY),
-// Scout
-        new BuildingStep(Units.ORBITAL_COMMAND),
-// Reaper scout/harrass
-        new BuildingStep(Units.COMMAND_CENTER),
-        new BuildingStep(Units.BARRACKS),
-        new BuildingStep(Units.BARRACKS_REACTOR),
-        new BuildingStep(Units.SUPPLY_DEPOT),
-        new BuildingStep(Units.REFINERY),
-        new BuildingStep(Units.FACTORY),
-        new BuildingStep(Units.BARRACKS_TECHLAB),
-// Research stim
-        new BuildingStep(Units.SUPPLY_DEPOT),// Added by myself
-        new BuildingStep(Units.STARPORT),
-        new BuildingStep(Units.FACTORY_TECHLAB), // Should be reactor now to switch with starport but not implemented yet
-    };
+    //public static ICollection<BuildOrderDefinition.IBuildStep> buildOrder 
+
+    public static BuildOrderDefinition currentBuild = new MarineMedivacIntoTankBuild();
 
 
-    public interface IBuildStep
-    {
-        
-    }
-
-    public class BuildingStep: IBuildStep
-    {
-        public BuildingStep(uint buildingType)
-        {
-            BuildingType = buildingType;
-        }
-
-        public uint BuildingType { get; set; }
-    }
+// FAST MARINE RUSH
+    // public static ICollection<IBuildStep> buildOrder = new List<IBuildStep>
+    // {
+    //     new BuildingStep(Units.SUPPLY_DEPOT),
+    //     new BuildingStep(Units.BARRACKS),
+    //     new BuildingStep(Units.REFINERY),
+    //     new BuildingStep(Units.BARRACKS),
+    //     new BuildingStep(Units.SUPPLY_DEPOT),
+    //     new BuildingStep(Units.BARRACKS_REACTOR),
+    //     new BuildingStep(Units.BARRACKS),
+    //     new BuildingStep(Units.ENGINEERING_BAY),
+    //     new BuildingStep(Units.SUPPLY_DEPOT),
+    //     new BuildingStep(Units.REFINERY),
+    //     new BuildingStep(Units.FACTORY),
+    //     new BuildingStep(Units.BARRACKS_TECHLAB),
+    //     new BuildingStep(Units.SUPPLY_DEPOT),// Added by myself
+    //     new BuildingStep(Units.STARPORT),
+    //     new BuildingStep(Units.FACTORY_TECHLAB), // Should be reactor now to switch with starport but not implemented yet
+    // };
     
-    public class ResearchStep:IBuildStep
-    {
-        public ResearchStep(uint researchId)
-        {
-            ResearchId = researchId;
-        }
-
-        public uint ResearchId { get; set; }
-    }
-
     public static bool IsBuildOrderCompleted()
     {
-        var groups = buildOrder.GroupBy(x => ((BuildingStep)x).BuildingType);
+        var groups = currentBuild.buildOrder.GroupBy(x => ((BuildOrderDefinition.BuildingStep)x).BuildingType);
         foreach (var buildOrderGrouping in groups)
         {
-            HashSet<uint> unitTypes = new HashSet<uint> { buildOrderGrouping.Cast<BuildingStep>().First().BuildingType };
+            HashSet<uint> unitTypes = new HashSet<uint> { buildOrderGrouping.Cast<BuildOrderDefinition.BuildingStep>().First().BuildingType };
 
             if (unitTypes.First() == Units.COMMAND_CENTER)
             {
@@ -76,10 +56,10 @@ public static class BuildOrderQueries
         var countDic = new Dictionary<uint, int>();
         countDic[Units.COMMAND_CENTER] = 1; // We already start with a command center, so its not included in the build order
         
-        foreach (var step in buildOrder)
+        foreach (var step in currentBuild.buildOrder)
         {
             // TODO Fix with UpgradeStep
-            var u = ((BuildingStep)step).BuildingType;
+            var u = ((BuildOrderDefinition.BuildingStep)step).BuildingType;
             if (!countDic.TryGetValue(u, out var targetCount))
             {
                 targetCount = 1;

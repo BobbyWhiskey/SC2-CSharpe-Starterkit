@@ -15,5 +15,15 @@ public class ResearchModule
             unit.Ability(Abilities.RESEARCH_UPGRADE_INFANTRY_WEAPON);
             unit.Ability(Abilities.RESEARCH_UPGRADE_INFANTRY_ARMOR);
         }
+        
+        var barrackTechLabs = Controller.GetUnits(Units.BARRACKS_TECHLAB)
+            .Where(b => b.order.AbilityId == 0 && !(b.buildProgress < 1));
+
+        foreach (var barrackTechLab in barrackTechLabs)
+        {
+            // TODO MC This is spammy af
+            barrackTechLab.Ability(Abilities.RESEARCH_STIMPACK);
+            barrackTechLab.Ability(Abilities.RESEARCH_COMBAT_SHIELD);
+        }
     }
 }

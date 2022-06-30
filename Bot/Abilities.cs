@@ -13,6 +13,10 @@ internal static class Abilities
     public static int RESEARCH_UPGRADE_INFANTRY_ARMOR = 3697; //656; //;  
     public static int RESEARCH_UPGRADE_INFANTRY_WEAPON = 3698; // 652; //;  
     
+    public static int RESEARCH_STIMPACK = 730; // 652; //;  
+    public static int RESEARCH_COMBAT_SHIELD = 731; // 652; //;  
+    public static int RESEARCH_CONCUSSIVE_SHELL = 733; // 652; //;  
+    
     public static int COMMAND_CENTER_ORBITAL_UPGRADE = 1516;
 
     public static int CANCEL_CONSTRUCTION = 314;
@@ -29,8 +33,13 @@ internal static class Abilities
     public static int RALLY = 3673;
     public static int REPAIR = 316;
 
+    // Thor
     public static int THOR_SWITCH_AP = 2362;
     public static int THOR_SWITCH_NORMAL = 2364;
+    
+    // Marine
+    public static int GENERAL_STIMPACK = 3675;
+
     public static int SCANNER_SWEEP = 399;
     public static int YAMATO = 401;
     public static int CALL_DOWN_MULE = 171;

@@ -19,7 +19,7 @@ public class ArmyMovementModule
             _lastAttackPositionUpdate = Controller.frame;
             Controller.Attack(army, _lastAttackPosition.Value);
         }
-        else if (army.Count > 20 && GetOwnArmyValue() > GetEnemyArmyValue())
+        else if (army.Count > 30 && GetOwnArmyValue() > GetEnemyArmyValue())
         {
             if (Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).Any())
             {
@@ -39,7 +39,12 @@ public class ArmyMovementModule
                     }
                     else
                     {
-                        _lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
+                        if (_lastAttackPosition.HasValue)
+                        {
+                            _lastAttackPosition += Vector3.Multiply(0.2f, Controller.enemyLocations[0] - _lastAttackPosition.Value);    
+                        }
+                        
+                        //_lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
                         _lastAttackPositionUpdate = Controller.frame;
                     }
                 }

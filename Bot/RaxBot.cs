@@ -1,4 +1,5 @@
-﻿using Bot.Modules;
+﻿using Bot.Micro;
+using Bot.Modules;
 using Bot.Queries;
 using SC2APIProtocol;
 using Action = SC2APIProtocol.Action;
@@ -12,6 +13,8 @@ internal class RaxBot : Bot
 
     private readonly BuildingModule _buildingModule;
     private readonly ResearchModule _researchModule;
+    private readonly MarineMicro _marineMicro;
+    private readonly TankMicro _tankMicro;
 
     public RaxBot()
     {
@@ -19,6 +22,8 @@ internal class RaxBot : Bot
         _spawnerModule = new SpawnerModule();
         _researchModule = new ResearchModule();
         _armyMovementModule = new ArmyMovementModule();
+        _marineMicro = new MarineMicro();
+        _tankMicro = new TankMicro();
     }
 
 
@@ -64,7 +69,7 @@ internal class RaxBot : Bot
             }
         }
 
-        if (Controller.frame % 50 == 0)
+        if (Controller.frame % 5 == 0)
         {
             await _buildingModule.OnFrame();
         }
@@ -75,6 +80,12 @@ internal class RaxBot : Bot
             _researchModule.OnFrame();
             _spawnerModule.OnFrame();
             _armyMovementModule.OnFrame();
+        }
+
+        if (Controller.frame % 5 == 0)
+        {
+            _marineMicro.OnFrame();
+            _tankMicro.OnFrame();
         }
 
         return Controller.CloseFrame();
