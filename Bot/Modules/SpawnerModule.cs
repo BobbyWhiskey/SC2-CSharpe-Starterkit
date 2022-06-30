@@ -1,4 +1,5 @@
-﻿using Bot.Queries;
+﻿using Bot.BuildOrders;
+using Bot.Queries;
 
 namespace Bot;
 
@@ -56,14 +57,15 @@ public class SpawnerModule
         }
         else 
         {
-            var nextBuildOrder = BuildOrderQueries.GetNextBuildOrderUnit();
+            var nextBuildOrder = BuildOrderQueries.GetNextStep() as BuildingStep;
+            
             // TODO NEed to handle if building has a reactor wink wink
             foreach (var barracks in Controller.GetUnits(Units.BARRACKS, onlyCompleted: true))
             {
                 // Dont build if we are waiting to create an addon
                 if (!barracks.GetAddonType().HasValue
-                    && nextBuildOrder.HasValue
-                    && Units.BarrackAddOns.Contains(nextBuildOrder.Value))
+                    && nextBuildOrder != null
+                    && Units.BarrackAddOns.Contains(nextBuildOrder.BuildingType))
                 {
                     continue;
                 }
@@ -95,8 +97,8 @@ public class SpawnerModule
             {
                 // Dont build if we are waiting to create an addon
                 if (!factory.GetAddonType().HasValue
-                    && nextBuildOrder.HasValue
-                    && Units.FactoryAddOns.Contains(nextBuildOrder.Value))
+                    && nextBuildOrder != null
+                    && Units.FactoryAddOns.Contains(nextBuildOrder.BuildingType))
                 {
                     continue;
                 }
@@ -112,8 +114,8 @@ public class SpawnerModule
             {
                 // Dont build if we are waiting to create an addon
                 if (!starport.GetAddonType().HasValue
-                    && nextBuildOrder.HasValue
-                    && Units.StarportAddOns.Contains(nextBuildOrder.Value))
+                    && nextBuildOrder != null
+                    && Units.StarportAddOns.Contains(nextBuildOrder.BuildingType))
                 {
                     continue;
                 }

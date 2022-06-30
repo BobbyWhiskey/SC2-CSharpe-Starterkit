@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using Bot.BuildOrders;
 using Bot.Queries;
 using SC2APIProtocol;
 using Action = SC2APIProtocol.Action;
@@ -115,7 +116,7 @@ public static class Controller
 
     private static void AddDebugDataOnScreen()
     {
-        var nextBuildOrder = BuildOrderQueries.GetNextBuildOrderUnit();
+        var nextBuildOrder = BuildOrderQueries.GetNextStep() as BuildingStep;
         AddDebugCommand(new DebugCommand()
         {
             Draw = new DebugDraw()
@@ -126,7 +127,7 @@ public static class Controller
                     {
                         new DebugText() 
                         {
-                            Text = "Next build order : " + (nextBuildOrder.HasValue ? Controller.GetUnitName(nextBuildOrder.Value): "NA") +"\n" +
+                            Text = "Next build order : " + (nextBuildOrder != null ? Controller.GetUnitName(nextBuildOrder.BuildingType): "NA") +"\n" +
                                     "Waiting for expand : " + IsTimeForExpandQuery.Get() + "\n" +
                                     "Next unit to train : " +  GetUnitName(nextUnitToTrain),
                             
@@ -620,6 +621,11 @@ public static class Controller
 
     public static bool CanBuildingTrainUnit(Unit building, uint unitType)
     {
+        if (building.buildProgress < 1)
+        {
+            return false;
+        }
+        
         if (Units.NeedsTechLab.Contains(unitType))
         {
             if (building.GetAddonType().HasValue 

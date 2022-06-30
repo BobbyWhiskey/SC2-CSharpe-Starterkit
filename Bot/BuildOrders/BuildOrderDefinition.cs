@@ -11,29 +11,42 @@ public abstract class BuildOrderDefinition
     {
     }
 
-    public interface IBuildStep
-    {
+}
+
+
+public interface IBuildStep
+{
         
-    }
+}
 
-    public class BuildingStep: IBuildStep
+public class WaitStep: IBuildStep
+{
+    public ulong Delay { get; }
+    public ulong StartedFrame { get; set; } = 0;
+
+    public WaitStep(ulong delay)
     {
-        public BuildingStep(uint buildingType)
-        {
-            BuildingType = buildingType;
-        }
-
-        public uint BuildingType { get; set; }
+        Delay = delay;
     }
+        
+}
     
-    public class ResearchStep:IBuildStep
+public class BuildingStep: IBuildStep
+{
+    public BuildingStep(uint buildingType)
     {
-        public ResearchStep(uint researchId)
-        {
-            ResearchId = researchId;
-        }
-
-        public uint ResearchId { get; set; }
+        BuildingType = buildingType;
     }
 
+    public uint BuildingType { get; set; }
+}
+    
+public class ResearchStep:IBuildStep
+{
+    public ResearchStep(uint researchId)
+    {
+        ResearchId = researchId;
+    }
+
+    public uint ResearchId { get; set; }
 }

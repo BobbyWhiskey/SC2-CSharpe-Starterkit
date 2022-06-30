@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Bot.BuildOrders;
 using Bot.Queries;
 using SC2APIProtocol;
 
@@ -8,6 +9,11 @@ public class BuildingModule
 {
     public async Task OnFrame()
     {
+        if (BuildOrderQueries.IsBuildOrderCompleted() || BuildOrderQueries.GetNextStep() is WaitStep)
+        {
+            await BuildSupplyDepots();
+        }
+        
         // TODO MC Not sure if here, but repair damaged buildings 
         if (!BuildOrderQueries.IsBuildOrderCompleted())
         {
@@ -16,8 +22,6 @@ public class BuildingModule
         else
         {
             await BuildRefineries();
-
-            await BuildSupplyDepots();
 
             await BuildResearch();
 
@@ -61,52 +65,57 @@ public class BuildingModule
 
     private async Task AdvanceBuildOrder()
     {
-        var nextBuildOrderResult = BuildOrderQueries.GetNextBuildOrderUnit();
-        if (!nextBuildOrderResult.HasValue)
-        {
-            Logger.Error("u should have value here");
-            return;
-        }
+        var nextBuildOrderResult = BuildOrderQueries.GetNextStep();
 
-        var nextUnit = nextBuildOrderResult.Value;
-        if (nextUnit == Units.ORBITAL_COMMAND)
+        if (nextBuildOrderResult is BuildingStep buildingStep)
         {
-            // TODO MC Maybe we can cancel SCV currently training to make orbital faster?
-            UpgradeCommandCenter();
-        }
-        else if (nextUnit == Units.COMMAND_CENTER)
-        {
-            await BuildExpansion();
-        }
-        else if (nextUnit == Units.REFINERY)
-        {
-            var cc = Controller.GetResourceCenters().FirstOrDefault(cc => cc.buildProgress >= 1);
-            if (cc == null)
+            // if (!nextBuildOrderResult.HasValue)
+            // {
+            //     Logger.Error("u should have value here");
+            //     return;
+            // }
+
+            var nextUnit = buildingStep.BuildingType;
+            if (nextUnit == Units.ORBITAL_COMMAND)
             {
-                Logger.Warning("Trying to build refinery from build order but could not find CC. Are we loosing? :(");                
+                // TODO MC Maybe we can cancel SCV currently training to make orbital faster?
+                UpgradeCommandCenter();
+            }
+            else if (nextUnit == Units.COMMAND_CENTER)
+            {
+                await BuildExpansion();
+            }
+            else if (nextUnit == Units.REFINERY)
+            {
+                var cc = Controller.GetResourceCenters().FirstOrDefault(cc => cc.buildProgress >= 1);
+                if (cc == null)
+                {
+                    Logger.Warning(
+                        "Trying to build refinery from build order but could not find CC. Are we loosing? :(");
+                }
+                else
+                {
+                    await BuildRefinery(cc.position);
+                }
+
+                //await BuildRefineries();
+            }
+            else if (nextUnit == Units.BARRACKS_TECHLAB || nextUnit == Units.BARRACKS_REACTOR)
+            {
+                BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint> { nextUnit });
+            }
+            else if (nextUnit == Units.FACTORY_TECHLAB || nextUnit == Units.FACTORY_REACTOR)
+            {
+                BuildBuildingExtensions(Units.FACTORY, new HashSet<uint> { nextUnit });
+            }
+            else if (nextUnit == Units.STARPORT_TECHLAB || nextUnit == Units.STARPORT_REACTOR)
+            {
+                BuildBuildingExtensions(Units.STARPORT, new HashSet<uint> { nextUnit });
             }
             else
             {
-                await BuildRefinery(cc.position);    
+                await BuildIfPossible(nextUnit, true);
             }
-            
-            //await BuildRefineries();
-        }
-        else if (nextUnit == Units.BARRACKS_TECHLAB || nextUnit == Units.BARRACKS_REACTOR)
-        {
-            BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint> { nextUnit });
-        }
-        else if (nextUnit == Units.FACTORY_TECHLAB || nextUnit == Units.FACTORY_REACTOR)
-        {
-            BuildBuildingExtensions(Units.FACTORY, new HashSet<uint> { nextUnit });
-        }
-        else if (nextUnit == Units.STARPORT_TECHLAB || nextUnit == Units.STARPORT_REACTOR)
-        {
-            BuildBuildingExtensions(Units.STARPORT, new HashSet<uint> { nextUnit });
-        }
-        else
-        {
-            await BuildIfPossible(nextUnit);
         }
     }
 
@@ -236,7 +245,7 @@ public class BuildingModule
 
     private async Task BuildRefineries()
     {
-        var ccs = Controller.GetUnits(Units.COMMAND_CENTER);
+        var ccs = Controller.GetUnits(Units.ResourceCenters);
         var refineries = Controller.GetUnits(Units.REFINERY);
 
         foreach (var cc in ccs)

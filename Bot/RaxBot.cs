@@ -1,4 +1,5 @@
-﻿using Bot.Micro;
+﻿using Bot.BuildOrders;
+using Bot.Micro;
 using Bot.Modules;
 using Bot.Queries;
 using SC2APIProtocol;
@@ -43,9 +44,9 @@ internal class RaxBot : Bot
 
         // TODO This should be moved into spawner?
         var resourceCenters = Controller.GetUnits(Units.ResourceCenters);
-        var nextBuildOrder = BuildOrderQueries.GetNextBuildOrderUnit();
+        var nextBuildOrder = BuildOrderQueries.GetNextStep() as BuildingStep;
         var canBuildOrbital = Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Any();
-        var stopScvProduction = nextBuildOrder.HasValue && nextBuildOrder.Value == Units.ORBITAL_COMMAND && canBuildOrbital;
+        var stopScvProduction = nextBuildOrder != null && nextBuildOrder.BuildingType == Units.ORBITAL_COMMAND && canBuildOrbital;
         
         //var totalAssign
         var totalAssigned = resourceCenters.Sum(rc => rc.assignedWorkers);

@@ -1,11 +1,18 @@
-﻿namespace Bot.Queries;
+﻿using Bot.BuildOrders;
+
+namespace Bot.Queries;
 
 public static class IsTimeForExpandQuery
 {
     public static bool Get()
     {
-        var nextBuildOrder = BuildOrderQueries.GetNextBuildOrderUnit();
-        if (nextBuildOrder.HasValue && nextBuildOrder == Units.COMMAND_CENTER)
+        var nextStep = BuildOrderQueries.GetNextStep();
+        if (nextStep is WaitStep)
+        {
+            return false;
+        }
+        var nextBuildOrder =  nextStep as BuildingStep;
+        if (nextBuildOrder != null && nextBuildOrder.BuildingType == Units.COMMAND_CENTER)
         {
             return true;
         }
