@@ -213,6 +213,18 @@ public static class Controller
         return pendingCount + constructionCount;
     }
 
+
+    public static int GetPendingCount(HashSet<uint> unitTypes, bool inConstruction = true)
+    {
+        int total = 0;
+        foreach (var unitType in unitTypes)
+        {
+            total += GetPendingCount(unitType);
+        }
+
+        return total;
+    }
+
     public static int GetPendingCount(uint unitType, bool inConstruction = true)
     {
         var workers = GetUnits(Units.Workers);

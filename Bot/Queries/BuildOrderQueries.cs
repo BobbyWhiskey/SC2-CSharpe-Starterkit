@@ -36,9 +36,14 @@ public static class BuildOrderQueries
         {
             HashSet<uint> unitTypes = new HashSet<uint> { buildOrderGrouping.Cast<BuildOrderDefinition.BuildingStep>().First().BuildingType };
 
+            // TODO Those 2 ifs are duplicated in GetNextBuildOrderUnit, fix this
             if (unitTypes.First() == Units.COMMAND_CENTER)
             {
                 unitTypes = Units.ResourceCenters;
+            }
+            if (unitTypes.First() == Units.SUPPLY_DEPOT)
+            {
+                unitTypes = Units.SupplyDepots;
             }
             
             // TODO MC Update this with ResearchStep also

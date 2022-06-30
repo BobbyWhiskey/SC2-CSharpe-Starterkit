@@ -222,13 +222,13 @@ public class BuildingModule
     {
         //keep on buildings depots if supply is tight
         if (Controller.maxSupply - Controller.currentSupply <= 8
-            && Controller.GetPendingCount(Units.SUPPLY_DEPOT) == 0)
+            && Controller.GetPendingCount(Units.SupplyDepots) == 0)
         {
             await BuildIfPossible(Units.SUPPLY_DEPOT);
         }
         
         if (Controller.maxSupply - Controller.currentSupply <= 3
-            && Controller.GetPendingCount(Units.SUPPLY_DEPOT) < 4)
+            && Controller.GetPendingCount(Units.SupplyDepots) < 4)
         {
             await BuildIfPossible(Units.SUPPLY_DEPOT, true);
         }
