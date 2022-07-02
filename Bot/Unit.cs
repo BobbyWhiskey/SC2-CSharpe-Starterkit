@@ -26,6 +26,8 @@ public class Unit
     public ulong tag;
     public uint unitType;
     private readonly UnitTypeData unitTypeData;
+    public readonly DisplayType displayType;
+    public readonly CloakState cloak;
 
     public Unit(SC2APIProtocol.Unit unit)
     {
@@ -46,6 +48,8 @@ public class Unit
         order = unit.Orders.Count > 0 ? unit.Orders[0] : new UnitOrder();
         orders = unit.Orders;
         isVisible = unit.DisplayType == DisplayType.Visible;
+        displayType = unit.DisplayType;
+        cloak = unit.Cloak;
 
         supply = (int)unitTypeData.FoodRequired;
     }

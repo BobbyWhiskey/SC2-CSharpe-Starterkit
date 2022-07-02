@@ -72,6 +72,17 @@ public static class Controller
             Environment.Exit(0);
         }
 
+        if (obs.Observation.RawData.Units.Any(x =>
+                x.Cloak == CloakState.Cloaked || x.Cloak == CloakState.CloakedDetected))
+        {
+            Logger.Info("Detected cloaked unit!!");
+        }
+        
+        if (obs.Observation.RawData.Units.Any(x => x.UnitType == Units.OBSERVER))
+        {
+            Logger.Info("Observer cloaked unit!!");
+        }
+        
         actions.Clear();
         debugCommands.Clear();
 

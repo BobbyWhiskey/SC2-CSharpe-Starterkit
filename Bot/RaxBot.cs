@@ -18,6 +18,8 @@ internal class RaxBot : Bot
     private readonly TankMicro _tankMicro = new();
     private readonly MuleModule _muleModule = new();
 
+    private readonly ScanModule _scanModule = new();
+
     //the following will be called every frame
     //you can increase the amount of frames that get processed for each step at once in Wrapper/GameConnection.cs: stepSize  
     public async Task<(IEnumerable<Action>, IEnumerable<DebugCommand>)> OnFrame()
@@ -71,6 +73,7 @@ internal class RaxBot : Bot
             _researchModule.OnFrame();
             _spawnerModule.OnFrame();
             _armyMovementModule.OnFrame();
+            _scanModule.OnFrame();
         }
 
         if (Controller.frame % 5 == 0)

@@ -7,6 +7,7 @@ public class ArmyMovementModule
 {
     private Vector3? _lastAttackPosition;
     private ulong _lastAttackPositionUpdate;
+    private int attackUnitCountThreshhold = 25;
 
     public void OnFrame()
     {
@@ -19,7 +20,7 @@ public class ArmyMovementModule
             _lastAttackPositionUpdate = Controller.frame;
             Controller.Attack(army, _lastAttackPosition.Value);
         }
-        else if (army.Count > 30 && GetOwnArmyValue() > GetEnemyArmyValue())
+        else if (army.Count > attackUnitCountThreshhold && GetOwnArmyValue() > GetEnemyArmyValue())
         {
             if (Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).Any())
             {

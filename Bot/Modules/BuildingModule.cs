@@ -79,6 +79,14 @@ public class BuildingModule
             if (nextUnit == Units.ORBITAL_COMMAND)
             {
                 // TODO MC Maybe we can cancel SCV currently training to make orbital faster?
+                if(Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Any())
+                {
+                    foreach (var resourceCenter in Controller.GetResourceCenters())
+                    {
+                        resourceCenter.Ability(Abilities.CANCEL_LAST);
+                    }
+                }
+
                 UpgradeCommandCenter();
             }
             else if (nextUnit == Units.COMMAND_CENTER)
