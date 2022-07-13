@@ -2,7 +2,7 @@
 
 namespace Bot.Micro;
 
-public class TankMicro
+public class TankMicro : IUnitMicro
 {
     public void OnFrame()
     {

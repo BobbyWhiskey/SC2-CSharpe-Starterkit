@@ -9,6 +9,8 @@ public class ArmyMovementModule
     private ulong _lastAttackPositionUpdate;
     private int attackUnitCountThreshhold = 25;
 
+    private ArmyMovementState state = ArmyMovementState.Defending;
+
     public void OnFrame()
     {
         var army = Controller.GetUnits(Units.ArmyUnits);
@@ -100,4 +102,11 @@ public class ArmyMovementModule
         var units = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible:true);
         return (int)units.Sum(u => Controller.gameData.Units[(int)u.unitType].MineralCost);
     }
+}
+
+internal enum ArmyMovementState
+{
+    Defending,
+    Attacking,
+    Retreating,
 }

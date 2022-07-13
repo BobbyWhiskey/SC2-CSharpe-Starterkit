@@ -2,7 +2,7 @@
 
 namespace Bot.Micro;
 
-public class MarineMicro
+public class MarineMicro : IUnitMicro
 {
     private static int StimRangeActivation = 10;
     private static int StimRangeActivationDelay = 500;

@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using Bot.AStar;
 using Bot.BuildOrders;
 using Bot.Queries;
 using SC2APIProtocol;
@@ -11,7 +12,7 @@ namespace Bot;
 
 public static class Controller
 {
-    private const double FRAMES_PER_SECOND = 22.4;
+    public const double FRAMES_PER_SECOND = 22.4;
 
     //editable
     private static readonly int frameDelay = 0; //too fast? increase this to e.g. 20
@@ -33,7 +34,7 @@ public static class Controller
     public static readonly List<Vector3> enemyLocations = new();
     public static Vector3 startingLocation;
     public static readonly List<string> chatLog = new();
-    
+
     // Debug data
     private static uint nextUnitToTrain;
 
@@ -45,6 +46,60 @@ public static class Controller
             //do nothing
         }
     }
+
+    public static void ExtractMap()
+    {
+        var canMoveMap = gameInfo.StartRaw.PathingGrid.Data.ToByteArray()
+            .SelectMany(ByteToBools)
+            .ToList();
+        var canMoveLines = canMoveMap.Chunk(gameInfo.StartRaw.MapSize.X)
+            // .Select(x => x.Reverse().ToArray())
+            .ToArray();
+
+
+        PathingMap = canMoveLines;
+
+
+        var grid = new List<List<Node>>();
+        int x = 0;
+
+        foreach (var line in canMoveLines)
+        {
+            int y = 0;
+            var gridLine = new List<Node>();
+            foreach (var value in line)
+            {
+                gridLine.Add(new Node(new Vector2(x, y), value));
+                y++;
+            }
+
+
+            grid.Add(gridLine);
+            x++;
+        }
+
+        AStarPathingGrid = new Astar(grid);
+    }
+
+    public static Astar AStarPathingGrid { get; set; }
+
+    static bool[] ByteToBools(byte value)
+    {
+        var values = new bool[8];
+
+        values[0] = (value & 1) == 0 ? false : true;
+        values[1] = (value & 2) == 0 ? false : true;
+        values[2] = (value & 4) == 0 ? false : true;
+        values[3] = (value & 8) == 0 ? false : true;
+        values[4] = (value & 16) == 0 ? false : true;
+        values[5] = (value & 32) == 0 ? false : true;
+        values[6] = (value & 64) == 0 ? false : true;
+        values[7] = (value & 128) == 0 ? false : true;
+
+        return values.Reverse().ToArray();
+    }
+
+    public static bool[][] PathingMap { get; set; }
 
     public static ulong SecsToFrames(int seconds)
     {
@@ -77,12 +132,17 @@ public static class Controller
         {
             Logger.Info("Detected cloaked unit!!");
         }
-        
+
         if (obs.Observation.RawData.Units.Any(x => x.UnitType == Units.OBSERVER))
         {
             Logger.Info("Observer cloaked unit!!");
         }
-        
+
+        if (PathingMap == null)
+        {
+            ExtractMap();
+        }
+
         actions.Clear();
         debugCommands.Clear();
 
@@ -120,36 +180,117 @@ public static class Controller
             Thread.Sleep(frameDelay);
     }
 
-    public  static void SetDebugPriorityUnitToTrain(uint unit)
+    public static void SetDebugPriorityUnitToTrain(uint unit)
     {
         nextUnitToTrain = unit;
     }
 
     private static void AddDebugDataOnScreen()
     {
-        var nextBuildOrder = BuildOrderQueries.GetNextStep() as BuildingStep;
+        var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
+        var nextWaitOrder = BuildOrderQueries.GetNextStep() as WaitStep;
+        var nextOrderStr = (nextBuildStep != null ? Controller.GetUnitName(nextBuildStep.BuildingType) : "NA");
+        if (nextWaitOrder != null)
+        {
+            nextOrderStr = "Waiting " + nextWaitOrder.Delay + " sec";
+        }
+
         AddDebugCommand(new DebugCommand()
         {
             Draw = new DebugDraw()
             {
                 Text =
                 {
-                    new []
+                    new[]
                     {
-                        new DebugText() 
+                        new DebugText()
                         {
-                            Text = "Next build order : " + (nextBuildOrder != null ? Controller.GetUnitName(nextBuildOrder.BuildingType): "NA") +"\n" +
-                                    "Waiting for expand : " + IsTimeForExpandQuery.Get() + "\n" +
-                                    "Next unit to train : " +  GetUnitName(nextUnitToTrain),
-                            
-                            Size = 6
+                            Text = "Next build order : " + nextOrderStr + "\n" +
+                                   "Waiting for expand : " + IsTimeForExpandQuery.Get() + "\n" +
+                                   "Next unit to train : " + GetUnitName(nextUnitToTrain),
+                            VirtualPos = new Point(),
+                            Size = 12
                         }
                     }
                 }
             }
         });
-    }
 
+        // if (Controller.frame % 20 != 0)
+        // {
+        //     return;
+        // }
+
+
+        // var stringBytes = string.Concat(gameInfo.StartRaw.PathingGrid.Data.ToByteArray()
+        //     .Select(x => Convert.ToString(x, 2).PadLeft(8, '0')));
+        //
+        // var lines = Enumerable.Range(0, stringBytes.Length / gameInfo.StartRaw.MapSize.X)
+        //     .Select(i => stringBytes.Substring(i * gameInfo.StartRaw.MapSize.X, gameInfo.StartRaw.MapSize.X));
+
+
+        // TODO REMOVE THIS SUEPR EXPENSIVE
+        //ExtractMap();
+
+        int x = 0;
+        int y = 0;
+
+        var debugTexts = new List<DebugText>();
+        //
+        // foreach (var line in AStarPathingGrid.Grid)
+        // {
+        //     x = 0;
+        //     foreach (var c in line)
+        //     {
+        //         if (!c.Walkable)
+        //         {
+        //             debugTexts.Add(new DebugText()
+        //             {
+        //                 Text = "NO!",
+        //                 Size = 12,
+        //                 WorldPos = new Point() { X = x, Y = y, Z = 10 }
+        //             });
+        //         }
+        //
+        //         x++;
+        //     }
+        //
+        //     y++;
+        // }
+
+
+        var enemyPosition = Controller.enemyLocations.First();
+
+        // var path = AStarPathingGrid.FindPath(new Vector2((int)startingLocation.X +4, (int)startingLocation.Y+4),
+        //     new Vector2((int)enemyPosition.X, (int)enemyPosition.Y));
+
+        // if (path != null)
+        // {
+        //     foreach (var matrixNode in path)
+        //     {
+        //         debugTexts.Add(new DebugText()
+        //         {
+        //             Text = "x",
+        //             Size = 12,
+        //             WorldPos = new Point() { X = matrixNode.Position.Y, Y = matrixNode.Position.X, Z = 10 }
+        //         });
+        //     }
+        // }
+
+        if (debugTexts.Any())
+        {
+            AddDebugCommand(new DebugCommand()
+            {
+                Draw = new DebugDraw()
+                {
+                    Text =
+                    {
+                        debugTexts
+                    }
+                }
+            });
+        }
+    }
 
     public static string GetUnitName(uint unitType)
     {
@@ -184,7 +325,7 @@ public static class Controller
         {
             return false;
         }
-        
+
         var abilityID = GetAbilityID(buildingToConstruct);
         var constructAction = CreateRawUnitCommand(abilityID);
         constructAction.ActionRaw.UnitCommand.UnitTags.Add(worker.tag);
@@ -243,7 +384,7 @@ public static class Controller
         var abilityID = Abilities.GetID(unitType);
 
         var counter = 0;
-        
+
         // TODO Fix this method. If we are constructing one building, it returns 2
 
         //count workers that have been sent to build this structure
@@ -309,6 +450,7 @@ public static class Controller
         {
             baseCost = gameData.Units[(int)Units.COMMAND_CENTER].MineralCost;
         }
+
         return minerals >= (unitData.MineralCost - baseCost) && vespene >= unitData.VespeneCost;
     }
 
@@ -318,15 +460,17 @@ public static class Controller
         {
             return Units.BARRACKS;
         }
+
         if (Units.FromFactory.Contains(unitType))
         {
             return Units.FACTORY;
         }
+
         if (Units.FromStarport.Contains(unitType))
         {
             return Units.STARPORT;
         }
-        
+
         Logger.Error("GetProducerBuildingType cannot find producer building");
         return 0;
     }
@@ -432,10 +576,13 @@ public static class Controller
     {
         int timeout = 500;
         var task = Program.gc.SendQuery(requestQuery.Query);
-        if (await Task.WhenAny(task, Task.Delay(timeout)) == task) {
+        if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
+        {
             // task completed within timeout
             return task.Result;
-        } else { 
+        }
+        else
+        {
             // timeout logic
             Logger.Error("Query TIMEOUT!!!");
             return null;
@@ -583,7 +730,7 @@ public static class Controller
         while (true)
         {
             var adjustedRadius = radius + (nbRetry / 300);
-            
+
             constructionSpot = new Vector3(startingSpot.Value.X + random.Next(-adjustedRadius, adjustedRadius + 1),
                 startingSpot.Value.Y + random.Next(-adjustedRadius, adjustedRadius + 1), startingSpot.Value.Z);
             nbRetry++;
@@ -636,10 +783,10 @@ public static class Controller
         {
             return false;
         }
-        
+
         if (Units.NeedsTechLab.Contains(unitType))
         {
-            if (building.GetAddonType().HasValue 
+            if (building.GetAddonType().HasValue
                 && Units.TechLabs.Contains(building.GetAddonType()!.Value))
             {
                 return true;

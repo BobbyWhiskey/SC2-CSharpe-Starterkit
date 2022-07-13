@@ -17,9 +17,10 @@ public class MarineMedivacIntoTankBuild : BuildOrderDefinition
             new BuildingStep(Units.REFINERY),
             new BuildingStep(Units.FACTORY),
             new BuildingStep(Units.BARRACKS_TECHLAB),
-            new BuildingStep(Units.SUPPLY_DEPOT), // Added by myself
+            new BuildingStep(Units.SUPPLY_DEPOT),
             new BuildingStep(Units.STARPORT),
             new BuildingStep(Units.FACTORY_TECHLAB), // TODO Should be reactor now to switch with starport but not implemented yet
+            new WaitStep((int)(120 * Controller.FRAMES_PER_SECOND)),
         };
 
         idealUnitRatio = new Dictionary<uint, double>()
