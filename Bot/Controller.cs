@@ -192,7 +192,7 @@ public static class Controller
         var nextOrderStr = (nextBuildStep != null ? Controller.GetUnitName(nextBuildStep.BuildingType) : "NA");
         if (nextWaitOrder != null)
         {
-            nextOrderStr = "Waiting " + nextWaitOrder.Delay + " sec";
+            nextOrderStr = "Waiting " + nextWaitOrder.Delay/Controller.FRAMES_PER_SECOND + " sec";
         }
 
         AddDebugCommand(new DebugCommand()
@@ -527,7 +527,7 @@ public static class Controller
 
     public static async Task<bool> CanPlace(uint unitType, Vector3 targetPos, bool withExtention = true)
     {
-        //Note: this is a blocking call! Use it sparingly, or you will slow down your execution significantly!
+
         var abilityID = Abilities.GetID(unitType);
 
         var queryBuildingPlacement = new RequestQueryBuildingPlacement();
@@ -539,7 +539,14 @@ public static class Controller
         var requestQuery = new Request();
         requestQuery.Query = new RequestQuery();
         requestQuery.Query.Placements.Add(queryBuildingPlacement);
+        
+        // TODO Check to make sure we don't block a building expension
+        if(GetFirstInRange(targetPos, GetUnits(Units.BuildingsWithAddons), 1) != null)
+        {
+            return false;
+        }
 
+        //Note: this is a blocking call! Use it sparingly, or you will slow down your execution significantly!
         var result = await GetQueryWithTimeout(requestQuery);
         if (result?.Placements.Count > 0)
             if (result.Placements[0].Result == ActionResult.Success)
@@ -651,10 +658,11 @@ public static class Controller
 
         // Fill up gas
         var refineries = GetUnits(Units.REFINERY);
+        var availableWorkers = GetUnits(Units.SCV).Where(u => u.order.AbilityId != Abilities.RETURN_RESOURCES).ToList();
         foreach (var refinery in refineries)
             if (refinery.assignedWorkers < refinery.idealWorkers)
             {
-                var scv = GetFirstInRange(refinery.position, GetUnits(Units.SCV), 7);
+                var scv = GetFirstInRange(refinery.position, availableWorkers , 7);
                 if (scv != null)
                     scv.Smart(refinery);
                 else

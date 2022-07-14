@@ -25,7 +25,7 @@ public class ScanModule
                 {
                     break;
                 }
-                var cluster = Controller.GetInRange(mineral.position, allMinerals, 8).ToList();
+                var cluster = Controller.GetInRange(mineral.position, allMinerals,14).ToList();
                 var clusterPosition = cluster.First().position;
                 mineralClusters.Add(clusterPosition);
                 lastClusterScan.Add(clusterPosition, 0);
@@ -53,7 +53,12 @@ public class ScanModule
         {
             if (unit.energy > 60)
             {
-                var targetScan = lastClusterScan.ToList().OrderBy(x => x.Value).First();
+                var orderedClusters = lastClusterScan.ToList().OrderBy(x => x.Value).ToList();
+                var targetScan = orderedClusters.First();
+
+                // For all equals, find closest to enemy base:
+                targetScan = orderedClusters.Where(x => x.Value == targetScan.Value).MinBy(x => (x.Key - Controller.enemyLocations.First()).LengthSquared());
+                
                 lastClusterScan[targetScan.Key] = Controller.frame;
 
                 unit.Ability(Abilities.SCANNER_SWEEP, targetScan.Key);

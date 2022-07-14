@@ -4,6 +4,7 @@ public abstract class BuildOrderDefinition
 {
     public ICollection<IBuildStep> buildOrder = new List<IBuildStep>();
     public Dictionary<uint, double> idealUnitRatio = new Dictionary<uint, double>();
+    public Dictionary<uint, double> idealUnitFixedNumber = new Dictionary<uint, double>();
 
     // TODO Add optimal unit ratios
 
@@ -24,9 +25,9 @@ public class WaitStep: IBuildStep
     public ulong Delay { get; }
     public ulong StartedFrame { get; set; } = 0;
 
-    public WaitStep(ulong delay)
+    public WaitStep(ulong delaySeconds)
     {
-        Delay = delay;
+        Delay = (ulong)(delaySeconds * Controller.FRAMES_PER_SECOND);
     }
         
 }

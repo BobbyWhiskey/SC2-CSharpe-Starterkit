@@ -20,7 +20,7 @@ public class MarineMedivacIntoTankBuild : BuildOrderDefinition
             new BuildingStep(Units.SUPPLY_DEPOT),
             new BuildingStep(Units.STARPORT),
             new BuildingStep(Units.FACTORY_TECHLAB), // TODO Should be reactor now to switch with starport but not implemented yet
-            new WaitStep((int)(120 * Controller.FRAMES_PER_SECOND)),
+            new WaitStep(150),
         };
 
         idealUnitRatio = new Dictionary<uint, double>()
@@ -29,6 +29,11 @@ public class MarineMedivacIntoTankBuild : BuildOrderDefinition
             { Units.MARAUDER, 2 },
             { Units.MEDIVAC, 1 },
             { Units.SIEGE_TANK, 1 },
+        };
+        
+        idealUnitFixedNumber =  new Dictionary<uint, double>()
+        {
+            { Units.RAVEN, 1 },
         };
     }
 }

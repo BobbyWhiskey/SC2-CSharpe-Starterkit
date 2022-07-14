@@ -39,21 +39,18 @@ public class SpawnerModule
             
             if (targetUnitToTrain != 0)
             {
-                if (Units.FromBarracks.Contains(targetUnitToTrain))
-                {
-                    GetAvailableProducerAndTrainUnit(Units.BARRACKS, targetUnitToTrain);
-                }
-                else if (Units.FromFactory.Contains(targetUnitToTrain))
-                {
-                    GetAvailableProducerAndTrainUnit(Units.FACTORY, targetUnitToTrain);
-                }
-                else if (Units.FromStarport.Contains(targetUnitToTrain))
-                {
-                    GetAvailableProducerAndTrainUnit(Units.STARPORT, targetUnitToTrain);
-                }
+                TrainUnit(targetUnitToTrain);
             }
 
             Controller.SetDebugPriorityUnitToTrain(targetUnitToTrain);
+            
+            foreach (var keyValuePair in BuildOrderQueries.currentBuild.idealUnitFixedNumber)
+            {
+                if (Controller.GetUnits(keyValuePair.Key).Count < keyValuePair.Value)
+                {
+                    TrainUnit(keyValuePair.Key);
+                }
+            }
         }
         else 
         {
@@ -126,6 +123,22 @@ public class SpawnerModule
                     starport.Train(Units.MEDIVAC, true);
                 }
             }
+        }
+    }
+
+    private void TrainUnit(uint targetUnitToTrain)
+    {
+        if (Units.FromBarracks.Contains(targetUnitToTrain))
+        {
+            GetAvailableProducerAndTrainUnit(Units.BARRACKS, targetUnitToTrain);
+        }
+        else if (Units.FromFactory.Contains(targetUnitToTrain))
+        {
+            GetAvailableProducerAndTrainUnit(Units.FACTORY, targetUnitToTrain);
+        }
+        else if (Units.FromStarport.Contains(targetUnitToTrain))
+        {
+            GetAvailableProducerAndTrainUnit(Units.STARPORT, targetUnitToTrain);
         }
     }
 

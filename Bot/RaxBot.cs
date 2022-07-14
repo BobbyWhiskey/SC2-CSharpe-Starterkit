@@ -17,6 +17,8 @@ internal class RaxBot : Bot
     private readonly MarineMicro _marineMicro = new();
     private readonly TankMicro _tankMicro = new();
     private readonly MuleModule _muleModule = new();
+    private readonly CatFactModule _catFactModule = new();
+    private readonly AntiChangelingModule _antiChangelingModule = new();
 
     private readonly ScanModule _scanModule = new();
 
@@ -33,9 +35,6 @@ internal class RaxBot : Bot
             Logger.Info("Map: {0}", Controller.gameInfo.MapName);
             Logger.Info("--------------------------------------");
         }
-
-        if (Controller.frame == Controller.SecsToFrames(1))
-            Controller.Chat("gl hf");
 
         var structures = Controller.GetUnits(Units.Structures);
         if (structures.Count == 1)
@@ -74,6 +73,7 @@ internal class RaxBot : Bot
             _spawnerModule.OnFrame();
             _armyMovementModule.OnFrame();
             _scanModule.OnFrame();
+            _antiChangelingModule.OnFrame();
         }
 
         if (Controller.frame % 5 == 0)
@@ -82,6 +82,8 @@ internal class RaxBot : Bot
             _tankMicro.OnFrame();
             _muleModule.OnFrame();
         }
+
+        _catFactModule.OnFrame();
 
         return Controller.CloseFrame();
     }

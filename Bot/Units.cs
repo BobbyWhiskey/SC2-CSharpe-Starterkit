@@ -809,6 +809,13 @@ internal static class Units
         LIBERATOR
     };
 
+    public static readonly HashSet<uint> BuildingsWithAddons = new()
+    {
+        BARRACKS,
+        FACTORY,
+        STARPORT,
+    };
+
     public static readonly HashSet<uint> AddOns = new()
     {
         TECHLAB,
@@ -856,5 +863,15 @@ internal static class Units
         FACTORY_TECHLAB,
         BARRACKS_TECHLAB,
         STARPORT_TECHLAB
+    };
+
+    public static HashSet<uint> Changelings = new()
+    {
+        CHANGELING,
+        CHANGELING_MARINE,
+        CHANGELING_ZEALOT,
+        CHANGELING_ZERGLING,
+        CHANGELING_MARINE_SHIELD,
+        CHANGELING_ZERGLING_WINGS,
     };
 }

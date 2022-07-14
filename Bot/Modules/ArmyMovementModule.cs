@@ -32,7 +32,7 @@ public class ArmyMovementModule
             }
             else if (_lastAttackPosition.HasValue)
             {
-                if (Controller.frame - _lastAttackPositionUpdate > 300)
+                if (Controller.frame - _lastAttackPositionUpdate > 200)
                 {
                     var enemies = Controller.GetUnits(Units.All, Alliance.Enemy);
                     if (enemies.Any())

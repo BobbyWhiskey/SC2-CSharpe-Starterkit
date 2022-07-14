@@ -9,7 +9,9 @@ public class MuleModule
         var ocs = Controller.GetUnits(Units.ORBITAL_COMMAND);
         foreach (var unit in ocs)
         {
-            if (unit.energy > 50)
+            if (unit.energy > 50 
+                && unit.assignedWorkers < unit.idealWorkers +2
+                && unit.idealWorkers > 10)
             {
                 var minerals = Controller.GetUnits(Units.MineralFields.ToHashSet(), Alliance.Neutral);
                 var target = Controller.GetFirstInRange(unit.position, minerals, 10);
