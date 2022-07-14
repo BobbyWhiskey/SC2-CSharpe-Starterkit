@@ -79,6 +79,8 @@ public class ArmyMovementModule
                 var rallyPoint = avg +
                                  (Controller.enemyLocations[0] - avg) * (float)0.15;
 
+                _lastAttackPosition = rallyPoint;
+
                 Controller.Attack(army, rallyPoint);
             }
         }

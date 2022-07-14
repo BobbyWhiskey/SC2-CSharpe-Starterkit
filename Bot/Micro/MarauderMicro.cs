@@ -2,7 +2,7 @@
 
 namespace Bot.Micro;
 
-public class MarineMicro : IUnitMicro
+public class MarauderMicro : IUnitMicro
 {
     private static int StimRangeActivation = 10;
     private static int StimRangeActivationDelay = 500;
@@ -11,7 +11,7 @@ public class MarineMicro : IUnitMicro
 
     public void OnFrame()
     {
-        var marines = Controller.GetUnits(Units.MARINE);
+        var marines = Controller.GetUnits(Units.MARAUDER);
 
         // TODO Check if we researched stim
         foreach (var marine in marines)
@@ -28,7 +28,6 @@ public class MarineMicro : IUnitMicro
                     marine.Ability(Abilities.GENERAL_STIMPACK);
                     _lastActivationTimeMap[marine.tag] = Controller.frame;
                 }
-                
             }
         }
     }

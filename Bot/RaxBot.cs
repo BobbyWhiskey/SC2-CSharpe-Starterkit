@@ -15,6 +15,7 @@ internal class RaxBot : Bot
     private readonly BuildingModule _buildingModule = new();
     private readonly ResearchModule _researchModule = new();
     private readonly MarineMicro _marineMicro = new();
+    private readonly MarauderMicro _marauderMicro = new();
     private readonly TankMicro _tankMicro = new();
     private readonly MuleModule _muleModule = new();
     private readonly CatFactModule _catFactModule = new();
@@ -79,6 +80,7 @@ internal class RaxBot : Bot
         if (Controller.frame % 5 == 0)
         {
             _marineMicro.OnFrame();
+            _marauderMicro.OnFrame();
             _tankMicro.OnFrame();
             _muleModule.OnFrame();
         }

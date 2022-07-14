@@ -17,6 +17,16 @@ public class SpawnerModule
 
         if (useRatioFromBuild)
         {
+            // Fixed number of units
+            foreach (var keyValuePair in BuildOrderQueries.currentBuild.idealUnitFixedNumber)
+            {
+                if (Controller.GetUnits(keyValuePair.Key).Count < keyValuePair.Value)
+                {
+                    TrainUnit(keyValuePair.Key);
+                }
+            }
+            
+            // Ratio units
             var myArmy = Controller.GetUnits(Units.ArmyUnits).ToList();
             var groupedArmy = myArmy.GroupBy(GroupByArmyDuplicateUnit).ToList();
             var unitRatio = groupedArmy.Select(x => (x.Key, (double)x.Count() / myArmy.Count));
@@ -44,13 +54,6 @@ public class SpawnerModule
 
             Controller.SetDebugPriorityUnitToTrain(targetUnitToTrain);
             
-            foreach (var keyValuePair in BuildOrderQueries.currentBuild.idealUnitFixedNumber)
-            {
-                if (Controller.GetUnits(keyValuePair.Key).Count < keyValuePair.Value)
-                {
-                    TrainUnit(keyValuePair.Key);
-                }
-            }
         }
         else 
         {

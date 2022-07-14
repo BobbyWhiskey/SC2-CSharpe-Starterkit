@@ -10,16 +10,8 @@ public class Program
     private static readonly Bot bot = new RaxBot();
 
     // Settings for single player mode.
-//        private static string mapName = "AbyssalReefLE.SC2Map";
-//        private static string mapName = "AbiogenesisLE.SC2Map";
-//        private static string mapName = "FrostLE.SC2Map";
-    //private static readonly string mapName = "BlackburnAIE.SC2Map"; //"WorldofSleepersLE.SC2Map";// "ThunderbirdLE.SC2Map";
-    //private static readonly string mapName = "WorldofSleepersLE.SC2Map";// "ThunderbirdLE.SC2Map";
-    //private static readonly string mapName = "ThunderbirdLE.SC2Map";
-    //private static readonly string mapName = "CuriousMindsAIE.SC2Map";
-
-    private static readonly Race opponentRace = Race.Zerg;
-    private static readonly Difficulty opponentDifficulty = Difficulty.Hard;
+    private static readonly Race opponentRace = Race.Random;
+    private static readonly Difficulty opponentDifficulty = Difficulty.VeryHard;
 
     public static GameConnection gc;
 

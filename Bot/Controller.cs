@@ -527,7 +527,6 @@ public static class Controller
 
     public static async Task<bool> CanPlace(uint unitType, Vector3 targetPos, bool withExtention = true)
     {
-
         var abilityID = Abilities.GetID(unitType);
 
         var queryBuildingPlacement = new RequestQueryBuildingPlacement();
@@ -540,8 +539,7 @@ public static class Controller
         requestQuery.Query = new RequestQuery();
         requestQuery.Query.Placements.Add(queryBuildingPlacement);
         
-        // TODO Check to make sure we don't block a building expension
-        if(GetFirstInRange(targetPos, GetUnits(Units.BuildingsWithAddons), 1) != null)
+        if(GetFirstInRange(targetPos, GetUnits(Units.BuildingsWithAddons), 2) != null)
         {
             return false;
         }
@@ -673,9 +671,13 @@ public static class Controller
 
     public static Unit? GetAvailableWorker(Vector3 targetPosition)
     {
-        // TODO MC Use method parameter
-        var workers = GetUnits(Units.Workers).Where(w => w.order.AbilityId == Abilities.GATHER_MINERALS);
-        return workers.FirstOrDefault();
+        var workers = GetUnits(Units.Workers).Where(w => w.order.AbilityId == Abilities.GATHER_MINERALS).ToList();
+        if (!workers.Any())
+        {
+            return null;
+        }
+        
+        return workers.MinBy(x => (x.position - targetPosition).LengthSquared());;
     }
 
     public static bool IsInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)

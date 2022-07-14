@@ -35,23 +35,23 @@ public class BuildingModule
             UpgradeCommandCenter();
 
 
-            BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint>
+            BuildBuildingAddons(Units.BARRACKS, new HashSet<uint>
             {
                 Units.BARRACKS_TECHLAB,
                 Units.BARRACKS_REACTOR
             });
 
-            BuildBuildingExtensions(Units.FACTORY, new HashSet<uint>
+            BuildBuildingAddons(Units.FACTORY, new HashSet<uint>
             {
                 Units.FACTORY_TECHLAB,
                 Units.FACTORY_REACTOR
             });
 
-            // BuildBuildingExtensions(Units.STARPORT, new HashSet<uint>
-            // {
-            //     Units.STARPORT_REACTOR,
-            //     Units.STARPORT_TECHLAB
-            // });
+            BuildBuildingAddons(Units.STARPORT, new HashSet<uint>
+            {
+                Units.STARPORT_TECHLAB,
+                Units.STARPORT_REACTOR,
+            });
         }
         
         // Leave this meanwhile ithere is a better strategy to place buildiings
@@ -104,15 +104,15 @@ public class BuildingModule
             }
             else if (nextUnit == Units.BARRACKS_TECHLAB || nextUnit == Units.BARRACKS_REACTOR)
             {
-                BuildBuildingExtensions(Units.BARRACKS, new HashSet<uint> { nextUnit });
+                BuildBuildingAddons(Units.BARRACKS, new HashSet<uint> { nextUnit });
             }
             else if (nextUnit == Units.FACTORY_TECHLAB || nextUnit == Units.FACTORY_REACTOR)
             {
-                BuildBuildingExtensions(Units.FACTORY, new HashSet<uint> { nextUnit });
+                BuildBuildingAddons(Units.FACTORY, new HashSet<uint> { nextUnit });
             }
             else if (nextUnit == Units.STARPORT_TECHLAB || nextUnit == Units.STARPORT_REACTOR)
             {
-                BuildBuildingExtensions(Units.STARPORT, new HashSet<uint> { nextUnit });
+                BuildBuildingAddons(Units.STARPORT, new HashSet<uint> { nextUnit });
             }
             else
             {
@@ -178,12 +178,12 @@ public class BuildingModule
         }
     }
 
-    private void BuildBuildingExtensions(uint building, HashSet<uint> allowedExtensions)
+    private void BuildBuildingAddons(uint building, HashSet<uint> allowedAddons)
     {
         var producers = Controller.GetUnits(building).ToList();
-        var extensions = Controller.GetUnits(allowedExtensions).ToList();
+        var addons = Controller.GetUnits(allowedAddons).ToList();
 
-        if (extensions.Count < producers.Count) 
+        if (addons.Count < producers.Count) 
             foreach (var producer in producers)
             {
                 if (producer.GetAddonType().HasValue)
@@ -191,8 +191,9 @@ public class BuildingModule
                     continue;
                 }
                 
-                var extensionType = allowedExtensions.First();
-                // TODO MC Do also reactors some time ya know
+                // TODO MC Do other types of addons some time ya know
+                var extensionType = allowedAddons.First();
+                
                 if (Controller.CanConstruct(extensionType)
                     && !(producer.buildProgress < 1)
                     && producer.order.AbilityId == 0)
@@ -209,8 +210,8 @@ public class BuildingModule
         var nbRcs = Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers);
 
         var barrackTargetCount = 1 * (nbRcs / 10);
-        var factoryTargetCount = 1 * (nbRcs / 22);
-        var starportTargetCount = 1 * (nbRcs / 22);
+        var factoryTargetCount = 1 * (nbRcs / 18);
+        var starportTargetCount = 1 * (nbRcs / 18);
 
         if (starportTargetCount > Controller.GetTotalCount(Units.STARPORT)
             && Controller.GetUnits(Units.FACTORY, onlyCompleted: true).Any())
