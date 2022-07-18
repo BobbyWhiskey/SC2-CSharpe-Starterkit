@@ -13,18 +13,25 @@ internal class RaxBot : Bot
     private readonly ArmyMovementModule _armyMovementModule = new();
     private readonly ArmyModuleV2 _armyMovementModule2 = new();
 
+    private readonly IList<IUnitMicro> _unitMicros = new List<IUnitMicro>()
+    {
+        new MarauderMicro(),
+        new MarineMicro(),
+        new MedicavMicro(),
+        new TankMicro(),
+        new VikingsMicro(),
+        new RavenMicro(),
+    };
+        
     private readonly BuildingModule _buildingModule = new();
     private readonly CatFactModule _catFactModule = new();
-    private readonly MarauderMicro _marauderMicro = new();
-    private readonly MarineMicro _marineMicro = new();
-    private readonly MedicavMicro _medicavMicro = new();
+
     private readonly MuleModule _muleModule = new();
     private readonly ResearchModule _researchModule = new();
 
     private readonly ScanModule _scanModule = new();
     private readonly SpawnerModule _spawnerModule = new();
-    private readonly TankMicro _tankMicro = new();
-    private readonly VikingsMicro _vikingsMicro = new();
+
 
     //the following will be called every frame
     //you can increase the amount of frames that get processed for each step at once in Wrapper/GameConnection.cs: stepSize  
@@ -85,20 +92,15 @@ internal class RaxBot : Bot
             Controller.DistributeWorkers();
             _researchModule.OnFrame();
             _spawnerModule.OnFrame();
-
+            _muleModule.OnFrame();
 
             _antiChangelingModule.OnFrame();
         }
 
-        // if (Controller.frame % 5 == 0)
-        // {
-        _marineMicro.OnFrame();
-        _marauderMicro.OnFrame();
-        _tankMicro.OnFrame();
-        _muleModule.OnFrame();
-        _medicavMicro.OnFrame();
-        _vikingsMicro.OnFrame();
-        //}
+        foreach (var unitMicro in _unitMicros)
+        {
+            unitMicro.OnFrame();
+        }
 
         _catFactModule.OnFrame();
 

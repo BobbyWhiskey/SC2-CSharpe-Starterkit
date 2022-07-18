@@ -700,10 +700,18 @@ public static class Controller
     public static Unit? GetFirstInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
     {
         //squared distance is faster to calculate
+        var adjustedTargetPosition = targetPosition with
+        {
+            Z = 0
+        };
         var maxDistanceSqr = maxDistance * maxDistance;
         foreach (var unit in units)
         {
-            if (Vector3.DistanceSquared(targetPosition, unit.position) <= maxDistanceSqr)
+            var adjustedUnitPosition = unit.position with
+            {
+                Z = 0
+            };
+            if (Vector3.DistanceSquared(adjustedUnitPosition, adjustedTargetPosition) <= maxDistanceSqr)
             {
                 return unit;
             }
@@ -715,6 +723,9 @@ public static class Controller
 
     public static IEnumerable<Unit> GetInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
     {
+        
+        // TODO MC Should we ajuste for unit height here too?
+        
         //squared distance is faster to calculate
         var maxDistanceSqr = maxDistance * maxDistance;
         foreach (var unit in units)

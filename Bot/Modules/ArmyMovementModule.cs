@@ -13,6 +13,11 @@ public class ArmyMovementModule
 
     public void OnFrame()
     {
+        if (Controller.frame % 5 != 0)
+        {
+            return; 
+        }
+        
         var army = Controller.GetUnits(Units.ArmyUnits);
         var attackingUnits = GetCloseToBaseArmy().ToList();
         if (attackingUnits.Any())

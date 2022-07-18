@@ -2,18 +2,18 @@
 
 namespace Bot.Micro;
 
-public class MedicavMicro : IUnitMicro
+public class RavenMicro : IUnitMicro
 {
     public void OnFrame()
     {
-        var medivacs = Controller.GetUnits(Units.MEDIVAC);
+        var medivacs = Controller.GetUnits(Units.RAVEN);
 
         foreach (var medivac in medivacs)
         {
             var enemy = Controller.GetFirstInRange(medivac.position,
                 Controller.GetUnits(Units.All, Alliance.Enemy)
                     .Where(x => Controller.CanUnitAttackAir(x.unitType)).ToList()
-                , 5);
+                , 9);
             if (enemy != null)
             {
                 medivac.Move(medivac.position - enemy.position + medivac.position);
