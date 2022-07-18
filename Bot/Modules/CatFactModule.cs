@@ -11,7 +11,6 @@ public class CatFactModule
         "A cat can’t climb head first down a tree because every claw on a cat’s paw points the same way. To get down from a tree, a cat must back down.",
         "Cats make about 100 different sounds. Dogs make only about 10.",
         "Many people in China consider cats a \"warming\" food that is perfect to eat during the winter",
-        "Every year, nearly four million cats are eaten in Asia.",
         "There are more than 500 million domestic cats in the world, with approximately 40 recognized breeds.",
         "Approximately 24 cat skins can make a coat.",
         "While it is commonly thought that the ancient Egyptians were the first to domesticate cats, the oldest known pet cat was recently found in a 9,500-year-old grave on the Mediterranean island of Cyprus. This grave predates early Egyptian art depicting cats by 4,000 years or more.",

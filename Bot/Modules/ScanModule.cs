@@ -37,16 +37,19 @@ public class ScanModule
 
         if (lastInvisibleScan + invisibleScanDelay < Controller.frame)
         {
-            if (Controller.obs.Observation.RawData.Units.Any(x =>
-                    x.Cloak == CloakState.Cloaked
-                    || x.IsBurrowed))
+            // TODO We check raw data but it should also be available in Controller.GetUnits()
+            var invisibleOrBorrowedUnits = Controller.obs.Observation.RawData.Units.Where(x =>
+                x.Cloak == CloakState.Cloaked
+                || x.IsBurrowed)
+                .ToList();
+            if (invisibleOrBorrowedUnits.Any())
             {
-                var invisibleUnits = Controller.GetUnits(Units.All, Alliance.Enemy).Where(x => x.cloak == CloakState.Cloaked).ToList();
                 var cc = ocs.FirstOrDefault(x => x.energy > 50);
-                if (cc != null && invisibleUnits.Any())
+                if (cc != null)
                 {
                     // TODO Check we got units or building close by before scanning?
-                    cc.Ability(Abilities.SCANNER_SWEEP, invisibleUnits.First());
+                    var unit = new Unit(invisibleOrBorrowedUnits.First());
+                    cc.Ability(Abilities.SCANNER_SWEEP, unit);
                     lastInvisibleScan = Controller.frame;
                 }
             }
@@ -56,6 +59,12 @@ public class ScanModule
                 x.Cloak == CloakState.Cloaked))
         {
             Logger.Info("Observer Cloaked unit!!");
+        }
+
+        if (Controller.obs.Observation.RawData.Units.Any(x =>
+                x.IsBurrowed))
+        {
+            Logger.Info("Burrowed unit detected!!");
         }
 
         if (Controller.obs.Observation.RawData.Units.Any(x =>
