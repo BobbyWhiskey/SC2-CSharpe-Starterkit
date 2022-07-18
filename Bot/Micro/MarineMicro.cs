@@ -12,14 +12,15 @@ public class MarineMicro : IUnitMicro
     public void OnFrame()
     {
         var marines = Controller.GetUnits(Units.MARINE);
+        var dangerousUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
+            .Where(x => Controller.CanUnitAttackGround(x.unitType)).ToList();
 
         if (Controller.frame % 10 == 0)
         {
             foreach (var marine in marines)
             {
                 var enemy = Controller.GetFirstInRange(marine.position,
-                    Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
-                        .Where(x => Controller.CanUnitAttackGround(x.unitType)).ToList()
+                    dangerousUnits
                     , 3);
                 if (enemy != null)
                 {

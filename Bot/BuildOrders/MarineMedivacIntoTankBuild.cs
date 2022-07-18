@@ -28,7 +28,8 @@ public class MarineMedivacIntoTankBuild : BuildOrderDefinition
 
         idealUnitMax = new Dictionary<uint, double>
         {
-            { Units.MEDIVAC, 12 }
+            { Units.MEDIVAC, 12 },
+            { Units.VIKING_FIGHTER, 8 }
         };
 
         idealUnitRatio = new Dictionary<uint, double>

@@ -8,11 +8,13 @@ public class RavenMicro : IUnitMicro
     {
         var medivacs = Controller.GetUnits(Units.RAVEN);
 
+        var dangerousUnits = Controller.GetUnits(Units.All, Alliance.Enemy)
+            .Where(x => Controller.CanUnitAttackAir(x.unitType)).ToList();
+        
         foreach (var medivac in medivacs)
         {
             var enemy = Controller.GetFirstInRange(medivac.position,
-                Controller.GetUnits(Units.All, Alliance.Enemy)
-                    .Where(x => Controller.CanUnitAttackAir(x.unitType)).ToList()
+                dangerousUnits
                 , 9);
             if (enemy != null)
             {
