@@ -23,14 +23,14 @@ public class MassMarineRush : BuildOrderDefinition
             new BuildingStep(Units.SUPPLY_DEPOT),
             new BuildingStep(Units.BARRACKS),
             new BuildingStep(Units.FACTORY_TECHLAB),
-            new WaitStep(120),
+            new WaitStep(120)
         };
 
-        idealUnitRatio = new Dictionary<uint, double>()
+        idealUnitRatio = new Dictionary<uint, double>
         {
             { Units.MARINE, 8 },
             { Units.MEDIVAC, 1 },
-            { Units.HELLION, 2 },
+            { Units.HELLION, 2 }
         };
     }
 }

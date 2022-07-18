@@ -5,11 +5,11 @@ namespace Bot.Modules;
 
 public class ScanModule
 {
-    private ICollection<Vector3> mineralClusters { get; set; } = new List<Vector3>();
-    private Dictionary<Vector3, ulong> lastClusterScan = new();
+    private readonly ulong invisibleScanDelay = 24 * 15;
+    private readonly Dictionary<Vector3, ulong> lastClusterScan = new();
 
-    private ulong lastInvisibleScan = 0;
-    private ulong invisibleScanDelay = 24 * 15;
+    private ulong lastInvisibleScan;
+    private ICollection<Vector3> mineralClusters { get; } = new List<Vector3>();
 
     public void OnFrame()
     {
@@ -25,17 +25,17 @@ public class ScanModule
                 {
                     break;
                 }
-                var cluster = Controller.GetInRange(mineral.position, allMinerals,14).ToList();
+                var cluster = Controller.GetInRange(mineral.position, allMinerals, 14).ToList();
                 var clusterPosition = cluster.First().position;
                 mineralClusters.Add(clusterPosition);
                 lastClusterScan.Add(clusterPosition, 0);
                 processedMinerals.AddRange(cluster);
             }
         }
-        
+
         var ocs = Controller.GetUnits(Units.ORBITAL_COMMAND);
-        
-        
+
+
         if (Controller.obs.Observation.RawData.Units.Any(x =>
                 x.Cloak == CloakState.Cloaked))
         {
@@ -50,13 +50,13 @@ public class ScanModule
         }
 
         if (Controller.obs.Observation.RawData.Units.Any(x =>
-                x.Cloak == CloakState.Cloaked ))
+                x.Cloak == CloakState.Cloaked))
         {
             Logger.Info("Observer Cloaked unit!!");
         }
 
         if (Controller.obs.Observation.RawData.Units.Any(x =>
-                 x.Cloak == CloakState.CloakedDetected))
+                x.Cloak == CloakState.CloakedDetected))
         {
             Logger.Info("Observer CloakedDetected unit!!");
         }
@@ -67,7 +67,7 @@ public class ScanModule
         // }
         //
         //
-        
+
         // TODO Scanning invisibile units 
         // if (lastInvisibleScan + invisibleScanDelay < Controller.frame)
         // {
@@ -104,7 +104,7 @@ public class ScanModule
 
                 // For all equals, find closest to enemy base:
                 targetScan = orderedClusters.Where(x => x.Value == targetScan.Value).MinBy(x => (x.Key - Controller.enemyLocations.First()).LengthSquared());
-                
+
                 lastClusterScan[targetScan.Key] = Controller.frame;
 
                 unit.Ability(Abilities.SCANNER_SWEEP, targetScan.Key);

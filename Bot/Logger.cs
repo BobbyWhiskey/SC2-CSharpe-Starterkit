@@ -1,6 +1,4 @@
-﻿
-
-// ReSharper disable AssignNullToNotNullAttribute
+﻿// ReSharper disable AssignNullToNotNullAttribute
 
 namespace Bot;
 
@@ -39,6 +37,7 @@ public static class Logger
         file.Close();
         // do not write to stdout if it is closed (LadderServer on linux)
         if (!_stdoutClosed)
+        {
             try
             {
                 Console.WriteLine(msg, parameters);
@@ -47,6 +46,7 @@ public static class Logger
             {
                 _stdoutClosed = true;
             }
+        }
     }
 
     public static void Info(string line, params object[] parameters)

@@ -9,7 +9,7 @@ public class SpawnerModule
 
     public void OnFrame()
     {
-        bool useRatioFromBuild = true;
+        var useRatioFromBuild = true;
         if (IsTimeForExpandQuery.Get() && Controller.minerals < 500)
         {
             return;
@@ -25,7 +25,7 @@ public class SpawnerModule
                     TrainUnit(keyValuePair.Key);
                 }
             }
-            
+
             // Ratio units
             var myArmy = Controller.GetUnits(Units.ArmyUnits).ToList();
             var groupedArmy = myArmy.GroupBy(GroupByArmyDuplicateUnit).ToList();
@@ -34,7 +34,7 @@ public class SpawnerModule
                 (x.Key, x.Value / BuildOrderQueries.currentBuild.idealUnitRatio.Sum(y => y.Value)));
 
             var diffUnitRatios = normalizedTargetRatio.Select(x =>
-                (x.Key, x.Item2 - (unitRatio.FirstOrDefault(y => y.Key == x.Key).Item2)));
+                (x.Key, x.Item2 - unitRatio.FirstOrDefault(y => y.Key == x.Key).Item2));
 
             // Skip unit type we can't produce yet
             var targetUnitToTrain = diffUnitRatios
@@ -42,25 +42,25 @@ public class SpawnerModule
                 .OrderByDescending(x => x.Item2)
                 .Where(x => Controller.GetUnits(Controller.GetProducerBuildingType(x.Key))
                     .Where(b => Controller.CanBuildingTrainUnit(b, x.Key))
-                    .Any(b => b.order.AbilityId == 0 || 
-                              (b.GetAddonType().HasValue
-                               && Units.Reactors.Contains(b.GetAddonType()!.Value) 
-                               && b.orders.Count < 2 )) )
+                    .Any(b => b.order.AbilityId == 0 ||
+                              b.GetAddonType().HasValue
+                              && Units.Reactors.Contains(b.GetAddonType()!.Value)
+                              && b.orders.Count < 2))
                 .Select(x => x.Key)
                 .FirstOrDefault();
-            
+
             if (targetUnitToTrain != 0)
             {
                 TrainUnit(targetUnitToTrain);
             }
 
             Controller.SetDebugPriorityUnitToTrain(targetUnitToTrain);
-            
+
         }
-        else 
+        else
         {
             var nextBuildOrder = BuildOrderQueries.GetNextStep() as BuildingStep;
-            
+
             foreach (var barracks in Controller.GetUnits(Units.BARRACKS, onlyCompleted: true))
             {
                 // Dont build if we are waiting to create an addon
@@ -103,7 +103,7 @@ public class SpawnerModule
                 {
                     continue;
                 }
-                
+
                 if (Controller.CanConstruct(Units.SIEGE_TANK)
                     && factory.order.AbilityId == 0)
                 {
@@ -120,7 +120,7 @@ public class SpawnerModule
                 {
                     continue;
                 }
-                
+
                 // TODO Temporary fix to use reactors, use GetAddonType instead
                 if (Controller.CanConstruct(Units.MEDIVAC) && starport.orders.Count < 2)
                 {
@@ -153,16 +153,16 @@ public class SpawnerModule
         {
             return;
         }
-        
+
         var producers = Controller.GetUnits(producerType);
         foreach (var producer in producers)
         {
             if (Controller.CanConstruct(unitType) && producer.order.AbilityId == 0)
             {
-                producer.Train(unitType, false);
+                producer.Train(unitType);
                 break;
             }
-            else if (producer.GetAddonType().HasValue
+            if (producer.GetAddonType().HasValue
                 && !Units.NeedsTechLab.Contains(unitType)
                 && Units.Reactors.Contains(producer.GetAddonType()!.Value)
                 && Controller.CanConstruct(unitType)
@@ -177,14 +177,11 @@ public class SpawnerModule
     private uint GroupByArmyDuplicateUnit(Unit unit)
     {
         // TODO Add also helion too since we can convert them?
-        
+
         if (Units.SiegeTanks.Contains(unit.unitType))
         {
             return Units.SIEGE_TANK;
         }
-        else
-        {
-            return unit.unitType;
-        }
+        return unit.unitType;
     }
 }

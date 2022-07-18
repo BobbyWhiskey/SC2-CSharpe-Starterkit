@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using System.Runtime.CompilerServices;
 using Bot.AStar;
 using Bot.BuildOrders;
 using Bot.Queries;
@@ -14,7 +13,7 @@ public static class Controller
 {
     public const double FRAMES_PER_SECOND = 22.4;
 
-    public static Boolean IsDebug = false;
+    public static bool IsDebug = false;
 
     //editable
     private static readonly int frameDelay = 0; //too fast? increase this to e.g. 20
@@ -40,6 +39,10 @@ public static class Controller
     // Debug data
     private static uint nextUnitToTrain;
 
+    public static Astar AStarPathingGrid { get; set; }
+
+    public static bool[][] PathingMap { get; set; }
+
     public static void Pause()
     {
         Console.WriteLine("Press any key to continue...");
@@ -63,11 +66,11 @@ public static class Controller
 
 
         var grid = new List<List<Node>>();
-        int x = 0;
+        var x = 0;
 
         foreach (var line in canMoveLines)
         {
-            int y = 0;
+            var y = 0;
             var gridLine = new List<Node>();
             foreach (var value in line)
             {
@@ -83,9 +86,7 @@ public static class Controller
         AStarPathingGrid = new Astar(grid);
     }
 
-    public static Astar AStarPathingGrid { get; set; }
-
-    static bool[] ByteToBools(byte value)
+    private static bool[] ByteToBools(byte value)
     {
         var values = new bool[8];
 
@@ -100,8 +101,6 @@ public static class Controller
 
         return values.Reverse().ToArray();
     }
-
-    public static bool[][] PathingMap { get; set; }
 
     public static ulong SecsToFrames(int seconds)
     {
@@ -120,11 +119,17 @@ public static class Controller
         if (gameInfo == null || gameData == null || obs == null)
         {
             if (gameInfo == null)
+            {
                 Logger.Info("GameInfo is null! The application will terminate.");
+            }
             else if (gameData == null)
+            {
                 Logger.Info("GameData is null! The application will terminate.");
+            }
             else
+            {
                 Logger.Info("ResponseObservation is null! The application will terminate.");
+            }
             Pause();
             Environment.Exit(0);
         }
@@ -139,7 +144,9 @@ public static class Controller
         debugCommands.Clear();
 
         foreach (var chat in obs.Chat)
+        {
             chatLog.Add(chat.Message);
+        }
 
         frame = obs.Observation.GameLoop;
         currentSupply = obs.Observation.PlayerCommon.FoodUsed;
@@ -161,7 +168,9 @@ public static class Controller
                     var enemyLocation = new Vector3(startLocation.X, startLocation.Y, 0);
                     var distance = Vector3.Distance(enemyLocation, rcPosition);
                     if (distance > 30)
+                    {
                         enemyLocations.Add(enemyLocation);
+                    }
                 }
             }
         }
@@ -169,7 +178,9 @@ public static class Controller
         AddDebugDataOnScreen();
 
         if (frameDelay > 0)
+        {
             Thread.Sleep(frameDelay);
+        }
     }
 
     public static void SetDebugPriorityUnitToTrain(uint unit)
@@ -183,24 +194,24 @@ public static class Controller
         {
             return;
         }
-        
+
         var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
         var nextWaitOrder = BuildOrderQueries.GetNextStep() as WaitStep;
-        var nextOrderStr = (nextBuildStep != null ? Controller.GetUnitName(nextBuildStep.BuildingType) : "NA");
+        var nextOrderStr = nextBuildStep != null ? GetUnitName(nextBuildStep.BuildingType) : "NA";
         if (nextWaitOrder != null)
         {
-            nextOrderStr = "Waiting " + nextWaitOrder.Delay/Controller.FRAMES_PER_SECOND + " sec";
+            nextOrderStr = "Waiting " + nextWaitOrder.Delay / FRAMES_PER_SECOND + " sec";
         }
 
-        AddDebugCommand(new DebugCommand()
+        AddDebugCommand(new DebugCommand
         {
-            Draw = new DebugDraw()
+            Draw = new DebugDraw
             {
                 Text =
                 {
                     new[]
                     {
-                        new DebugText()
+                        new DebugText
                         {
                             Text = "Next build order : " + nextOrderStr + "\n" +
                                    "Waiting for expand : " + IsTimeForExpandQuery.Get() + "\n" +
@@ -212,7 +223,7 @@ public static class Controller
                 }
             }
         });
-        
+
         //ShowDebugAStarGrid();
     }
 
@@ -232,7 +243,7 @@ public static class Controller
         {
             return;
         }
-        
+
         debugCommands.Add(command);
     }
 
@@ -283,7 +294,9 @@ public static class Controller
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.X = target.X;
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;
         foreach (var unit in units)
+        {
             action.ActionRaw.UnitCommand.UnitTags.Add(unit.tag);
+        }
         AddAction(action);
     }
 
@@ -298,7 +311,7 @@ public static class Controller
 
     public static int GetPendingCount(HashSet<uint> unitTypes, bool inConstruction = true)
     {
-        int total = 0;
+        var total = 0;
         foreach (var unitType in unitTypes)
         {
             total += GetPendingCount(unitType);
@@ -318,14 +331,24 @@ public static class Controller
 
         //count workers that have been sent to build this structure
         foreach (var worker in workers)
+        {
             if (worker.order.AbilityId == abilityID)
+            {
                 counter += 1;
+            }
+        }
 
         //count buildings that are already in construction
         if (inConstruction)
+        {
             foreach (var unit in GetUnits(unitType))
+            {
                 if (unit.buildProgress < 1)
+                {
                     counter += 1;
+                }
+            }
+        }
 
         return counter;
     }
@@ -336,16 +359,22 @@ public static class Controller
         //ideally this should be cached in the future and cleared at each new frame
         var units = new List<Unit>();
         foreach (var unit in obs.Observation.RawData.Units)
+        {
             if (hashset.Contains(unit.UnitType) && unit.Alliance == alliance)
             {
                 if (onlyCompleted && unit.BuildProgress < 1)
+                {
                     continue;
+                }
 
                 if (onlyVisible && unit.DisplayType != DisplayType.Visible)
+                {
                     continue;
+                }
 
                 units.Add(new Unit(unit));
             }
+        }
 
         return units;
     }
@@ -356,16 +385,22 @@ public static class Controller
         //ideally this should be cached in the future and cleared at each new frame
         var units = new List<Unit>();
         foreach (var unit in obs.Observation.RawData.Units)
+        {
             if (unit.UnitType == unitType && unit.Alliance == alliance)
             {
                 if (onlyCompleted && unit.BuildProgress < 1)
+                {
                     continue;
+                }
 
                 if (onlyVisible && unit.DisplayType != DisplayType.Visible)
+                {
                     continue;
+                }
 
                 units.Add(new Unit(unit));
             }
+        }
 
         return units;
     }
@@ -376,7 +411,7 @@ public static class Controller
 
         return unitData.Weapons.Any(x => x.Type == Weapon.Types.TargetType.Air || x.Type == Weapon.Types.TargetType.Any);
     }
-    
+
     public static bool CanUnitAttackGround(uint unitType)
     {
         var unitData = gameData.Units[(int)unitType];
@@ -393,7 +428,7 @@ public static class Controller
             baseCost = gameData.Units[(int)Units.COMMAND_CENTER].MineralCost;
         }
 
-        return minerals >= (unitData. MineralCost - baseCost) && vespene >= unitData.VespeneCost;
+        return minerals >= unitData.MineralCost - baseCost && vespene >= unitData.VespeneCost;
     }
 
     public static uint GetProducerBuildingType(uint unitType)
@@ -424,18 +459,29 @@ public static class Controller
         if (Units.Structures.Contains(unitType))
         {
             //we need worker for every structure
-            if (GetUnits(Units.Workers).Count == 0) return false;
+            if (GetUnits(Units.Workers).Count == 0)
+            {
+                return false;
+            }
 
             //we need an RC for any structure
             var resourceCenters = GetUnits(Units.ResourceCenters, onlyCompleted: true);
-            if (resourceCenters.Count == 0) return false;
+            if (resourceCenters.Count == 0)
+            {
+                return false;
+            }
 
             if (unitType == Units.COMMAND_CENTER || unitType == Units.SUPPLY_DEPOT)
+            {
                 return CanAfford(unitType);
+            }
 
             //we need supply depots for the following structures
             var depots = GetUnits(Units.SupplyDepots, onlyCompleted: true);
-            if (depots.Count == 0) return false;
+            if (depots.Count == 0)
+            {
+                return false;
+            }
         }
 
         //it's an actual unit
@@ -444,13 +490,18 @@ public static class Controller
             //do we have enough supply?
             var requiredSupply = gameData.Units[(int)unitType].FoodRequired;
             if (requiredSupply > maxSupply - currentSupply)
+            {
                 return false;
+            }
 
             //do we construct the units from barracks? 
             if (Units.FromBarracks.Contains(unitType))
             {
                 var barracks = GetUnits(Units.BARRACKS, onlyCompleted: true);
-                if (barracks.Count == 0) return false;
+                if (barracks.Count == 0)
+                {
+                    return false;
+                }
             }
         }
 
@@ -480,8 +531,8 @@ public static class Controller
         var requestQuery = new Request();
         requestQuery.Query = new RequestQuery();
         requestQuery.Query.Placements.Add(queryBuildingPlacement);
-        
-        if(GetFirstInRange(targetPos, GetUnits(Units.BuildingsWithAddons), 2) != null)
+
+        if (GetFirstInRange(targetPos, GetUnits(Units.BuildingsWithAddons), 2) != null)
         {
             return false;
         }
@@ -489,6 +540,7 @@ public static class Controller
         //Note: this is a blocking call! Use it sparingly, or you will slow down your execution significantly!
         var result = await GetQueryWithTimeout(requestQuery);
         if (result?.Placements.Count > 0)
+        {
             if (result.Placements[0].Result == ActionResult.Success)
             {
                 if (withExtention &&
@@ -509,31 +561,31 @@ public static class Controller
 
                     if (result?.Placements.Count > 0
                         && result?.Placements[0].Result == ActionResult.Success)
+                    {
                         return true;
+                    }
                     return false;
                 }
 
                 return true;
             }
+        }
 
         return false;
     }
 
     private static async Task<ResponseQuery?> GetQueryWithTimeout(Request requestQuery)
     {
-        int timeout = 500;
+        var timeout = 500;
         var task = Program.gc.SendQuery(requestQuery.Query);
         if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
         {
             // task completed within timeout
             return task.Result;
         }
-        else
-        {
-            // timeout logic
-            Logger.Error("Query TIMEOUT!!!");
-            return null;
-        }
+        // timeout logic
+        Logger.Error("Query TIMEOUT!!!");
+        return null;
     }
 
 
@@ -551,7 +603,10 @@ public static class Controller
             {
                 //get one of the closer mineral fields
                 var mf = GetFirstInRange(rc.position, mineralFields, 7);
-                if (mf == null) continue;
+                if (mf == null)
+                {
+                    continue;
+                }
 
                 //only one at a time
                 Logger.Info("Distributing idle worker: {0}", idleWorkers[0].tag);
@@ -582,11 +637,20 @@ public static class Controller
                 var sqrDistance = 7 * 7;
                 foreach (var worker in workers)
                 {
-                    if (worker.order.AbilityId != Abilities.GATHER_MINERALS) continue;
-                    if (Vector3.DistanceSquared(worker.position, transferFrom.position) > sqrDistance) continue;
+                    if (worker.order.AbilityId != Abilities.GATHER_MINERALS)
+                    {
+                        continue;
+                    }
+                    if (Vector3.DistanceSquared(worker.position, transferFrom.position) > sqrDistance)
+                    {
+                        continue;
+                    }
 
                     var mf = GetFirstInRange(transferTo.position, mineralFields, 10);
-                    if (mf == null) continue;
+                    if (mf == null)
+                    {
+                        continue;
+                    }
 
                     //only one at a time
                     Logger.Info("Distributing idle worker: {0}", worker.tag);
@@ -600,14 +664,20 @@ public static class Controller
         var refineries = GetUnits(Units.REFINERY);
         var availableWorkers = GetUnits(Units.SCV).Where(u => u.order.AbilityId != Abilities.RETURN_RESOURCES).ToList();
         foreach (var refinery in refineries)
+        {
             if (refinery.assignedWorkers < refinery.idealWorkers)
             {
-                var scv = GetFirstInRange(refinery.position, availableWorkers , 7);
+                var scv = GetFirstInRange(refinery.position, availableWorkers, 7);
                 if (scv != null)
+                {
                     scv.Smart(refinery);
+                }
                 else
+                {
                     Logger.Info("Cant find SCV for refinery :*(");
+                }
             }
+        }
     }
 
 
@@ -618,8 +688,8 @@ public static class Controller
         {
             return null;
         }
-        
-        return workers.MinBy(x => (x.position - targetPosition).LengthSquared());;
+
+        return workers.MinBy(x => (x.position - targetPosition).LengthSquared());
     }
 
     public static bool IsInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
@@ -632,8 +702,13 @@ public static class Controller
         //squared distance is faster to calculate
         var maxDistanceSqr = maxDistance * maxDistance;
         foreach (var unit in units)
+        {
             if (Vector3.DistanceSquared(targetPosition, unit.position) <= maxDistanceSqr)
+            {
                 return unit;
+            }
+
+        }
 
         return null;
     }
@@ -643,8 +718,12 @@ public static class Controller
         //squared distance is faster to calculate
         var maxDistanceSqr = maxDistance * maxDistance;
         foreach (var unit in units)
+        {
             if (Vector3.DistanceSquared(targetPosition, unit.position) <= maxDistanceSqr)
+            {
                 yield return unit;
+            }
+        }
     }
 
 
@@ -671,7 +750,10 @@ public static class Controller
     public static async Task Construct(uint unitType, Vector3? startingSpot = null, int radius = 17)
     {
         var resourceCenters = GetUnits(Units.ResourceCenters);
-        if (startingSpot == null && resourceCenters.Count > 0) startingSpot = startingLocation;
+        if (startingSpot == null && resourceCenters.Count > 0)
+        {
+            startingSpot = startingLocation;
+        }
 
         //Logger.Error("Unable to construct: {0}. No resource center was found.", GetUnitName(unitType));
         //return;
@@ -681,7 +763,7 @@ public static class Controller
         var nbRetry = 0;
         while (true)
         {
-            var adjustedRadius = radius + (nbRetry / 300);
+            var adjustedRadius = radius + nbRetry / 300;
 
             constructionSpot = new Vector3(startingSpot.Value.X + random.Next(-adjustedRadius, adjustedRadius + 1),
                 startingSpot.Value.Y + random.Next(-adjustedRadius, adjustedRadius + 1), startingSpot.Value.Z);
@@ -712,10 +794,16 @@ public static class Controller
             }
 
             //avoid building in the mineral line
-            if (IsInRange(constructionSpot, mineralFields, 5)) continue;
+            if (IsInRange(constructionSpot, mineralFields, 5))
+            {
+                continue;
+            }
 
             //check if the building fits
-            if (!(await CanPlace(unitType, constructionSpot))) continue;
+            if (!await CanPlace(unitType, constructionSpot))
+            {
+                continue;
+            }
 
             //ok, we found a spot
             break;
@@ -756,39 +844,42 @@ public static class Controller
         {
             return;
         }
-        
+
         var debugBoxes = new List<DebugBox>();
-        
+
         foreach (var node in pathStack)
         {
-            debugBoxes.Add(new DebugBox()
+            debugBoxes.Add(new DebugBox
             {
-                Min =  new Point() { X = node.X + 1, Y = node.Y + 1, Z = 3 },
-                Max =  new Point() { X = node.X, Y = node.Y, Z = elevation },
-                Color = color ?? new Color(){ R = 1, B = 250, G = 1}
+                Min = new Point
+                    { X = node.X + 1, Y = node.Y + 1, Z = 3 },
+                Max = new Point
+                    { X = node.X, Y = node.Y, Z = elevation },
+                Color = color ?? new Color
+                    { R = 1, B = 250, G = 1 }
             });
         }
-        
-        Controller.AddDebugCommand(new DebugCommand()
+
+        AddDebugCommand(new DebugCommand
         {
-            Draw = new DebugDraw()
+            Draw = new DebugDraw
             {
-                Boxes = { debugBoxes },
+                Boxes = { debugBoxes }
             }
         });
     }
-    
+
     public static void ShowDebugAStarGrid()
     {
         if (!IsDebug)
         {
             return;
         }
-        
+
         var debugBoxes = new List<DebugBox>();
-        int x = 0;
-        int y = 0;
-        
+        var x = 0;
+        var y = 0;
+
         foreach (var line in AStarPathingGrid.Grid)
         {
             x = 0;
@@ -804,23 +895,26 @@ public static class Controller
                     //     });
                     //         
                     //
-                    debugBoxes.Add(new DebugBox()
-                        {
-                            Min =  new Point() { X = (float)(x+1), Y = (float)(y+1), Z = 3 },
-                            Max =  new Point() { X = (float)(x-0), Y = (float)(y-0), Z = 12 },
-                            Color = new Color(){ R = 250, B = 1, G = 1}
-                        });
+                    debugBoxes.Add(new DebugBox
+                    {
+                        Min = new Point
+                            { X = x + 1, Y = y + 1, Z = 3 },
+                        Max = new Point
+                            { X = x - 0, Y = y - 0, Z = 12 },
+                        Color = new Color
+                            { R = 250, B = 1, G = 1 }
+                    });
                 }
                 x++;
             }
             y++;
         }
-        
-        Controller.AddDebugCommand(new DebugCommand()
+
+        AddDebugCommand(new DebugCommand
         {
-            Draw = new DebugDraw()
+            Draw = new DebugDraw
             {
-                Boxes = { debugBoxes },
+                Boxes = { debugBoxes }
             }
         });
     }

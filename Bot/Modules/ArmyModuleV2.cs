@@ -1,39 +1,42 @@
 ﻿using System.Numerics;
-using Bot.AStar;
 using SC2APIProtocol;
 
 namespace Bot.Modules;
 
 public class ArmyModuleV2
 {
-    private IList<Vector2> _mainPath;
     private bool _isInitialized;
+    private IList<Vector2> _mainPath;
     private ArmyState ArmyState { get; set; } = ArmyState.DEFEND;
 
     private double attackPercentage { get; set; } = 0.2;
 
     private Vector2 LastAttackPosition { get; set; }
 
+    public ulong LastAttackFrame { get; set; }
+
     public void OnFrame()
     {
         if (!_isInitialized)
         {
             // Just a bit of offset to get our of the CC range
-            var delta = 3; 
-            
+            var delta = 3;
+
             IEnumerable<Vector2> pathStack = null;
-            var startPosition = new Vector2((int)Controller.startingLocation.X ,
+            var startPosition = new Vector2((int)Controller.startingLocation.X,
                 (int)Controller.startingLocation.Y + delta);
-            var toPosition = new Vector2((int)Controller.enemyLocations.First().X ,
+            var toPosition = new Vector2((int)Controller.enemyLocations.First().X,
                 (int)Controller.enemyLocations.First().Y);
 
             pathStack = Controller.AStarPathingGrid.FindPath(startPosition, toPosition);
 
             if (pathStack == null)
             {
-                Controller.ShowDebugPath(new List<Vector2>( new []{startPosition}), new Color(){G = 250, B = 1, R = 1}, 16);
-                Controller.ShowDebugPath(new List<Vector2>( new []{toPosition}), new Color(){G = 1, B = 250, R = 1}, 16);
-                
+                Controller.ShowDebugPath(new List<Vector2>(new[] { startPosition }), new Color
+                    { G = 250, B = 1, R = 1 }, 16);
+                Controller.ShowDebugPath(new List<Vector2>(new[] { toPosition }), new Color
+                    { G = 1, B = 250, R = 1 }, 16);
+
                 //_isInitialized = true;
                 return;
                 throw new Exception("CANNOT CREATE ATTACK PATH");
@@ -43,7 +46,7 @@ public class ArmyModuleV2
 
             _isInitialized = true;
         }
-        
+
         Controller.ShowDebugPath(_mainPath);
 
         switch (ArmyState)
@@ -106,7 +109,7 @@ public class ArmyModuleV2
 
     private void AttackMoveToMainPath(double d)
     {
-        var position = this._mainPath[Math.Max((int)(this._mainPath.Count * d), _mainPath.Count - 1)];
+        var position = _mainPath[Math.Max((int)(_mainPath.Count * d), _mainPath.Count - 1)];
 
         var army = Controller.GetUnits(Units.ArmyUnits);
 
@@ -119,7 +122,7 @@ public class ArmyModuleV2
             LastAttackFrame = Controller.frame;
         }
 
-        Controller.ShowDebugPath(this._mainPath);
+        Controller.ShowDebugPath(_mainPath);
 
 
         // Controller.AddDebugCommand(new DebugCommand()
@@ -146,8 +149,6 @@ public class ArmyModuleV2
         //     }
         // });
     }
-
-    public ulong LastAttackFrame { get; set; }
 }
 
 public enum ArmyState
@@ -155,5 +156,5 @@ public enum ArmyState
     ATTACK,
     RETREAT,
     DEFEND,
-    ROAM,
+    ROAM
 }

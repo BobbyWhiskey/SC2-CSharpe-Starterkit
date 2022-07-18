@@ -20,7 +20,7 @@ public class ResearchModule
         {
             unit.Ability(Abilities.RESEARCH_UPGRADE_MECH_GROUND);
         }
-        
+
         var barrackTechLabs = Controller.GetUnits(Units.BARRACKS_TECHLAB)
             .Where(b => b.order.AbilityId == 0 && !(b.buildProgress < 1));
 

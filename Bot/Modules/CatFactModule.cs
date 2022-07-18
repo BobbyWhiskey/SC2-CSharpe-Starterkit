@@ -2,7 +2,7 @@
 
 public class CatFactModule
 {
-    private List<string> _facts = new List<string>()
+    private readonly List<string> _facts = new()
     {
         "Unlike dogs, cats do not have a sweet tooth. Scientists believe this is due to a mutation in a key taste receptor.",
         "When a cat chases its prey, it keeps its head level. Dogs and humans bob their heads up and down.",
@@ -119,13 +119,14 @@ public class CatFactModule
         "The reactor of this bot has a cat."
     };
 
-    private bool _factSaid = false;
+    private bool _factSaid;
 
     public void OnFrame()
     {
         try
         {
-            if (Controller.frame == Controller.SecsToFrames(1)) {
+            if (Controller.frame == Controller.SecsToFrames(1))
+            {
                 var random = new Random();
                 var i = random.Next(0, _facts.Count);
                 var fact = _facts[i];
@@ -137,6 +138,6 @@ public class CatFactModule
         {
             Logger.Error(ex.Message);
         }
-        
+
     }
 }

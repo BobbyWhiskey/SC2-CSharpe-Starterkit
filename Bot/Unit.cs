@@ -9,25 +9,25 @@ namespace Bot;
 
 public class Unit
 {
+    public readonly CloakState cloak;
+    public readonly DisplayType displayType;
+    private readonly SC2APIProtocol.Unit original;
+    private readonly UnitTypeData unitTypeData;
     public int assignedWorkers;
     public float buildProgress;
-    public int idealWorkers;
-    public float integrity;
     public float energy;
     public float energyMax;
+    public int idealWorkers;
+    public float integrity;
     public bool isVisible;
 
     public string name;
     public UnitOrder order;
     public RepeatedField<UnitOrder> orders;
-    private SC2APIProtocol.Unit original;
     public Vector3 position;
     public int supply;
     public ulong tag;
     public uint unitType;
-    private readonly UnitTypeData unitTypeData;
-    public readonly DisplayType displayType;
-    public readonly CloakState cloak;
 
     public Unit(SC2APIProtocol.Unit unit)
     {
@@ -56,7 +56,7 @@ public class Unit
 
     public ulong GetAddonTag()
     {
-        return this.original.AddOnTag;
+        return original.AddOnTag;
     }
 
     public uint? GetAddonType()
@@ -85,7 +85,7 @@ public class Unit
         //var targetName = Controller.GetUnitName(unitType);
         //Logger.Info("Started research on {0}", targetName);
     }
-    
+
     public void Ability(int abilityID, Vector3 target)
     {
         var action = Controller.CreateRawUnitCommand(abilityID);
@@ -97,8 +97,8 @@ public class Unit
 
         //var targetName = Controller.GetUnitName(unitType);
         //Logger.Info("Started research on {0}", targetName);
-    }    
-    
+    }
+
     public void Ability(int abilityID, Unit target)
     {
         var action = Controller.CreateRawUnitCommand(abilityID);
@@ -113,7 +113,9 @@ public class Unit
     public void Train(uint unitType, bool queue = false)
     {
         if (!queue && orders.Count > 0)
+        {
             return;
+        }
 
         var abilityID = Abilities.GetID(unitType);
         var action = Controller.CreateRawUnitCommand(abilityID);

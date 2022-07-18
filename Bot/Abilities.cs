@@ -12,11 +12,11 @@ internal static class Abilities
 
     public static int RESEARCH_UPGRADE_INFANTRY_ARMOR = 3697; //656; //;  
     public static int RESEARCH_UPGRADE_INFANTRY_WEAPON = 3698; // 652; //;  
-    
+
     public static int RESEARCH_STIMPACK = 730; // 652; //;  
     public static int RESEARCH_COMBAT_SHIELD = 731; // 652; //;  
     public static int RESEARCH_CONCUSSIVE_SHELL = 733; // 652; //;  
-    
+
     public static int COMMAND_CENTER_ORBITAL_UPGRADE = 1516;
 
     public static int CANCEL_CONSTRUCTION = 314;
@@ -36,7 +36,7 @@ internal static class Abilities
     // Thor
     public static int THOR_SWITCH_AP = 2362;
     public static int THOR_SWITCH_NORMAL = 2364;
-    
+
     // Marine
     public static int GENERAL_STIMPACK = 3675;
 
@@ -62,9 +62,9 @@ internal static class Abilities
     //gathering/returning minerals
     public static int GATHER_MINERALS = 295;
     public static int RETURN_MINERALS = 296;
-    
-    
-    
+
+
+
     public static int BurrowBanelingDown = 1374;
     public static int BurrowDroneDown = 1378;
     public static int BurrowHydraliskDown = 1382;
@@ -80,7 +80,7 @@ internal static class Abilities
     public static int BurrowDown = 3661;
     public static int WidowMineBurrow = 2095;
 
-    public static List<int> AllBurrowActions = new List<int>()
+    public static List<int> AllBurrowActions = new()
     {
         BurrowBanelingDown,
         BurrowDroneDown,
@@ -95,7 +95,7 @@ internal static class Abilities
         BurrowRavagerDown,
         BurrowLurkerDown,
         BurrowDown,
-        WidowMineBurrow,
+        WidowMineBurrow
     };
 
 

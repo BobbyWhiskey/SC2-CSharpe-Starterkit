@@ -712,7 +712,7 @@ internal static class Units
         PROBE,
         DRONE
     };
-    
+
     public static readonly HashSet<uint> NeedsTechLab = new()
     {
         // TODO MC Is list complete?
@@ -813,7 +813,7 @@ internal static class Units
     {
         BARRACKS,
         FACTORY,
-        STARPORT,
+        STARPORT
     };
 
     public static readonly HashSet<uint> AddOns = new()
@@ -827,19 +827,19 @@ internal static class Units
         STARPORT_TECHLAB,
         STARPORT_REACTOR
     };
-    
+
     public static readonly HashSet<uint> BarrackAddOns = new()
     {
         BARRACKS_REACTOR,
-        BARRACKS_TECHLAB,
+        BARRACKS_TECHLAB
     };
-    
+
     public static readonly HashSet<uint> FactoryAddOns = new()
     {
         FACTORY_TECHLAB,
-        FACTORY_REACTOR,
+        FACTORY_REACTOR
     };
-    
+
     public static readonly HashSet<uint> StarportAddOns = new()
     {
         STARPORT_TECHLAB,
@@ -852,13 +852,13 @@ internal static class Units
         SUPPLY_DEPOT_LOWERED
     };
 
-    public static HashSet<uint> Reactors =  new()
+    public static HashSet<uint> Reactors = new()
     {
         FACTORY_REACTOR,
         BARRACKS_REACTOR,
         STARPORT_REACTOR
     };
-    public static HashSet<uint> TechLabs =  new()
+    public static HashSet<uint> TechLabs = new()
     {
         FACTORY_TECHLAB,
         BARRACKS_TECHLAB,
@@ -872,6 +872,6 @@ internal static class Units
         CHANGELING_ZEALOT,
         CHANGELING_ZERGLING,
         CHANGELING_MARINE_SHIELD,
-        CHANGELING_ZERGLING_WINGS,
+        CHANGELING_ZERGLING_WINGS
     };
 }

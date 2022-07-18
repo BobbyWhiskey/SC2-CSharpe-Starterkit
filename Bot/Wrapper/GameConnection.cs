@@ -83,7 +83,10 @@ public class GameConnection
         if (response.CreateGame.Error != ResponseCreateGame.Types.Error.Unset)
         {
             Logger.Error("CreateGame error: {0}", response.CreateGame.Error.ToString());
-            if (!string.IsNullOrEmpty(response.CreateGame.ErrorDetails)) Logger.Error(response.CreateGame.ErrorDetails);
+            if (!string.IsNullOrEmpty(response.CreateGame.ErrorDetails))
+            {
+                Logger.Error(response.CreateGame.ErrorDetails);
+            }
         }
     }
 
@@ -92,7 +95,9 @@ public class GameConnection
         var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         var executeInfo = Path.Combine(myDocuments, "StarCraft II", "ExecuteInfo.txt");
         if (!File.Exists(executeInfo))
+        {
             executeInfo = Path.Combine(myDocuments, "StarCraftII", "ExecuteInfo.txt");
+        }
 
         if (File.Exists(executeInfo))
         {
@@ -107,7 +112,9 @@ public class GameConnection
                         Path.GetDirectoryName(
                             Path.GetDirectoryName(Path.GetDirectoryName(starcraftExe))); //we need 2 folders down
                     if (starcraftDir != null)
+                    {
                         starcraftMaps = Path.Combine(starcraftDir, "Maps");
+                    }
                 }
             }
         }
@@ -134,7 +141,10 @@ public class GameConnection
         if (response.JoinGame.Error != ResponseJoinGame.Types.Error.Unset)
         {
             Logger.Error("JoinGame error: {0}", response.JoinGame.Error.ToString());
-            if (!string.IsNullOrEmpty(response.JoinGame.ErrorDetails)) Logger.Error(response.JoinGame.ErrorDetails);
+            if (!string.IsNullOrEmpty(response.JoinGame.ErrorDetails))
+            {
+                Logger.Error(response.JoinGame.ErrorDetails);
+            }
         }
 
         return response.JoinGame.PlayerId;
@@ -166,7 +176,10 @@ public class GameConnection
         if (response.JoinGame.Error != ResponseJoinGame.Types.Error.Unset)
         {
             Logger.Error("JoinGame error: {0}", response.JoinGame.Error.ToString());
-            if (!string.IsNullOrEmpty(response.JoinGame.ErrorDetails)) Logger.Error(response.JoinGame.ErrorDetails);
+            if (!string.IsNullOrEmpty(response.JoinGame.ErrorDetails))
+            {
+                Logger.Error(response.JoinGame.ErrorDetails);
+            }
         }
 
         return response.JoinGame.PlayerId;
@@ -228,8 +241,12 @@ public class GameConnection
             if (response.Status == Status.Ended || response.Status == Status.Quit)
             {
                 foreach (var result in observation.PlayerResult)
+                {
                     if (result.PlayerId == playerId)
+                    {
                         Logger.Info("Result: {0}", result.Result);
+                    }
+                }
                 // Do whatever you want with the info
                 break;
             }
@@ -256,7 +273,9 @@ public class GameConnection
             actionRequest.Action = new RequestAction();
             actionRequest.Action.Actions.AddRange(actions);
             if (actionRequest.Action.Actions.Count > 0)
+            {
                 await proxy.SendRequest(actionRequest);
+            }
 
             var stepRequest = new Request();
             stepRequest.Step = new RequestStep();
@@ -299,7 +318,10 @@ public class GameConnection
         if (response.Error.Count > 0)
         {
             Logger.Error("Response errors:");
-            foreach (var error in response.Error) Logger.Error(error);
+            foreach (var error in response.Error)
+            {
+                Logger.Error(error);
+            }
         }
 
         return response;

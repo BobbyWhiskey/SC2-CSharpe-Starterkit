@@ -4,10 +4,10 @@ namespace Bot.Micro;
 
 public class MarineMicro : IUnitMicro
 {
-    private static int StimRangeActivation = 10;
+    private static readonly int StimRangeActivation = 10;
     private static int StimRangeActivationDelay = 500;
 
-    private Dictionary<ulong, ulong> _lastActivationTimeMap = new Dictionary<ulong, ulong>();
+    private readonly Dictionary<ulong, ulong> _lastActivationTimeMap = new();
 
     public void OnFrame()
     {
@@ -27,7 +27,7 @@ public class MarineMicro : IUnitMicro
                 }
             }
         }
-        
+
 
         // TODO Check if we researched stim
         foreach (var marine in marines)
@@ -44,7 +44,7 @@ public class MarineMicro : IUnitMicro
                     marine.Ability(Abilities.GENERAL_STIMPACK);
                     _lastActivationTimeMap[marine.tag] = Controller.frame;
                 }
-                
+
             }
         }
     }

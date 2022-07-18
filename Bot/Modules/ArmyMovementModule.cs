@@ -5,9 +5,9 @@ namespace Bot.Modules;
 
 public class ArmyMovementModule
 {
+    private readonly int attackUnitCountThreshhold = 25;
     private Vector3? _lastAttackPosition;
     private ulong _lastAttackPositionUpdate;
-    private int attackUnitCountThreshhold = 25;
 
     private ArmyMovementState state = ArmyMovementState.Defending;
 
@@ -44,9 +44,9 @@ public class ArmyMovementModule
                     {
                         if (_lastAttackPosition.HasValue)
                         {
-                            _lastAttackPosition += Vector3.Multiply(0.2f, Controller.enemyLocations[0] - _lastAttackPosition.Value);    
+                            _lastAttackPosition += Vector3.Multiply(0.2f, Controller.enemyLocations[0] - _lastAttackPosition.Value);
                         }
-                        
+
                         //_lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
                         _lastAttackPositionUpdate = Controller.frame;
                     }
@@ -58,7 +58,7 @@ public class ArmyMovementModule
             {
                 _lastAttackPosition = Controller.startingLocation +
                                       Vector3.Multiply(0.3f, Controller.enemyLocations[0] - Controller.startingLocation);
-               // _lastAttackPosition = Controller.enemyLocations[0].MidWay(Controller.GetResourceCenters().First().position);
+                // _lastAttackPosition = Controller.enemyLocations[0].MidWay(Controller.GetResourceCenters().First().position);
                 _lastAttackPositionUpdate = Controller.frame;
             }
         }
@@ -98,10 +98,10 @@ public class ArmyMovementModule
         var myArmy = Controller.GetUnits(Units.ArmyUnits);
         return (int)myArmy.Sum(u => Controller.gameData.Units[(int)u.unitType].MineralCost);
     }
-    
+
     private int GetEnemyArmyValue()
     {
-        var units = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible:true);
+        var units = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible: true);
         return (int)units.Sum(u => Controller.gameData.Units[(int)u.unitType].MineralCost);
     }
 }
@@ -110,5 +110,5 @@ internal enum ArmyMovementState
 {
     Defending,
     Attacking,
-    Retreating,
+    Retreating
 }

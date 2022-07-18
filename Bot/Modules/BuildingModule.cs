@@ -13,11 +13,11 @@ public class BuildingModule
         {
             await BuildSupplyDepots();
         }
-        
+
         // TODO MC Not sure if here, but repair damaged buildings 
         if (!BuildOrderQueries.IsBuildOrderCompleted())
         {
-            await AdvanceBuildOrder(); 
+            await AdvanceBuildOrder();
         }
         else
         {
@@ -50,10 +50,10 @@ public class BuildingModule
             BuildBuildingAddons(Units.STARPORT, new HashSet<uint>
             {
                 Units.STARPORT_TECHLAB,
-                Units.STARPORT_REACTOR,
+                Units.STARPORT_REACTOR
             });
         }
-        
+
         // Leave this meanwhile ithere is a better strategy to place buildiings
         var depots = Controller.GetUnits(Units.SUPPLY_DEPOT);
         foreach (var depot in depots)
@@ -78,7 +78,7 @@ public class BuildingModule
             var nextUnit = buildingStep.BuildingType;
             if (nextUnit == Units.ORBITAL_COMMAND)
             {
-                if(Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Any())
+                if (Controller.GetUnits(Units.BARRACKS, onlyCompleted: true).Any())
                 {
                     UpgradeCommandCenter();
                 }
@@ -158,7 +158,10 @@ public class BuildingModule
 
             var ccs = Controller.GetUnits(Units.ResourceCenters);
 
-            foreach (var cc in ccs) allOwnedMinerals.AddRange(Controller.GetInRange(cc.position, allMinerals, 10));
+            foreach (var cc in ccs)
+            {
+                allOwnedMinerals.AddRange(Controller.GetInRange(cc.position, allMinerals, 10));
+            }
 
             var freeMinerals = allMinerals.Except(allOwnedMinerals).ToList();
 
@@ -183,17 +186,18 @@ public class BuildingModule
         var producers = Controller.GetUnits(building).ToList();
         var addons = Controller.GetUnits(allowedAddons).ToList();
 
-        if (addons.Count < producers.Count) 
+        if (addons.Count < producers.Count)
+        {
             foreach (var producer in producers)
             {
                 if (producer.GetAddonType().HasValue)
                 {
                     continue;
                 }
-                
+
                 // TODO MC Do other types of addons some time ya know
                 var extensionType = allowedAddons.First();
-                
+
                 if (Controller.CanConstruct(extensionType)
                     && !(producer.buildProgress < 1)
                     && producer.order.AbilityId == 0)
@@ -203,6 +207,7 @@ public class BuildingModule
                     return;
                 }
             }
+        }
     }
 
     private async Task BuildUnitProducers()
@@ -234,18 +239,18 @@ public class BuildingModule
     private async Task BuildSupplyDepots()
     {
         var position = Controller.GetUnits(Units.SupplyDepots).FirstOrDefault()?.position;
-        
+
         //keep on buildings depots if supply is tight
         if (Controller.maxSupply - Controller.currentSupply <= 8
             && Controller.GetPendingCount(Units.SupplyDepots) == 0)
         {
-            await BuildIfPossible(Units.SUPPLY_DEPOT, startingSpot: position, radius:4 );
+            await BuildIfPossible(Units.SUPPLY_DEPOT, startingSpot: position, radius: 4);
         }
-        
+
         if (Controller.maxSupply - Controller.currentSupply <= 3
             && Controller.GetPendingCount(Units.SupplyDepots) < 4)
         {
-            await BuildIfPossible(Units.SUPPLY_DEPOT,allowParalelBuild: true, startingSpot: position, radius:4);
+            await BuildIfPossible(Units.SUPPLY_DEPOT, allowParalelBuild: true, startingSpot: position, radius: 4);
         }
     }
 
@@ -273,9 +278,9 @@ public class BuildingModule
         bool allowParalelBuild = false,
         Vector3? startingSpot = null)
     {
-        if (Controller.CanConstruct(unit) )
+        if (Controller.CanConstruct(unit))
         {
-            if(!allowParalelBuild && Controller.GetPendingCount(unit, false) != 0 )
+            if (!allowParalelBuild && Controller.GetPendingCount(unit, false) != 0)
             {
                 return;
             }
@@ -288,7 +293,7 @@ public class BuildingModule
             {
                 await Controller.Construct(unit, startingSpot, radius);
             }
-            
+
         }
     }
 
@@ -298,7 +303,7 @@ public class BuildingModule
         {
             return;
         }
-        
+
         var geysers = Controller.GetUnits(Units.GasGeysers, Alliance.Neutral)
             .Where(r => (r.position - basePosition).Length() < 12);
 

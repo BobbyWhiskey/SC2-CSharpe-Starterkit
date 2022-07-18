@@ -67,6 +67,7 @@ public class ProtobufProxy
         var finished = false;
         var curPos = 0;
         while (!finished)
+        {
             using (var cancellationSource = new CancellationTokenSource())
             {
                 var left = receiveBuf.Length - curPos;
@@ -83,11 +84,14 @@ public class ProtobufProxy
                 var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuf, curPos, left),
                     cancellationSource.Token);
                 if (result.MessageType != WebSocketMessageType.Binary)
+                {
                     throw new Exception("Expected Binary message type.");
+                }
 
                 curPos += result.Count;
                 finished = result.EndOfMessage;
             }
+        }
 
         var response = Response.Parser.ParseFrom(new MemoryStream(receiveBuf, 0, curPos));
 

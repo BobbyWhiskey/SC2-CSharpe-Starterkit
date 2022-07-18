@@ -8,7 +8,7 @@ public class TankMicro : IUnitMicro
     {
         var tanks = Controller.GetUnits(Units.SIEGE_TANK);
         var siegedTanks = Controller.GetUnits(Units.SIEGE_TANK_SIEGED);
-        
+
         foreach (var tank in tanks)
         {
             if (Controller.GetFirstInRange(tank.position, Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy), 13) != null)
@@ -16,7 +16,7 @@ public class TankMicro : IUnitMicro
                 tank.Ability(Abilities.SIEGE_TANK);
             }
         }
-        
+
         foreach (var tank in siegedTanks)
         {
             if (Controller.GetFirstInRange(tank.position, Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy), 13 + 1) == null)

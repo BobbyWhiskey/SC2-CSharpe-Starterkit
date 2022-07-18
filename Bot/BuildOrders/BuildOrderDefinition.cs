@@ -3,40 +3,33 @@
 public abstract class BuildOrderDefinition
 {
     public ICollection<IBuildStep> buildOrder = new List<IBuildStep>();
-    
-    public Dictionary<uint, double> idealUnitRatio = new Dictionary<uint, double>();
-    public Dictionary<uint, double> idealUnitMax = new Dictionary<uint, double>();
-    
-    public Dictionary<uint, double> idealUnitFixedNumber = new Dictionary<uint, double>();
-    
+
+    public Dictionary<uint, double> idealUnitFixedNumber = new();
+    public Dictionary<uint, double> idealUnitMax = new();
+
+    public Dictionary<uint, double> idealUnitRatio = new();
+
 
     // TODO Add optimal unit ratios
-
-    public BuildOrderDefinition()
-    {
-    }
-
 }
-
 
 public interface IBuildStep
 {
-        
 }
 
-public class WaitStep: IBuildStep
+public class WaitStep : IBuildStep
 {
-    public ulong Delay { get; }
-    public ulong StartedFrame { get; set; } = 0;
 
     public WaitStep(ulong delaySeconds)
     {
         Delay = (ulong)(delaySeconds * Controller.FRAMES_PER_SECOND);
     }
-        
+
+    public ulong Delay { get; }
+    public ulong StartedFrame { get; set; } = 0;
 }
-    
-public class BuildingStep: IBuildStep
+
+public class BuildingStep : IBuildStep
 {
     public BuildingStep(uint buildingType)
     {
@@ -45,8 +38,8 @@ public class BuildingStep: IBuildStep
 
     public uint BuildingType { get; set; }
 }
-    
-public class ResearchStep:IBuildStep
+
+public class ResearchStep : IBuildStep
 {
     public ResearchStep(uint researchId)
     {
