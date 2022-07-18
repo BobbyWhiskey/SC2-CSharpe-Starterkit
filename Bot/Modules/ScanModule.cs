@@ -35,17 +35,20 @@ public class ScanModule
 
         var ocs = Controller.GetUnits(Units.ORBITAL_COMMAND);
 
-
-        if (Controller.obs.Observation.RawData.Units.Any(x =>
-                x.Cloak == CloakState.Cloaked))
+        if (lastInvisibleScan + invisibleScanDelay < Controller.frame)
         {
-            var invisibleUnits = Controller.GetUnits(Units.All, Alliance.Enemy).Where(x => x.cloak == CloakState.Cloaked).ToList();
-            var cc = ocs.FirstOrDefault(x => x.energy > 50);
-            if (cc != null && invisibleUnits.Any())
+            if (Controller.obs.Observation.RawData.Units.Any(x =>
+                    x.Cloak == CloakState.Cloaked
+                    || x.IsBurrowed))
             {
-                // TODO Check we got units or building close by before scanning?
-                cc.Ability(Abilities.SCANNER_SWEEP, invisibleUnits.First());
-                lastInvisibleScan = Controller.frame;
+                var invisibleUnits = Controller.GetUnits(Units.All, Alliance.Enemy).Where(x => x.cloak == CloakState.Cloaked).ToList();
+                var cc = ocs.FirstOrDefault(x => x.energy > 50);
+                if (cc != null && invisibleUnits.Any())
+                {
+                    // TODO Check we got units or building close by before scanning?
+                    cc.Ability(Abilities.SCANNER_SWEEP, invisibleUnits.First());
+                    lastInvisibleScan = Controller.frame;
+                }
             }
         }
 

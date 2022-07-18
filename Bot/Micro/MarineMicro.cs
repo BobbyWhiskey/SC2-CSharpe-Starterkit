@@ -5,6 +5,7 @@ namespace Bot.Micro;
 public class MarineMicro : IUnitMicro
 {
     private static readonly int StimRangeActivation = 10;
+    private static readonly int StimUnitCountThreshhold = 4;
     private static int StimRangeActivationDelay = 500;
 
     private readonly Dictionary<ulong, ulong> _lastActivationTimeMap = new();
@@ -29,17 +30,15 @@ public class MarineMicro : IUnitMicro
             }
         }
 
-
         // TODO Check if we researched stim
         foreach (var marine in marines)
         {
             var enemyUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
                 .Where(x => (marine.position - x.position).Length() < StimRangeActivation);
 
-            if (enemyUnits.Any())
+            if (enemyUnits.Count() > StimUnitCountThreshhold)
             {
                 var found = _lastActivationTimeMap.TryGetValue(marine.tag, out var lastActivationTime);
-// TODO Move this before this if
                 if (!found || lastActivationTime < Controller.frame - 500)
                 {
                     marine.Ability(Abilities.GENERAL_STIMPACK);

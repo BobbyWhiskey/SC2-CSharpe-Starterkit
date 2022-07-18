@@ -23,17 +23,14 @@ public class ArmyMovementModule
         if (attackingUnits.Any())
         {
             // Defend against an attacking unit
-            _lastAttackPosition = attackingUnits.First().position;
-            _lastAttackPositionUpdate = Controller.frame;
-            Controller.Attack(army, _lastAttackPosition.Value);
+            AttackWithArmy(attackingUnits.First().position);
         }
         else if (army.Count > attackUnitCountThreshhold && GetOwnArmyValue() > GetEnemyArmyValue())
         {
-            if (Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).Any())
+            var enemyUnits = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: true);
+            if (enemyUnits.Any())
             {
-                _lastAttackPosition = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy).First().position;
-                _lastAttackPositionUpdate = Controller.frame;
-                Controller.Attack(army, _lastAttackPosition.Value);
+                AttackWithArmy(enemyUnits.First().position);
             }
             else if (_lastAttackPosition.HasValue)
             {
@@ -42,29 +39,36 @@ public class ArmyMovementModule
                     var enemies = Controller.GetUnits(Units.All, Alliance.Enemy);
                     if (enemies.Any())
                     {
-                        _lastAttackPosition = enemies.First().position;
-                        _lastAttackPositionUpdate = Controller.frame;
+                        AttackWithArmy(enemies.First().position);
                     }
                     else
                     {
                         if (_lastAttackPosition.HasValue)
                         {
+                            // Meh 
                             _lastAttackPosition += Vector3.Multiply(0.2f, Controller.enemyLocations[0] - _lastAttackPosition.Value);
+                            //_lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
+                            //_lastAttackPositionUpdate = Controller.frame;
                         }
-
-                        //_lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
-                        _lastAttackPositionUpdate = Controller.frame;
                     }
                 }
 
-                Controller.Attack(army, _lastAttackPosition.Value);
+                //AttackWithArmy(_lastAttackPosition.Value);
+
+//                Controller.Attack(army, _lastAttackPosition.Value);
             }
             else if (Controller.enemyLocations.Count > 0)
             {
                 _lastAttackPosition = Controller.startingLocation +
                                       Vector3.Multiply(0.3f, Controller.enemyLocations[0] - Controller.startingLocation);
+                
                 // _lastAttackPosition = Controller.enemyLocations[0].MidWay(Controller.GetResourceCenters().First().position);
-                _lastAttackPositionUpdate = Controller.frame;
+                //_lastAttackPositionUpdate = Controller.frame;
+            }
+
+            if (_lastAttackPosition != null)
+            {
+                AttackWithArmy(_lastAttackPosition.Value);
             }
         }
         else
@@ -86,9 +90,21 @@ public class ArmyMovementModule
 
                 _lastAttackPosition = rallyPoint;
 
-                Controller.Attack(army, rallyPoint);
+                AttackWithArmy(rallyPoint);
             }
         }
+    }
+
+    private void AttackWithArmy(Vector3 position)
+    {
+        List<Unit> army = Controller.GetUnits(Units.ArmyUnits);
+        if (_lastAttackPosition != position || Controller.frame > _lastAttackPositionUpdate + Controller.FRAMES_PER_SECOND * 3)
+        {
+            _lastAttackPosition = position;
+            _lastAttackPositionUpdate = Controller.frame;
+            Controller.Attack(army, _lastAttackPosition.Value);
+        }
+        
     }
 
     private IEnumerable<Unit> GetCloseToBaseArmy()
