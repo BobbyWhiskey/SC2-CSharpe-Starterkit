@@ -116,7 +116,7 @@ public class BuildingModule
             }
             else
             {
-                await BuildIfPossible(nextUnit, true);
+                await BuildIfPossible(nextUnit, allowParalelBuild: true);
             }
         }
     }
@@ -209,7 +209,7 @@ public class BuildingModule
     {
         var nbRcs = Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers);
 
-        var barrackTargetCount = 1 * (nbRcs / 10);
+        var barrackTargetCount = 1 * (nbRcs / 7);
         var factoryTargetCount = 1 * (nbRcs / 18);
         var starportTargetCount = 1 * (nbRcs / 18);
 
@@ -233,17 +233,19 @@ public class BuildingModule
 
     private async Task BuildSupplyDepots()
     {
+        var position = Controller.GetUnits(Units.SupplyDepots).FirstOrDefault()?.position;
+        
         //keep on buildings depots if supply is tight
         if (Controller.maxSupply - Controller.currentSupply <= 8
             && Controller.GetPendingCount(Units.SupplyDepots) == 0)
         {
-            await BuildIfPossible(Units.SUPPLY_DEPOT);
+            await BuildIfPossible(Units.SUPPLY_DEPOT, startingSpot: position, radius:4 );
         }
         
         if (Controller.maxSupply - Controller.currentSupply <= 3
             && Controller.GetPendingCount(Units.SupplyDepots) < 4)
         {
-            await BuildIfPossible(Units.SUPPLY_DEPOT, true);
+            await BuildIfPossible(Units.SUPPLY_DEPOT,allowParalelBuild: true, startingSpot: position, radius:4);
         }
     }
 
@@ -266,7 +268,10 @@ public class BuildingModule
         }
     }
 
-    private async Task BuildIfPossible(uint unit, bool allowParalelBuild = false)
+    private async Task BuildIfPossible(
+        uint unit, int radius = -1,
+        bool allowParalelBuild = false,
+        Vector3? startingSpot = null)
     {
         if (Controller.CanConstruct(unit) )
         {
@@ -274,8 +279,16 @@ public class BuildingModule
             {
                 return;
             }
+
+            if (radius == -1)
+            {
+                await Controller.Construct(unit, startingSpot);
+            }
+            else
+            {
+                await Controller.Construct(unit, startingSpot, radius);
+            }
             
-            await Controller.Construct(unit);
         }
     }
 

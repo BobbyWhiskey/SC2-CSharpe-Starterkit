@@ -35,6 +35,39 @@ public class ScanModule
         
         var ocs = Controller.GetUnits(Units.ORBITAL_COMMAND);
         
+        
+        if (Controller.obs.Observation.RawData.Units.Any(x =>
+                x.Cloak == CloakState.Cloaked))
+        {
+            var invisibleUnits = Controller.GetUnits(Units.All, Alliance.Enemy).Where(x => x.cloak == CloakState.Cloaked).ToList();
+            var cc = ocs.FirstOrDefault(x => x.energy > 50);
+            if (cc != null && invisibleUnits.Any())
+            {
+                // TODO Check we got units or building close by before scanning?
+                cc.Ability(Abilities.SCANNER_SWEEP, invisibleUnits.First());
+                lastInvisibleScan = Controller.frame;
+            }
+        }
+
+        if (Controller.obs.Observation.RawData.Units.Any(x =>
+                x.Cloak == CloakState.Cloaked ))
+        {
+            Logger.Info("Observer Cloaked unit!!");
+        }
+
+        if (Controller.obs.Observation.RawData.Units.Any(x =>
+                 x.Cloak == CloakState.CloakedDetected))
+        {
+            Logger.Info("Observer CloakedDetected unit!!");
+        }
+
+        // if (Controller.obs.Observation.RawData.Units.Any(x => x.UnitType == Units.OBSERVER))
+        // {
+        //     Logger.Info("Observer cloaked unit!!");
+        // }
+        //
+        //
+        
         // TODO Scanning invisibile units 
         // if (lastInvisibleScan + invisibleScanDelay < Controller.frame)
         // {
@@ -47,7 +80,20 @@ public class ScanModule
         //         lastInvisibleScan = Controller.frame;
         //     }
         // }
-        
+
+        // Burrowing units
+        if (lastInvisibleScan + invisibleScanDelay < Controller.frame)
+        {
+            var borrowingUnit = Controller.GetUnits(Units.All, Alliance.Enemy).Where(x => Abilities.AllBurrowActions.Contains((int)x.order.AbilityId)).ToList();
+            var cc = ocs.FirstOrDefault(x => x.energy > 50);
+            if (cc != null && borrowingUnit.Any())
+            {
+                // TODO Check we got units or building close by before scanning?
+                cc.Ability(Abilities.SCANNER_SWEEP, borrowingUnit.First());
+                lastInvisibleScan = Controller.frame;
+            }
+        }
+
         // Scouting all extensions
         foreach (var unit in ocs)
         {

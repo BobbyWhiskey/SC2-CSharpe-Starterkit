@@ -11,10 +11,13 @@ internal class RaxBot : Bot
 {
     private readonly SpawnerModule _spawnerModule = new();
     private readonly ArmyMovementModule _armyMovementModule = new();
+    private readonly ArmyModuleV2 _armyMovementModule2 = new();
 
     private readonly BuildingModule _buildingModule = new();
     private readonly ResearchModule _researchModule = new();
     private readonly MarineMicro _marineMicro = new();
+    private readonly MedicavMicro _medicavMicro = new();
+    private readonly VikingsMicro _vikingsMicro = new();
     private readonly MarauderMicro _marauderMicro = new();
     private readonly TankMicro _tankMicro = new();
     private readonly MuleModule _muleModule = new();
@@ -66,24 +69,30 @@ internal class RaxBot : Bot
         {
             await _buildingModule.OnFrame();
         }
+        
+        _armyMovementModule.OnFrame();
+        _scanModule.OnFrame();
+        //_armyMovementModule2.OnFrame();
 
         if (Controller.frame % 10 == 0)
         {
             Controller.DistributeWorkers();
             _researchModule.OnFrame();
             _spawnerModule.OnFrame();
-            _armyMovementModule.OnFrame();
-            _scanModule.OnFrame();
+
+
             _antiChangelingModule.OnFrame();
         }
 
-        if (Controller.frame % 5 == 0)
-        {
+        // if (Controller.frame % 5 == 0)
+        // {
             _marineMicro.OnFrame();
             _marauderMicro.OnFrame();
             _tankMicro.OnFrame();
             _muleModule.OnFrame();
-        }
+            _medicavMicro.OnFrame();
+            _vikingsMicro.OnFrame();
+        //}
 
         _catFactModule.OnFrame();
 

@@ -45,6 +45,18 @@ public static class BuildOrderQueries
         return true;
     }
     
+    public static bool IsUnitCountMaxed(uint key)
+    {
+        var foundInBuildOrder =
+            currentBuild.idealUnitMax.TryGetValue(key, out var maxUnitcount);
+        if (!foundInBuildOrder)
+        {
+            return false;
+        }
+
+        return Controller.GetUnits(key).Count() >= maxUnitcount;
+    }
+    
     public static IBuildStep? GetNextStep()
     {
         var countDic = new Dictionary<uint, int>();

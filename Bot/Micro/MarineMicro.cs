@@ -13,6 +13,22 @@ public class MarineMicro : IUnitMicro
     {
         var marines = Controller.GetUnits(Units.MARINE);
 
+        if (Controller.frame % 10 == 0)
+        {
+            foreach (var marine in marines)
+            {
+                var enemy = Controller.GetFirstInRange(marine.position,
+                    Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
+                        .Where(x => Controller.CanUnitAttackGround(x.unitType)).ToList()
+                    , 3);
+                if (enemy != null)
+                {
+                    marine.Move(marine.position - enemy.position + marine.position);
+                }
+            }
+        }
+        
+
         // TODO Check if we researched stim
         foreach (var marine in marines)
         {

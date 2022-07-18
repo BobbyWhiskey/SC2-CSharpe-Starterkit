@@ -36,8 +36,10 @@ public class SpawnerModule
             var diffUnitRatios = normalizedTargetRatio.Select(x =>
                 (x.Key, x.Item2 - (unitRatio.FirstOrDefault(y => y.Key == x.Key).Item2)));
 
-            // Skip unit type we can't produce yet!!
-            var targetUnitToTrain = diffUnitRatios.OrderByDescending(x => x.Item2)
+            // Skip unit type we can't produce yet
+            var targetUnitToTrain = diffUnitRatios
+                .Where(x => !BuildOrderQueries.IsUnitCountMaxed(x.Key))
+                .OrderByDescending(x => x.Item2)
                 .Where(x => Controller.GetUnits(Controller.GetProducerBuildingType(x.Key))
                     .Where(b => Controller.CanBuildingTrainUnit(b, x.Key))
                     .Any(b => b.order.AbilityId == 0 || 
@@ -59,7 +61,6 @@ public class SpawnerModule
         {
             var nextBuildOrder = BuildOrderQueries.GetNextStep() as BuildingStep;
             
-            // TODO NEed to handle if building has a reactor wink wink
             foreach (var barracks in Controller.GetUnits(Units.BARRACKS, onlyCompleted: true))
             {
                 // Dont build if we are waiting to create an addon
@@ -128,6 +129,7 @@ public class SpawnerModule
             }
         }
     }
+
 
     private void TrainUnit(uint targetUnitToTrain)
     {

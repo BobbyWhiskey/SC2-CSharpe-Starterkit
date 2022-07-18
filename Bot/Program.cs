@@ -26,6 +26,7 @@ public class Program
             {
                 gc.readSettings();
                 var mapName = PickRandomMap();
+                Controller.IsDebug = true;
                 gc.RunSinglePlayer(bot, mapName, race, opponentRace, opponentDifficulty).Wait();
             }
             else

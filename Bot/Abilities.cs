@@ -62,6 +62,41 @@ internal static class Abilities
     //gathering/returning minerals
     public static int GATHER_MINERALS = 295;
     public static int RETURN_MINERALS = 296;
+    
+    
+    
+    public static int BurrowBanelingDown = 1374;
+    public static int BurrowDroneDown = 1378;
+    public static int BurrowHydraliskDown = 1382;
+    public static int BurrowRoachDown = 1386;
+    public static int BurrowZerglingDown = 1390;
+    public static int BurrowInfestorTerranDown = 1394;
+    public static int BurrowQueenDown = 1433;
+    public static int BurrowInfestorDown = 1444;
+    public static int BurrowUltraliskDown = 1512;
+    public static int BurrowCreepTumorDown = 1662;
+    public static int BurrowRavagerDown = 2340;
+    public static int BurrowLurkerDown = 2754;
+    public static int BurrowDown = 3661;
+    public static int WidowMineBurrow = 2095;
+
+    public static List<int> AllBurrowActions = new List<int>()
+    {
+        BurrowBanelingDown,
+        BurrowDroneDown,
+        BurrowHydraliskDown,
+        BurrowRoachDown,
+        BurrowZerglingDown,
+        BurrowInfestorTerranDown,
+        BurrowQueenDown,
+        BurrowInfestorDown,
+        BurrowUltraliskDown,
+        BurrowCreepTumorDown,
+        BurrowRavagerDown,
+        BurrowLurkerDown,
+        BurrowDown,
+        WidowMineBurrow,
+    };
 
 
     public static int GetID(uint unit)

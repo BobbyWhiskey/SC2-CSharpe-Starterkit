@@ -115,7 +115,8 @@ public class CatFactModule
         "Cats can drink seawater.",
         "There is a show in Iceland called \"Keeping Up With the Kattarshians.\" It's a cat reality show that features 4 kittens who live together in fully-furnished \"cat\" house, Big Brother-style.",
         "Researchers say your cat *does* know her name. She just doesn't care.",
-        "The Hungarian word for \"quotation marks\" is \"macskaköröm,\" which literally translates to \"cat claws.\""
+        "The Hungarian word for \"quotation marks\" is \"macskaköröm,\" which literally translates to \"cat claws.\"",
+        "The reactor of this bot has a cat."
     };
 
     private bool _factSaid = false;
@@ -124,8 +125,7 @@ public class CatFactModule
     {
         try
         {
-            if (!_factSaid)
-            {
+            if (Controller.frame == Controller.SecsToFrames(1)) {
                 var random = new Random();
                 var i = random.Next(0, _facts.Count);
                 var fact = _facts[i];

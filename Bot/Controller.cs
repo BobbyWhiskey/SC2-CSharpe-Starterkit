@@ -14,6 +14,8 @@ public static class Controller
 {
     public const double FRAMES_PER_SECOND = 22.4;
 
+    public static Boolean IsDebug = false;
+
     //editable
     private static readonly int frameDelay = 0; //too fast? increase this to e.g. 20
 
@@ -127,16 +129,6 @@ public static class Controller
             Environment.Exit(0);
         }
 
-        if (obs.Observation.RawData.Units.Any(x =>
-                x.Cloak == CloakState.Cloaked || x.Cloak == CloakState.CloakedDetected))
-        {
-            Logger.Info("Detected cloaked unit!!");
-        }
-
-        if (obs.Observation.RawData.Units.Any(x => x.UnitType == Units.OBSERVER))
-        {
-            Logger.Info("Observer cloaked unit!!");
-        }
 
         if (PathingMap == null)
         {
@@ -187,6 +179,11 @@ public static class Controller
 
     private static void AddDebugDataOnScreen()
     {
+        if (!IsDebug)
+        {
+            return;
+        }
+        
         var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
         var nextWaitOrder = BuildOrderQueries.GetNextStep() as WaitStep;
         var nextOrderStr = (nextBuildStep != null ? Controller.GetUnitName(nextBuildStep.BuildingType) : "NA");
@@ -215,81 +212,8 @@ public static class Controller
                 }
             }
         });
-
-        // if (Controller.frame % 20 != 0)
-        // {
-        //     return;
-        // }
-
-
-        // var stringBytes = string.Concat(gameInfo.StartRaw.PathingGrid.Data.ToByteArray()
-        //     .Select(x => Convert.ToString(x, 2).PadLeft(8, '0')));
-        //
-        // var lines = Enumerable.Range(0, stringBytes.Length / gameInfo.StartRaw.MapSize.X)
-        //     .Select(i => stringBytes.Substring(i * gameInfo.StartRaw.MapSize.X, gameInfo.StartRaw.MapSize.X));
-
-
-        // TODO REMOVE THIS SUEPR EXPENSIVE
-        //ExtractMap();
-
-        int x = 0;
-        int y = 0;
-
-        var debugTexts = new List<DebugText>();
-        //
-        // foreach (var line in AStarPathingGrid.Grid)
-        // {
-        //     x = 0;
-        //     foreach (var c in line)
-        //     {
-        //         if (!c.Walkable)
-        //         {
-        //             debugTexts.Add(new DebugText()
-        //             {
-        //                 Text = "NO!",
-        //                 Size = 12,
-        //                 WorldPos = new Point() { X = x, Y = y, Z = 10 }
-        //             });
-        //         }
-        //
-        //         x++;
-        //     }
-        //
-        //     y++;
-        // }
-
-
-        var enemyPosition = Controller.enemyLocations.First();
-
-        // var path = AStarPathingGrid.FindPath(new Vector2((int)startingLocation.X +4, (int)startingLocation.Y+4),
-        //     new Vector2((int)enemyPosition.X, (int)enemyPosition.Y));
-
-        // if (path != null)
-        // {
-        //     foreach (var matrixNode in path)
-        //     {
-        //         debugTexts.Add(new DebugText()
-        //         {
-        //             Text = "x",
-        //             Size = 12,
-        //             WorldPos = new Point() { X = matrixNode.Position.Y, Y = matrixNode.Position.X, Z = 10 }
-        //         });
-        //     }
-        // }
-
-        if (debugTexts.Any())
-        {
-            AddDebugCommand(new DebugCommand()
-            {
-                Draw = new DebugDraw()
-                {
-                    Text =
-                    {
-                        debugTexts
-                    }
-                }
-            });
-        }
+        
+        //ShowDebugAStarGrid();
     }
 
     public static string GetUnitName(uint unitType)
@@ -304,6 +228,11 @@ public static class Controller
 
     public static void AddDebugCommand(DebugCommand command)
     {
+        if (!IsDebug)
+        {
+            return;
+        }
+        
         debugCommands.Add(command);
     }
 
@@ -441,6 +370,19 @@ public static class Controller
         return units;
     }
 
+    public static bool CanUnitAttackAir(uint unitType)
+    {
+        var unitData = gameData.Units[(int)unitType];
+
+        return unitData.Weapons.Any(x => x.Type == Weapon.Types.TargetType.Air || x.Type == Weapon.Types.TargetType.Any);
+    }
+    
+    public static bool CanUnitAttackGround(uint unitType)
+    {
+        var unitData = gameData.Units[(int)unitType];
+
+        return unitData.Weapons.Any(x => x.Type == Weapon.Types.TargetType.Ground || x.Type == Weapon.Types.TargetType.Any);
+    }
 
     public static bool CanAfford(uint unitType)
     {
@@ -451,7 +393,7 @@ public static class Controller
             baseCost = gameData.Units[(int)Units.COMMAND_CENTER].MineralCost;
         }
 
-        return minerals >= (unitData.MineralCost - baseCost) && vespene >= unitData.VespeneCost;
+        return minerals >= (unitData. MineralCost - baseCost) && vespene >= unitData.VespeneCost;
     }
 
     public static uint GetProducerBuildingType(uint unitType)
@@ -806,5 +748,80 @@ public static class Controller
         }
 
         return true;
+    }
+
+    public static void ShowDebugPath(IEnumerable<Vector2> pathStack, Color? color = null, int elevation = 12)
+    {
+        if (!IsDebug)
+        {
+            return;
+        }
+        
+        var debugBoxes = new List<DebugBox>();
+        
+        foreach (var node in pathStack)
+        {
+            debugBoxes.Add(new DebugBox()
+            {
+                Min =  new Point() { X = node.X + 1, Y = node.Y + 1, Z = 3 },
+                Max =  new Point() { X = node.X, Y = node.Y, Z = elevation },
+                Color = color ?? new Color(){ R = 1, B = 250, G = 1}
+            });
+        }
+        
+        Controller.AddDebugCommand(new DebugCommand()
+        {
+            Draw = new DebugDraw()
+            {
+                Boxes = { debugBoxes },
+            }
+        });
+    }
+    
+    public static void ShowDebugAStarGrid()
+    {
+        if (!IsDebug)
+        {
+            return;
+        }
+        
+        var debugBoxes = new List<DebugBox>();
+        int x = 0;
+        int y = 0;
+        
+        foreach (var line in AStarPathingGrid.Grid)
+        {
+            x = 0;
+            foreach (var c in line)
+            {
+                if (!c.Walkable)
+                {
+                    // debugTexts.Add(new DebugText()
+                    //     {
+                    //         Text = "NO!",
+                    //         Size = 12,
+                    //         WorldPos = new Point() { X = x, Y = y, Z = 12 }
+                    //     });
+                    //         
+                    //
+                    debugBoxes.Add(new DebugBox()
+                        {
+                            Min =  new Point() { X = (float)(x+1), Y = (float)(y+1), Z = 3 },
+                            Max =  new Point() { X = (float)(x-0), Y = (float)(y-0), Z = 12 },
+                            Color = new Color(){ R = 250, B = 1, G = 1}
+                        });
+                }
+                x++;
+            }
+            y++;
+        }
+        
+        Controller.AddDebugCommand(new DebugCommand()
+        {
+            Draw = new DebugDraw()
+            {
+                Boxes = { debugBoxes },
+            }
+        });
     }
 }

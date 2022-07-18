@@ -3,8 +3,12 @@
 public abstract class BuildOrderDefinition
 {
     public ICollection<IBuildStep> buildOrder = new List<IBuildStep>();
+    
     public Dictionary<uint, double> idealUnitRatio = new Dictionary<uint, double>();
+    public Dictionary<uint, double> idealUnitMax = new Dictionary<uint, double>();
+    
     public Dictionary<uint, double> idealUnitFixedNumber = new Dictionary<uint, double>();
+    
 
     // TODO Add optimal unit ratios
 

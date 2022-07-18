@@ -65,7 +65,7 @@ namespace Bot.AStar;
             Grid = grid;
         }
 
-        public Stack<Node> FindPath(Vector2 Start, Vector2 End)
+        public IEnumerable<Vector2> FindPath(Vector2 Start, Vector2 End)
         {
             Node start = new Node(new Vector2((int)(Start.X/Node.NODE_SIZE), (int) (Start.Y/Node.NODE_SIZE)), true);
             Node end = new Node(new Vector2((int)(End.X / Node.NODE_SIZE), (int)(End.Y / Node.NODE_SIZE)), true);
@@ -122,7 +122,10 @@ namespace Bot.AStar;
                 Path.Push(temp);
                 temp = temp.Parent;
             } while (temp != start && temp != null) ;
-            return Path;
+
+            var pathList = Path.Select(n => new Vector2(n.Position.Y, n.Position.X));
+            
+            return pathList;
         }
 		
         private List<Node> GetAdjacentNodes(Node n)

@@ -88,7 +88,7 @@ public class ArmyMovementModule
 
     private IEnumerable<Unit> GetCloseToBaseArmy()
     {
-        var enemyArmy = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible: true);
+        var enemyArmy = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: true);
         var resourceCenters = Controller.GetResourceCenters();
         return enemyArmy.Where(unit => resourceCenters.Any(rc => (rc.position - unit.position).Length() < 25));
     }
