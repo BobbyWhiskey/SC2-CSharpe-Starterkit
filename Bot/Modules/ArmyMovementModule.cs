@@ -5,11 +5,10 @@ namespace Bot.Modules;
 
 public class ArmyMovementModule
 {
-    private readonly int attackUnitCountThreshhold = 25;
+    private readonly int _attackUnitCountThreshold = 25;
     private Vector3? _lastAttackPosition;
     private ulong _lastAttackPositionUpdate;
-
-    private ArmyMovementState state = ArmyMovementState.Defending;
+    private ulong _lastAttackMoveTime;
 
     public void OnFrame()
     {
@@ -25,7 +24,7 @@ public class ArmyMovementModule
             // Defend against an attacking unit
             AttackWithArmy(attackingUnits.First().position);
         }
-        else if (army.Count > attackUnitCountThreshhold && GetOwnArmyValue() > GetEnemyArmyValue())
+        else if (army.Count > _attackUnitCountThreshold && GetOwnArmyValue() > GetEnemyArmyValue())
         {
             var enemyUnits = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: true);
             if (enemyUnits.Any())
@@ -98,11 +97,16 @@ public class ArmyMovementModule
     private void AttackWithArmy(Vector3 position)
     {
         List<Unit> army = Controller.GetUnits(Units.ArmyUnits);
-        if (_lastAttackPosition != position || Controller.frame > _lastAttackPositionUpdate + Controller.FRAMES_PER_SECOND * 3)
+        
+        if (_lastAttackPosition != position || Controller.frame > _lastAttackMoveTime + Controller.FRAMES_PER_SECOND * 3)
         {
-            _lastAttackPosition = position;
-            _lastAttackPositionUpdate = Controller.frame;
+            if (_lastAttackPosition != position)
+            {
+                _lastAttackPosition = position;
+                _lastAttackPositionUpdate = Controller.frame;
+            }
             Controller.Attack(army, _lastAttackPosition.Value);
+            _lastAttackMoveTime = Controller.frame;
         }
         
     }
