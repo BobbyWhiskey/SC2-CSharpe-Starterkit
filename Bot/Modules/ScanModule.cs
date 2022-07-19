@@ -5,7 +5,7 @@ namespace Bot.Modules;
 
 public class ScanModule
 {
-    private readonly ulong invisibleScanDelay = 24 * 15;
+    private readonly ulong invisibleScanDelay = (ulong)(Controller.FRAMES_PER_SECOND * 10);
     private readonly Dictionary<Vector3, ulong> lastClusterScan = new();
 
     private ulong lastInvisibleScan;
@@ -97,7 +97,7 @@ public class ScanModule
         // Scouting all extensions
         foreach (var unit in ocs)
         {
-            if (unit.Energy > 100)
+            if (unit.Energy > 110)
             {
                 var orderedClusters = lastClusterScan.ToList().OrderBy(x => x.Value).ToList();
                 var targetScan = orderedClusters.First();
