@@ -21,7 +21,7 @@ public class TankMicro : IUnitMicro
 
         foreach (var tank in tanks) 
         {
-            var unitsInRange = Controller.GetInRange(tank.position,enemyArmy,  13 - 1);
+            var unitsInRange = Controller.GetInRange(tank.Position,enemyArmy,  13 - 1);
             
             if (unitsInRange.Count() > UnitCountSiegeThreshold)
             {
@@ -31,7 +31,7 @@ public class TankMicro : IUnitMicro
 
         foreach (var tank in siegedTanks)
         {
-            if (Controller.GetFirstInRange(tank.position, Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy), 13 + 1) == null)
+            if (Controller.GetFirstInRange(tank.Position, Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy), 13 + 1) == null)
             {
                 tank.Ability(Abilities.UNSIEGE_TANK);
             }

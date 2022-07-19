@@ -89,7 +89,7 @@ public class BuildingModule
             }
             else if (nextUnit == Units.REFINERY)
             {
-                var cc = Controller.GetResourceCenters().FirstOrDefault(cc => cc.buildProgress >= 1);
+                var cc = Controller.GetResourceCenters().FirstOrDefault(cc => cc.BuildProgress >= 1);
                 if (cc == null)
                 {
                     Logger.Warning(
@@ -97,7 +97,7 @@ public class BuildingModule
                 }
                 else
                 {
-                    await BuildRefinery(cc.position);
+                    await BuildRefinery(cc.Position);
                 }
 
                 //await BuildRefineries();
@@ -160,21 +160,21 @@ public class BuildingModule
 
             foreach (var cc in ccs)
             {
-                allOwnedMinerals.AddRange(Controller.GetInRange(cc.position, allMinerals, 10));
+                allOwnedMinerals.AddRange(Controller.GetInRange(cc.Position, allMinerals, 10));
             }
 
             var freeMinerals = allMinerals.Except(allOwnedMinerals).ToList();
 
             var targetMineral = freeMinerals.OrderBy(
-                fm => (fm.position - Controller.startingLocation).LengthSquared()
+                fm => (fm.Position - Controller.startingLocation).LengthSquared()
             ).First();
 
-            var mineralCluster = Controller.GetInRange(targetMineral.position, allMinerals, 10).ToList();
-            var gasGeyser = Controller.GetInRange(targetMineral.position, Controller.GetGeysers(), 14).ToList();
+            var mineralCluster = Controller.GetInRange(targetMineral.Position, allMinerals, 10).ToList();
+            var gasGeyser = Controller.GetInRange(targetMineral.Position, Controller.GetGeysers(), 14).ToList();
 
-            var avgX = mineralCluster.Concat(gasGeyser).Select(m => m.position.X).Average();
-            var avgY = mineralCluster.Concat(gasGeyser).Select(m => m.position.Y).Average();
-            var avgZ = mineralCluster.Concat(gasGeyser).Select(m => m.position.Z).Average();
+            var avgX = mineralCluster.Concat(gasGeyser).Select(m => m.Position.X).Average();
+            var avgY = mineralCluster.Concat(gasGeyser).Select(m => m.Position.Y).Average();
+            var avgZ = mineralCluster.Concat(gasGeyser).Select(m => m.Position.Z).Average();
 
             // TODO MC probably not the method to call, we need something more specific for how to place a CC correctly
             await Controller.Construct(Units.COMMAND_CENTER, new Vector3(avgX, avgY, avgZ), 5);
@@ -199,8 +199,8 @@ public class BuildingModule
                 var extensionType = allowedAddons.First();
 
                 if (Controller.CanConstruct(extensionType)
-                    && !(producer.buildProgress < 1)
-                    && producer.order.AbilityId == 0)
+                    && !(producer.BuildProgress < 1)
+                    && producer.Order.AbilityId == 0)
                 {
                     producer.Train(extensionType);
 
@@ -212,7 +212,7 @@ public class BuildingModule
 
     private async Task BuildUnitProducers()
     {
-        var nbRcs = Controller.GetUnits(Units.ResourceCenters).Sum(r => r.idealWorkers);
+        var nbRcs = Controller.GetUnits(Units.ResourceCenters).Sum(r => r.IdealWorkers);
 
         var barrackTargetCount = 1 * (nbRcs / 7);
         var factoryTargetCount = 1 * (nbRcs / 18);
@@ -238,7 +238,7 @@ public class BuildingModule
 
     private async Task BuildSupplyDepots()
     {
-        var position = Controller.GetUnits(Units.SupplyDepots).FirstOrDefault()?.position;
+        var position = Controller.GetUnits(Units.SupplyDepots).FirstOrDefault()?.Position;
 
         //keep on buildings depots if supply is tight
         if (Controller.maxSupply - Controller.currentSupply <= 8
@@ -261,14 +261,14 @@ public class BuildingModule
 
         foreach (var cc in ccs)
         {
-            var refCount = refineries.Count(r => (r.position - cc.position).Length() < 8);
-            if (cc.assignedWorkers > 13 && refCount < 1)
+            var refCount = refineries.Count(r => (r.Position - cc.Position).Length() < 8);
+            if (cc.AssignedWorkers > 13 && refCount < 1)
             {
-                await BuildRefinery(cc.position);
+                await BuildRefinery(cc.Position);
             }
-            else if (cc.assignedWorkers > 15 && refCount < 2)
+            else if (cc.AssignedWorkers > 15 && refCount < 2)
             {
-                await BuildRefinery(cc.position);
+                await BuildRefinery(cc.Position);
             }
         }
     }
@@ -305,11 +305,11 @@ public class BuildingModule
         }
 
         var geysers = Controller.GetUnits(Units.GasGeysers, Alliance.Neutral)
-            .Where(r => (r.position - basePosition).Length() < 12);
+            .Where(r => (r.Position - basePosition).Length() < 12);
 
         foreach (var geyser in geysers)
         {
-            if (await Controller.CanPlace(Units.REFINERY, geyser.position))
+            if (await Controller.CanPlace(Units.REFINERY, geyser.Position))
             {
                 Controller.ConstructGas(Units.REFINERY, geyser);
                 return;

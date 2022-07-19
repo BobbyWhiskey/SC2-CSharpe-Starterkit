@@ -160,7 +160,7 @@ public static class Controller
             var resourceCenters = GetUnits(Units.ResourceCenters);
             if (resourceCenters.Count > 0)
             {
-                var rcPosition = resourceCenters[0].position;
+                var rcPosition = resourceCenters[0].Position;
                 startingLocation = rcPosition;
 
                 foreach (var startLocation in gameInfo.StartRaw.StartLocations)
@@ -260,7 +260,7 @@ public static class Controller
 
     public static bool ConstructGas(uint buildingToConstruct, Unit geyser)
     {
-        var worker = GetAvailableWorker(geyser.position);
+        var worker = GetAvailableWorker(geyser.Position);
         if (worker == null)
         {
             return false;
@@ -268,12 +268,12 @@ public static class Controller
 
         var abilityID = GetAbilityID(buildingToConstruct);
         var constructAction = CreateRawUnitCommand(abilityID);
-        constructAction.ActionRaw.UnitCommand.UnitTags.Add(worker.tag);
-        constructAction.ActionRaw.UnitCommand.TargetUnitTag = geyser.tag;
+        constructAction.ActionRaw.UnitCommand.UnitTags.Add(worker.Tag);
+        constructAction.ActionRaw.UnitCommand.TargetUnitTag = geyser.Tag;
         AddAction(constructAction);
 
-        Logger.Info("Constructing: {0} @ {1} / {2}", GetUnitName(buildingToConstruct), geyser.position.X,
-            geyser.position.Y);
+        Logger.Info("Constructing: {0} @ {1} / {2}", GetUnitName(buildingToConstruct), geyser.Position.X,
+            geyser.Position.Y);
         return true;
     }
 
@@ -295,7 +295,7 @@ public static class Controller
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;
         foreach (var unit in units)
         {
-            action.ActionRaw.UnitCommand.UnitTags.Add(unit.tag);
+            action.ActionRaw.UnitCommand.UnitTags.Add(unit.Tag);
         }
         AddAction(action);
     }
@@ -332,7 +332,7 @@ public static class Controller
         //count workers that have been sent to build this structure
         foreach (var worker in workers)
         {
-            if (worker.order.AbilityId == abilityID)
+            if (worker.Order.AbilityId == abilityID)
             {
                 counter += 1;
             }
@@ -343,7 +343,7 @@ public static class Controller
         {
             foreach (var unit in GetUnits(unitType))
             {
-                if (unit.buildProgress < 1)
+                if (unit.BuildProgress < 1)
                 {
                     counter += 1;
                 }
@@ -592,7 +592,7 @@ public static class Controller
     public static void DistributeWorkers()
     {
         var workers = GetUnits(Units.Workers);
-        var idleWorkers = workers.FindAll(w => w.order.AbilityId == 0);
+        var idleWorkers = workers.FindAll(w => w.Order.AbilityId == 0);
 
         if (idleWorkers.Count > 0)
         {
@@ -602,14 +602,14 @@ public static class Controller
             foreach (var rc in resourceCenters)
             {
                 //get one of the closer mineral fields
-                var mf = GetFirstInRange(rc.position, mineralFields, 7);
+                var mf = GetFirstInRange(rc.Position, mineralFields, 7);
                 if (mf == null)
                 {
                     continue;
                 }
 
                 //only one at a time
-                Logger.Info("Distributing idle worker: {0}", idleWorkers[0].tag);
+                Logger.Info("Distributing idle worker: {0}", idleWorkers[0].Tag);
                 idleWorkers[0].Smart(mf);
                 return;
             }
@@ -625,10 +625,10 @@ public static class Controller
             Unit? transferTo = null;
 
             transferFrom = GetUnits(Units.ResourceCenters)
-                .FirstOrDefault(x => x.assignedWorkers > x.idealWorkers);
+                .FirstOrDefault(x => x.AssignedWorkers > x.IdealWorkers);
 
             transferTo = GetUnits(Units.ResourceCenters)
-                .FirstOrDefault(x => x.assignedWorkers < x.idealWorkers);
+                .FirstOrDefault(x => x.AssignedWorkers < x.IdealWorkers);
 
             if (transferFrom != null && transferTo != null)
             {
@@ -637,23 +637,23 @@ public static class Controller
                 var sqrDistance = 7 * 7;
                 foreach (var worker in workers)
                 {
-                    if (worker.order.AbilityId != Abilities.GATHER_MINERALS)
+                    if (worker.Order.AbilityId != Abilities.GATHER_MINERALS)
                     {
                         continue;
                     }
-                    if (Vector3.DistanceSquared(worker.position, transferFrom.position) > sqrDistance)
+                    if (Vector3.DistanceSquared(worker.Position, transferFrom.Position) > sqrDistance)
                     {
                         continue;
                     }
 
-                    var mf = GetFirstInRange(transferTo.position, mineralFields, 10);
+                    var mf = GetFirstInRange(transferTo.Position, mineralFields, 10);
                     if (mf == null)
                     {
                         continue;
                     }
 
                     //only one at a time
-                    Logger.Info("Distributing idle worker: {0}", worker.tag);
+                    Logger.Info("Distributing idle worker: {0}", worker.Tag);
                     worker.Smart(mf);
                     return;
                 }
@@ -662,12 +662,12 @@ public static class Controller
 
         // Fill up gas
         var refineries = GetUnits(Units.REFINERY);
-        var availableWorkers = GetUnits(Units.SCV).Where(u => u.order.AbilityId != Abilities.RETURN_RESOURCES).ToList();
+        var availableWorkers = GetUnits(Units.SCV).Where(u => u.Order.AbilityId != Abilities.RETURN_RESOURCES).ToList();
         foreach (var refinery in refineries)
         {
-            if (refinery.assignedWorkers < refinery.idealWorkers)
+            if (refinery.AssignedWorkers < refinery.IdealWorkers)
             {
-                var scv = GetFirstInRange(refinery.position, availableWorkers, 7);
+                var scv = GetFirstInRange(refinery.Position, availableWorkers, 7);
                 if (scv != null)
                 {
                     scv.Smart(refinery);
@@ -683,13 +683,13 @@ public static class Controller
 
     public static Unit? GetAvailableWorker(Vector3 targetPosition)
     {
-        var workers = GetUnits(Units.Workers).Where(w => w.order.AbilityId == Abilities.GATHER_MINERALS).ToList();
+        var workers = GetUnits(Units.Workers).Where(w => w.Order.AbilityId == Abilities.GATHER_MINERALS).ToList();
         if (!workers.Any())
         {
             return null;
         }
 
-        return workers.MinBy(x => (x.position - targetPosition).LengthSquared());
+        return workers.MinBy(x => (x.Position - targetPosition).LengthSquared());
     }
 
     public static bool IsInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
@@ -707,7 +707,7 @@ public static class Controller
         var maxDistanceSqr = maxDistance * maxDistance;
         foreach (var unit in units)
         {
-            var adjustedUnitPosition = unit.position with
+            var adjustedUnitPosition = unit.Position with
             {
                 Z = 0
             };
@@ -730,7 +730,7 @@ public static class Controller
         var maxDistanceSqr = maxDistance * maxDistance;
         foreach (var unit in units)
         {
-            if (Vector3.DistanceSquared(targetPosition, unit.position) <= maxDistanceSqr)
+            if (Vector3.DistanceSquared(targetPosition, unit.Position) <= maxDistanceSqr)
             {
                 yield return unit;
             }
@@ -749,7 +749,7 @@ public static class Controller
 
         var abilityID = Abilities.GetID(unitType);
         var constructAction = CreateRawUnitCommand(abilityID);
-        constructAction.ActionRaw.UnitCommand.UnitTags.Add(worker.tag);
+        constructAction.ActionRaw.UnitCommand.UnitTags.Add(worker.Tag);
         constructAction.ActionRaw.UnitCommand.TargetWorldSpacePos = new Point2D();
         constructAction.ActionRaw.UnitCommand.TargetWorldSpacePos.X = position.X;
         constructAction.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = position.Y;
@@ -830,7 +830,7 @@ public static class Controller
 
     public static bool CanBuildingTrainUnit(Unit building, uint unitType)
     {
-        if (building.buildProgress < 1)
+        if (building.BuildProgress < 1)
         {
             return false;
         }

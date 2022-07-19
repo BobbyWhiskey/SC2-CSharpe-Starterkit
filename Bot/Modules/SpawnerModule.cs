@@ -42,10 +42,10 @@ public class SpawnerModule
                 .OrderByDescending(x => x.Item2)
                 .Where(x => Controller.GetUnits(Controller.GetProducerBuildingType(x.Key))
                     .Where(b => Controller.CanBuildingTrainUnit(b, x.Key))
-                    .Any(b => b.order.AbilityId == 0 ||
+                    .Any(b => b.Order.AbilityId == 0 ||
                               b.GetAddonType().HasValue
                               && Units.Reactors.Contains(b.GetAddonType()!.Value)
-                              && b.orders.Count < 2))
+                              && b.Orders.Count < 2))
                 .Select(x => x.Key)
                 .FirstOrDefault();
 
@@ -73,21 +73,21 @@ public class SpawnerModule
 
                 if (_random.NextDouble() > 0.7)
                 {
-                    if (Controller.CanConstruct(Units.MARAUDER) && barracks.order.AbilityId == 0)
+                    if (Controller.CanConstruct(Units.MARAUDER) && barracks.Order.AbilityId == 0)
                     {
                         barracks.Train(Units.MARAUDER);
                     }
                 }
                 else
                 {
-                    if (Controller.CanConstruct(Units.MARINE) && barracks.order.AbilityId == 0)
+                    if (Controller.CanConstruct(Units.MARINE) && barracks.Order.AbilityId == 0)
                     {
                         barracks.Train(Units.MARINE, true);
                     }
 
                     if (barracks.GetAddonType() == Units.BARRACKS_REACTOR
                         && Controller.CanConstruct(Units.MARINE)
-                        && barracks.orders.Count < 2)
+                        && barracks.Orders.Count < 2)
                     {
                         barracks.Train(Units.MARINE, true);
                     }
@@ -105,7 +105,7 @@ public class SpawnerModule
                 }
 
                 if (Controller.CanConstruct(Units.SIEGE_TANK)
-                    && factory.order.AbilityId == 0)
+                    && factory.Order.AbilityId == 0)
                 {
                     factory.Train(Units.SIEGE_TANK);
                 }
@@ -122,7 +122,7 @@ public class SpawnerModule
                 }
 
                 // TODO Temporary fix to use reactors, use GetAddonType instead
-                if (Controller.CanConstruct(Units.MEDIVAC) && starport.orders.Count < 2)
+                if (Controller.CanConstruct(Units.MEDIVAC) && starport.Orders.Count < 2)
                 {
                     starport.Train(Units.MEDIVAC, true);
                 }
@@ -157,7 +157,7 @@ public class SpawnerModule
         var producers = Controller.GetUnits(producerType);
         foreach (var producer in producers)
         {
-            if (Controller.CanConstruct(unitType) && producer.order.AbilityId == 0)
+            if (Controller.CanConstruct(unitType) && producer.Order.AbilityId == 0)
             {
                 producer.Train(unitType);
                 break;
@@ -166,7 +166,7 @@ public class SpawnerModule
                 && !Units.NeedsTechLab.Contains(unitType)
                 && Units.Reactors.Contains(producer.GetAddonType()!.Value)
                 && Controller.CanConstruct(unitType)
-                && producer.orders.Count < 2)
+                && producer.Orders.Count < 2)
             {
                 producer.Train(unitType, true);
                 break;
@@ -178,10 +178,10 @@ public class SpawnerModule
     {
         // TODO Add also helion too since we can convert them?
 
-        if (Units.SiegeTanks.Contains(unit.unitType))
+        if (Units.SiegeTanks.Contains(unit.UnitType))
         {
             return Units.SIEGE_TANK;
         }
-        return unit.unitType;
+        return unit.UnitType;
     }
 }

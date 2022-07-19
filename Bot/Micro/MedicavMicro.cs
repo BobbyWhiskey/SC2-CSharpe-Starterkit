@@ -8,16 +8,16 @@ public class MedicavMicro : IUnitMicro
     {
         var medivacs = Controller.GetUnits(Units.MEDIVAC);
         var dangerousUnits = Controller.GetUnits(Units.All, Alliance.Enemy)
-            .Where(x => Controller.CanUnitAttackAir(x.unitType)).ToList();
+            .Where(x => Controller.CanUnitAttackAir(x.UnitType)).ToList();
 
         foreach (var medivac in medivacs)
         {
-            var enemy = Controller.GetFirstInRange(medivac.position,
+            var enemy = Controller.GetFirstInRange(medivac.Position,
                 dangerousUnits
                 , 6);
             if (enemy != null)
             {
-                medivac.Move(medivac.position - enemy.position + medivac.position);
+                medivac.Move(medivac.Position - enemy.Position + medivac.Position);
             }
         }
     }

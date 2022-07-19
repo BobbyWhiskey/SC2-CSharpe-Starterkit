@@ -17,16 +17,16 @@ public class MarauderMicro : IUnitMicro
         foreach (var marine in marines)
         {
             var enemyUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
-                .Where(x => (marine.position - x.position).Length() < StimRangeActivation);
+                .Where(x => (marine.Position - x.Position).Length() < StimRangeActivation);
 
             if (enemyUnits.Any())
             {
-                var found = _lastActivationTimeMap.TryGetValue(marine.tag, out var lastActivationTime);
+                var found = _lastActivationTimeMap.TryGetValue(marine.Tag, out var lastActivationTime);
 // TODO Move this before this if
                 if (!found || lastActivationTime < Controller.frame - 500)
                 {
                     marine.Ability(Abilities.GENERAL_STIMPACK);
-                    _lastActivationTimeMap[marine.tag] = Controller.frame;
+                    _lastActivationTimeMap[marine.Tag] = Controller.frame;
                 }
             }
         }

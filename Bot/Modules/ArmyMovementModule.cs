@@ -22,14 +22,14 @@ public class ArmyMovementModule
         if (attackingUnits.Any())
         {
             // Defend against an attacking unit
-            AttackWithArmy(attackingUnits.First().position);
+            AttackWithArmy(attackingUnits.First().Position);
         }
         else if (army.Count > _attackUnitCountThreshold && GetOwnArmyValue() > GetEnemyArmyValue())
         {
             var enemyUnits = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: true);
             if (enemyUnits.Any())
             {
-                AttackWithArmy(enemyUnits.First().position);
+                AttackWithArmy(enemyUnits.First().Position);
             }
             else if (_lastAttackPosition.HasValue)
             {
@@ -38,7 +38,7 @@ public class ArmyMovementModule
                     var enemies = Controller.GetUnits(Units.All, Alliance.Enemy);
                     if (enemies.Any())
                     {
-                        AttackWithArmy(enemies.First().position);
+                        AttackWithArmy(enemies.First().Position);
                     }
                     else
                     {
@@ -74,14 +74,14 @@ public class ArmyMovementModule
         {
             // Rally point
             var rcs = Controller.GetResourceCenters()
-                .OrderBy(rc => (rc.position - Controller.enemyLocations[0]).LengthSquared())
+                .OrderBy(rc => (rc.Position - Controller.enemyLocations[0]).LengthSquared())
                 .ToList();
             if (rcs.Any())
             {
                 // Dirty way to just have a Rally point somewhere useful
-                var avgX = rcs.Select(m => m.position.X).Average();
-                var avgY = rcs.Select(m => m.position.Y).Average();
-                var avgZ = rcs.Select(m => m.position.Z).Average();
+                var avgX = rcs.Select(m => m.Position.X).Average();
+                var avgY = rcs.Select(m => m.Position.Y).Average();
+                var avgZ = rcs.Select(m => m.Position.Z).Average();
                 var avg = new Vector3(avgX, avgY, avgZ);
 
                 var rallyPoint = avg +
@@ -115,19 +115,19 @@ public class ArmyMovementModule
     {
         var enemyArmy = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: true);
         var resourceCenters = Controller.GetResourceCenters();
-        return enemyArmy.Where(unit => resourceCenters.Any(rc => (rc.position - unit.position).Length() < 25));
+        return enemyArmy.Where(unit => resourceCenters.Any(rc => (rc.Position - unit.Position).Length() < 25));
     }
 
     private int GetOwnArmyValue()
     {
         var myArmy = Controller.GetUnits(Units.ArmyUnits);
-        return (int)myArmy.Sum(u => Controller.gameData.Units[(int)u.unitType].MineralCost);
+        return (int)myArmy.Sum(u => Controller.gameData.Units[(int)u.UnitType].MineralCost);
     }
 
     private int GetEnemyArmyValue()
     {
         var units = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible: true);
-        return (int)units.Sum(u => Controller.gameData.Units[(int)u.unitType].MineralCost);
+        return (int)units.Sum(u => Controller.gameData.Units[(int)u.UnitType].MineralCost);
     }
 }
 

@@ -14,18 +14,18 @@ public class MarineMicro : IUnitMicro
     {
         var marines = Controller.GetUnits(Units.MARINE);
         var dangerousUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
-            .Where(x => Controller.CanUnitAttackGround(x.unitType)).ToList();
+            .Where(x => Controller.CanUnitAttackGround(x.UnitType)).ToList();
 
         if (Controller.frame % 10 == 0)
         {
             foreach (var marine in marines)
             {
-                var enemy = Controller.GetFirstInRange(marine.position,
+                var enemy = Controller.GetFirstInRange(marine.Position,
                     dangerousUnits
                     , 3);
                 if (enemy != null)
                 {
-                    marine.Move(marine.position - enemy.position + marine.position);
+                    marine.Move(marine.Position - enemy.Position + marine.Position);
                 }
             }
         }
@@ -34,15 +34,15 @@ public class MarineMicro : IUnitMicro
         foreach (var marine in marines)
         {
             var enemyUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
-                .Where(x => (marine.position - x.position).Length() < StimRangeActivation);
+                .Where(x => (marine.Position - x.Position).Length() < StimRangeActivation);
 
             if (enemyUnits.Count() > StimUnitCountThreshhold)
             {
-                var found = _lastActivationTimeMap.TryGetValue(marine.tag, out var lastActivationTime);
+                var found = _lastActivationTimeMap.TryGetValue(marine.Tag, out var lastActivationTime);
                 if (!found || lastActivationTime < Controller.frame - 500)
                 {
                     marine.Ability(Abilities.GENERAL_STIMPACK);
-                    _lastActivationTimeMap[marine.tag] = Controller.frame;
+                    _lastActivationTimeMap[marine.Tag] = Controller.frame;
                 }
 
             }

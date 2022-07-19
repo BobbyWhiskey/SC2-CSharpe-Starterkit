@@ -19,10 +19,10 @@ public static class IsTimeForExpandQuery
 
         var rcs = Controller.GetUnits(Units.ResourceCenters);
         var scvCount = Controller.GetUnits(Units.SCV).Count();
-        var idealWorkerTotal = rcs.Sum(rc => rc.idealWorkers);
+        var idealWorkerTotal = rcs.Sum(rc => rc.IdealWorkers);
 
-        return rcs.All(rc => rc.assignedWorkers >= rc.idealWorkers)
-               && !rcs.Any(rc => rc.buildProgress < 1)
+        return rcs.All(rc => rc.AssignedWorkers >= rc.IdealWorkers)
+               && !rcs.Any(rc => rc.BuildProgress < 1)
                && idealWorkerTotal < 35;
     }
 }

@@ -10,7 +10,7 @@ public class AntiChangelingModule
 
         foreach (var changeling in changelings)
         {
-            var unitInRange = Controller.GetFirstInRange(changeling.position, Controller.GetUnits(Units.ArmyUnits), 10);
+            var unitInRange = Controller.GetFirstInRange(changeling.Position, Controller.GetUnits(Units.ArmyUnits), 10);
             if (unitInRange != null)
             {
                 unitInRange.Ability(Abilities.ATTACK, changeling);

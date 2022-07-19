@@ -22,7 +22,7 @@ public class MarineMedivacIntoTankBuild : BuildOrderDefinition
             new BuildingStep(Units.FACTORY_TECHLAB),
             new BuildingStep(Units.REFINERY),
             new BuildingStep(Units.REFINERY),
-            new WaitStep(150),
+            new WaitStep(120),
             new BuildingStep(Units.STARPORT_REACTOR)
         };
 

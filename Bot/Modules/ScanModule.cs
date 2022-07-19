@@ -25,8 +25,8 @@ public class ScanModule
                 {
                     break;
                 }
-                var cluster = Controller.GetInRange(mineral.position, allMinerals, 14).ToList();
-                var clusterPosition = cluster.First().position;
+                var cluster = Controller.GetInRange(mineral.Position, allMinerals, 14).ToList();
+                var clusterPosition = cluster.First().Position;
                 mineralClusters.Add(clusterPosition);
                 lastClusterScan.Add(clusterPosition, 0);
                 processedMinerals.AddRange(cluster);
@@ -44,12 +44,13 @@ public class ScanModule
                 .ToList();
             if (invisibleOrBorrowedUnits.Any())
             {
-                var cc = ocs.FirstOrDefault(x => x.energy > 50);
+                var cc = ocs.FirstOrDefault(x => x.Energy > 50);
                 if (cc != null)
                 {
                     // TODO Check we got units or building close by before scanning?
                     var unit = new Unit(invisibleOrBorrowedUnits.First());
                     cc.Ability(Abilities.SCANNER_SWEEP, unit);
+                    Logger.Info("Burrowed unit scanned!!");
                     lastInvisibleScan = Controller.frame;
                 }
             }
@@ -93,23 +94,10 @@ public class ScanModule
         //     }
         // }
 
-        // Burrowing units
-        if (lastInvisibleScan + invisibleScanDelay < Controller.frame)
-        {
-            var borrowingUnit = Controller.GetUnits(Units.All, Alliance.Enemy).Where(x => Abilities.AllBurrowActions.Contains((int)x.order.AbilityId)).ToList();
-            var cc = ocs.FirstOrDefault(x => x.energy > 50);
-            if (cc != null && borrowingUnit.Any())
-            {
-                // TODO Check we got units or building close by before scanning?
-                cc.Ability(Abilities.SCANNER_SWEEP, borrowingUnit.First());
-                lastInvisibleScan = Controller.frame;
-            }
-        }
-
         // Scouting all extensions
         foreach (var unit in ocs)
         {
-            if (unit.energy > 60)
+            if (unit.Energy > 100)
             {
                 var orderedClusters = lastClusterScan.ToList().OrderBy(x => x.Value).ToList();
                 var targetScan = orderedClusters.First();

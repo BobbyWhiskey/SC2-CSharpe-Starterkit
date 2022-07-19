@@ -9,77 +9,78 @@ namespace Bot;
 
 public class Unit
 {
-    public readonly CloakState cloak;
-    public readonly DisplayType displayType;
-    private readonly SC2APIProtocol.Unit original;
-    private readonly UnitTypeData unitTypeData;
-    public int assignedWorkers;
-    public float buildProgress;
-    public float energy;
-    public float energyMax;
-    public int idealWorkers;
-    public float integrity;
-    public bool isVisible;
-
-    public string name;
-    public UnitOrder order;
-    public RepeatedField<UnitOrder> orders;
-    public Vector3 position;
-    public int supply;
-    public ulong tag;
-    public uint unitType;
+    public CloakState Cloak { get; }
+    public DisplayType DisplayType { get; }
+    private SC2APIProtocol.Unit Original { get; }
+    private UnitTypeData UnitTypeData { get; }
+    public int AssignedWorkers { get; }
+    public float BuildProgress { get; }
+    public float Energy { get; }
+    public float EnergyMax { get; }
+    public int IdealWorkers { get; }
+    public float Integrity { get; }
+    public bool IsVisible { get; }
+    public string Name { get; }
+    public UnitOrder Order { get; }
+    public RepeatedField<UnitOrder> Orders { get; }
+    public Vector3 Position { get; }
+    public int Supply { get; }
+    public ulong Tag { get; }
+    public uint UnitType { get; }
+    public bool IsBurrowed { get; }
 
     public Unit(SC2APIProtocol.Unit unit)
     {
-        original = unit;
-        unitTypeData = Controller.gameData.Units[(int)unit.UnitType];
+        Original = unit;
+        UnitTypeData = Controller.gameData.Units[(int)unit.UnitType];
 
-        name = unitTypeData.Name;
-        tag = unit.Tag;
-        unitType = unit.UnitType;
-        position = new Vector3(unit.Pos.X, unit.Pos.Y, unit.Pos.Z);
-        integrity = (unit.Health + unit.Shield) / (unit.HealthMax + unit.ShieldMax);
-        buildProgress = unit.BuildProgress;
-        idealWorkers = unit.IdealHarvesters;
-        assignedWorkers = unit.AssignedHarvesters;
-        energy = unit.Energy;
-        energyMax = unit.EnergyMax;
+        Name = UnitTypeData.Name;
+        Tag = unit.Tag;
+        UnitType = unit.UnitType;
+        Position = new Vector3(unit.Pos.X, unit.Pos.Y, unit.Pos.Z);
+        Integrity = (unit.Health + unit.Shield) / (unit.HealthMax + unit.ShieldMax);
+        BuildProgress = unit.BuildProgress;
+        IdealWorkers = unit.IdealHarvesters;
+        AssignedWorkers = unit.AssignedHarvesters;
+        Energy = unit.Energy;
+        EnergyMax = unit.EnergyMax;
 
-        order = unit.Orders.Count > 0 ? unit.Orders[0] : new UnitOrder();
-        orders = unit.Orders;
-        isVisible = unit.DisplayType == DisplayType.Visible;
-        displayType = unit.DisplayType;
-        cloak = unit.Cloak;
+        Order = unit.Orders.Count > 0 ? unit.Orders[0] : new UnitOrder();
+        Orders = unit.Orders;
+        IsVisible = unit.DisplayType == DisplayType.Visible;
+        DisplayType = unit.DisplayType;
+        IsBurrowed = unit.IsBurrowed;
+        Cloak = unit.Cloak;
 
-        supply = (int)unitTypeData.FoodRequired;
+        Supply = (int)UnitTypeData.FoodRequired;
     }
 
     public ulong GetAddonTag()
     {
-        return original.AddOnTag;
+        return Original.AddOnTag;
     }
 
     public uint? GetAddonType()
     {
         var tag = GetAddonTag();
-        var unit = Controller.GetUnits(Units.AddOns).FirstOrDefault(x => x.tag == tag);
-        return unit?.unitType;
+        var unit = Controller.GetUnits(Units.AddOns).FirstOrDefault(x => x.Tag == tag);
+        return unit?.UnitType;
     }
 
     public double GetDistance(Unit otherUnit)
     {
-        return Vector3.Distance(position, otherUnit.position);
+        return Vector3.Distance(Position, otherUnit.Position);
     }
 
     public double GetDistance(Vector3 location)
     {
-        return Vector3.Distance(position, location);
+        return Vector3.Distance(Position, location);
     }
 
     public void Ability(int abilityID)
     {
         var action = Controller.CreateRawUnitCommand(abilityID);
-        action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+        action.ActionRaw.UnitCommand.UnitTags.Add(Tag);
         Controller.AddAction(action);
 
         //var targetName = Controller.GetUnitName(unitType);
@@ -89,7 +90,7 @@ public class Unit
     public void Ability(int abilityID, Vector3 target)
     {
         var action = Controller.CreateRawUnitCommand(abilityID);
-        action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+        action.ActionRaw.UnitCommand.UnitTags.Add(Tag);
         action.ActionRaw.UnitCommand.TargetWorldSpacePos = new Point2D();
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.X = target.X;
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;
@@ -102,8 +103,8 @@ public class Unit
     public void Ability(int abilityID, Unit target)
     {
         var action = Controller.CreateRawUnitCommand(abilityID);
-        action.ActionRaw.UnitCommand.UnitTags.Add(tag);
-        action.ActionRaw.UnitCommand.TargetUnitTag = target.tag;
+        action.ActionRaw.UnitCommand.UnitTags.Add(Tag);
+        action.ActionRaw.UnitCommand.TargetUnitTag = target.Tag;
         Controller.AddAction(action);
 
         //var targetName = Controller.GetUnitName(unitType);
@@ -112,14 +113,14 @@ public class Unit
 
     public void Train(uint unitType, bool queue = false)
     {
-        if (!queue && orders.Count > 0)
+        if (!queue && Orders.Count > 0)
         {
             return;
         }
 
         var abilityID = Abilities.GetID(unitType);
         var action = Controller.CreateRawUnitCommand(abilityID);
-        action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+        action.ActionRaw.UnitCommand.UnitTags.Add(Tag);
         Controller.AddAction(action);
 
         var targetName = Controller.GetUnitName(unitType);
@@ -132,9 +133,9 @@ public class Unit
         action.ActionRaw = new ActionRaw();
         action.ActionRaw.CameraMove = new ActionRawCameraMove();
         action.ActionRaw.CameraMove.CenterWorldSpace = new Point();
-        action.ActionRaw.CameraMove.CenterWorldSpace.X = position.X;
-        action.ActionRaw.CameraMove.CenterWorldSpace.Y = position.Y;
-        action.ActionRaw.CameraMove.CenterWorldSpace.Z = position.Z;
+        action.ActionRaw.CameraMove.CenterWorldSpace.X = Position.X;
+        action.ActionRaw.CameraMove.CenterWorldSpace.Y = Position.Y;
+        action.ActionRaw.CameraMove.CenterWorldSpace.Z = Position.Z;
         Controller.AddAction(action);
     }
 
@@ -145,15 +146,15 @@ public class Unit
         action.ActionRaw.UnitCommand.TargetWorldSpacePos = new Point2D();
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.X = target.X;
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;
-        action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+        action.ActionRaw.UnitCommand.UnitTags.Add(Tag);
         Controller.AddAction(action);
     }
 
     public void Smart(Unit unit)
     {
         var action = Controller.CreateRawUnitCommand(Abilities.SMART);
-        action.ActionRaw.UnitCommand.TargetUnitTag = unit.tag;
-        action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+        action.ActionRaw.UnitCommand.TargetUnitTag = unit.Tag;
+        action.ActionRaw.UnitCommand.UnitTags.Add(Tag);
         Controller.AddAction(action);
     }
 }

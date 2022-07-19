@@ -51,7 +51,7 @@ internal class RaxBot : Bot
         if (structures.Count == 1)
             //last building                
         {
-            if (structures[0].integrity < 0.4) //being attacked or burning down                 
+            if (structures[0].Integrity < 0.4) //being attacked or burning down                 
             {
                 if (!Controller.chatLog.Contains("gg"))
                 {
@@ -67,8 +67,8 @@ internal class RaxBot : Bot
         var stopScvProduction = nextBuildOrder != null && nextBuildOrder.BuildingType == Units.ORBITAL_COMMAND && canBuildOrbital;
 
         //var totalAssign
-        var totalAssigned = resourceCenters.Sum(rc => rc.assignedWorkers);
-        var totalIdeal = resourceCenters.Sum(rc => rc.idealWorkers);
+        var totalAssigned = resourceCenters.Sum(rc => rc.AssignedWorkers);
+        var totalIdeal = resourceCenters.Sum(rc => rc.IdealWorkers);
 
         if (totalIdeal > totalAssigned && Controller.CanConstruct(Units.SCV) && !stopScvProduction)
         {

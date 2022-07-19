@@ -5,9 +5,9 @@ public class ResearchModule
     public void OnFrame()
     {
         var bay = Controller.GetUnits(Units.ENGINEERING_BAY)
-            .Where(b => b.order.AbilityId == 0 && !(b.buildProgress < 1));
+            .Where(b => b.Order.AbilityId == 0 && !(b.BuildProgress < 1));
         var armory = Controller.GetUnits(Units.ARMORY)
-            .Where(b => b.order.AbilityId == 0 && !(b.buildProgress < 1));
+            .Where(b => b.Order.AbilityId == 0 && !(b.BuildProgress < 1));
 
         foreach (var unit in bay)
         {
@@ -22,7 +22,7 @@ public class ResearchModule
         }
 
         var barrackTechLabs = Controller.GetUnits(Units.BARRACKS_TECHLAB)
-            .Where(b => b.order.AbilityId == 0 && !(b.buildProgress < 1));
+            .Where(b => b.Order.AbilityId == 0 && !(b.BuildProgress < 1));
 
         foreach (var barrackTechLab in barrackTechLabs)
         {

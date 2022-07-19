@@ -103,7 +103,7 @@ public static class BuildOrderQueries
 
                 // An upgrading orbital is still considered a command center so we need to do this check
                 if (u == Units.ORBITAL_COMMAND
-                    && Controller.GetUnits(Units.COMMAND_CENTER).Any(x => x.order.AbilityId == Abilities.COMMAND_CENTER_ORBITAL_UPGRADE))
+                    && Controller.GetUnits(Units.COMMAND_CENTER).Any(x => x.Order.AbilityId == Abilities.COMMAND_CENTER_ORBITAL_UPGRADE))
                 {
                     continue;
                 }
