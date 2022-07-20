@@ -31,6 +31,9 @@ internal class RaxBot : Bot
 
     private readonly ScanModule _scanModule = new();
     private readonly SpawnerModule _spawnerModule = new();
+    private readonly ScoutingModule _scoutingModule = new();
+    private readonly RepairUnitModule _repairUnitModule = new();
+    private readonly ScvDefenseModule _scvDefenseModule = new();
 
 
     //the following will be called every frame
@@ -84,8 +87,12 @@ internal class RaxBot : Bot
         }
 
         _armyMovementModule.OnFrame();
-        _scanModule.OnFrame();
         //_armyMovementModule2.OnFrame();
+        
+        _scanModule.OnFrame();
+        _scoutingModule.OnFrame();
+        _repairUnitModule.OnFrame();
+        _scvDefenseModule.OnFrame();
 
         if (Controller.Frame % 10 == 0)
         {
@@ -97,9 +104,12 @@ internal class RaxBot : Bot
             _antiChangelingModule.OnFrame();
         }
 
-        foreach (var unitMicro in _unitMicros)
+        if (Controller.Frame % 4 == 0)
         {
-            unitMicro.OnFrame();
+            foreach (var unitMicro in _unitMicros)
+            {
+                unitMicro.OnFrame();
+            }
         }
 
         _catFactModule.OnFrame();

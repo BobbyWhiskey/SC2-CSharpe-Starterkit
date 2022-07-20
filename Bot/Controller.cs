@@ -55,6 +55,16 @@ public static class Controller
         }
     }
 
+    public static void ReserveUnit(ulong tag)
+    {
+        ReservedUnits.Add(tag);
+    }
+
+    public static void ReleaseUnit(ulong tag)
+    {
+        ReservedUnits.Remove(tag); 
+    }
+
     public static void ExtractMap()
     {
         var canMoveMap = GameInfo.StartRaw.PathingGrid.Data.ToByteArray()
@@ -357,33 +367,19 @@ public static class Controller
     }
 
     public static List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self,
-        bool onlyCompleted = false, bool onlyVisible = false)
+        bool onlyCompleted = false, bool onlyVisible = false, bool includeReservedUnits = false)
     {
-        //ideally this should be cached in the future and cleared at each new frame
         var units = new List<Unit>();
-        foreach (var unit in Obs.Observation.RawData.Units)
+        foreach (var unitType in hashset)
         {
-            if (hashset.Contains(unit.UnitType) && unit.Alliance == alliance)
-            {
-                if (onlyCompleted && unit.BuildProgress < 1)
-                {
-                    continue;
-                }
-
-                if (onlyVisible && unit.DisplayType != DisplayType.Visible)
-                {
-                    continue;
-                }
-
-                units.Add(new Unit(unit));
-            }
+            units.AddRange(GetUnits(unitType, alliance, onlyCompleted, onlyVisible, includeReservedUnits));
         }
 
         return units;
     }
 
     public static List<Unit> GetUnits(uint unitType, Alliance alliance = Alliance.Self, bool onlyCompleted = false,
-        bool onlyVisible = false)
+        bool onlyVisible = false, bool includeReservedUnits = false)
     {
         //ideally this should be cached in the future and cleared at each new frame
         var units = new List<Unit>();
@@ -397,6 +393,11 @@ public static class Controller
                 }
 
                 if (onlyVisible && unit.DisplayType != DisplayType.Visible)
+                {
+                    continue;
+                }
+
+                if (!includeReservedUnits && ReservedUnits.Contains(unit.Tag))
                 {
                     continue;
                 }
@@ -665,7 +666,7 @@ public static class Controller
 
         // Fill up gas
         var refineries = GetUnits(Units.REFINERY);
-        var availableWorkers = GetUnits(Units.SCV).Where(u => u.Order.AbilityId != Abilities.RETURN_RESOURCES).ToList();
+        var availableWorkers = GetUnits(Units.SCV).Where(u => u.Order.AbilityId != Abilities.RETURN_RESOURCES && u.Order.AbilityId != Abilities.REPAIR).ToList();
         foreach (var refinery in refineries)
         {
             if (refinery.AssignedWorkers < refinery.IdealWorkers)
@@ -777,7 +778,7 @@ public static class Controller
         var nbRetry = 0;
         while (true)
         {
-            var adjustedRadius = radius + nbRetry / 300;
+            var adjustedRadius = radius + nbRetry / 200;
 
             constructionSpot = new Vector3(startingSpot.Value.X + Random.Next(-adjustedRadius, adjustedRadius + 1),
                 startingSpot.Value.Y + Random.Next(-adjustedRadius, adjustedRadius + 1), startingSpot.Value.Z);
@@ -803,7 +804,7 @@ public static class Controller
                 });
 
                 // TODO This is just temporary so we don't have infinite loop. Fix this
-                Logger.Warning("Could not find space for building " + unitType);
+                Logger.Warning("Could not find space for building " + Controller.GetUnitName(unitType));
                 break;
             }
 

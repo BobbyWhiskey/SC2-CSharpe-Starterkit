@@ -244,13 +244,13 @@ public class BuildingModule
         if (Controller.MaxSupply - Controller.CurrentSupply <= 8
             && Controller.GetPendingCount(Units.SupplyDepots) == 0)
         {
-            await BuildIfPossible(Units.SUPPLY_DEPOT, startingSpot: position, radius: 4);
+            await BuildIfPossible(Units.SUPPLY_DEPOT, startingSpot: position, radius: 5);
         }
 
         if (Controller.MaxSupply - Controller.CurrentSupply <= 3
             && Controller.GetPendingCount(Units.SupplyDepots) < 4)
         {
-            await BuildIfPossible(Units.SUPPLY_DEPOT, allowParalelBuild: true, startingSpot: position, radius: 4);
+            await BuildIfPossible(Units.SUPPLY_DEPOT, allowParalelBuild: true, startingSpot: position, radius: 5);
         }
     }
 

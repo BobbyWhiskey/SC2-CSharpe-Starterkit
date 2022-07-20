@@ -5,7 +5,7 @@ namespace Bot.Micro;
 public class MarineMicro : IUnitMicro
 {
     private static readonly int StimRangeActivation = 10;
-    private static readonly int StimUnitCountThreshhold = 4;
+    private static readonly int StimUnitCountThreshhold = 2;
     private static int StimRangeActivationDelay = 500;
 
     private readonly Dictionary<ulong, ulong> _lastActivationTimeMap = new();

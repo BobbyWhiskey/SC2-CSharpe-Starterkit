@@ -29,6 +29,7 @@ public class ResearchModule
             // TODO MC This is spammy af
             barrackTechLab.Ability(Abilities.RESEARCH_STIMPACK);
             barrackTechLab.Ability(Abilities.RESEARCH_COMBAT_SHIELD);
+            barrackTechLab.Ability(Abilities.RESEARCH_CONCUSSIVE_SHELL);
         }
     }
 }

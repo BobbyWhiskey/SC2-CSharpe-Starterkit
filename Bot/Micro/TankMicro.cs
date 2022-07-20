@@ -4,7 +4,7 @@ namespace Bot.Micro;
 
 public class TankMicro : IUnitMicro
 {
-    private const int UnitCountSiegeThreshold = 4;
+    private const int UnitCountSiegeThreshold = 2;
     
     public void OnFrame()
     {

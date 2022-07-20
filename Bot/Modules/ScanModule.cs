@@ -49,7 +49,7 @@ public class ScanModule
                 {
                     // TODO Check we got units or building close by before scanning?
                     var unit = new Unit(invisibleOrBorrowedUnits.First());
-                    cc.Ability(Abilities.SCANNER_SWEEP, unit);
+                    cc.Ability(Abilities.SCANNER_SWEEP, unit.Position);
                     Logger.Info("Burrowed/cloacked unit scanned!!");
                     lastInvisibleScan = Controller.Frame;
                 }
