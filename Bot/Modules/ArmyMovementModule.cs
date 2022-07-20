@@ -12,7 +12,7 @@ public class ArmyMovementModule
 
     public void OnFrame()
     {
-        if (Controller.frame % 5 != 0)
+        if (Controller.Frame % 5 != 0)
         {
             return; 
         }
@@ -33,7 +33,7 @@ public class ArmyMovementModule
             }
             else if (_lastAttackPosition.HasValue)
             {
-                if (Controller.frame - _lastAttackPositionUpdate > 200)
+                if (Controller.Frame - _lastAttackPositionUpdate > 200)
                 {
                     var enemies = Controller.GetUnits(Units.All, Alliance.Enemy);
                     if (enemies.Any())
@@ -45,7 +45,7 @@ public class ArmyMovementModule
                         if (_lastAttackPosition.HasValue)
                         {
                             // Meh 
-                            _lastAttackPosition += Vector3.Multiply(0.2f, Controller.enemyLocations[0] - _lastAttackPosition.Value);
+                            _lastAttackPosition += Vector3.Multiply(0.2f, Controller.EnemyLocations[0] - _lastAttackPosition.Value);
                             //_lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
                             //_lastAttackPositionUpdate = Controller.frame;
                         }
@@ -56,10 +56,10 @@ public class ArmyMovementModule
 
 //                Controller.Attack(army, _lastAttackPosition.Value);
             }
-            else if (Controller.enemyLocations.Count > 0)
+            else if (Controller.EnemyLocations.Count > 0)
             {
-                _lastAttackPosition = Controller.startingLocation +
-                                      Vector3.Multiply(0.3f, Controller.enemyLocations[0] - Controller.startingLocation);
+                _lastAttackPosition = Controller.StartingLocation +
+                                      Vector3.Multiply(0.3f, Controller.EnemyLocations[0] - Controller.StartingLocation);
                 
                 // _lastAttackPosition = Controller.enemyLocations[0].MidWay(Controller.GetResourceCenters().First().position);
                 //_lastAttackPositionUpdate = Controller.frame;
@@ -74,7 +74,7 @@ public class ArmyMovementModule
         {
             // Rally point
             var rcs = Controller.GetResourceCenters()
-                .OrderBy(rc => (rc.Position - Controller.enemyLocations[0]).LengthSquared())
+                .OrderBy(rc => (rc.Position - Controller.EnemyLocations[0]).LengthSquared())
                 .ToList();
             if (rcs.Any())
             {
@@ -85,7 +85,7 @@ public class ArmyMovementModule
                 var avg = new Vector3(avgX, avgY, avgZ);
 
                 var rallyPoint = avg +
-                                 (Controller.enemyLocations[0] - avg) * (float)0.15;
+                                 (Controller.EnemyLocations[0] - avg) * (float)0.15;
 
                 _lastAttackPosition = rallyPoint;
 
@@ -98,15 +98,15 @@ public class ArmyMovementModule
     {
         List<Unit> army = Controller.GetUnits(Units.ArmyUnits);
         
-        if (_lastAttackPosition != position || Controller.frame > _lastAttackMoveTime + Controller.FRAMES_PER_SECOND * 3)
+        if (_lastAttackPosition != position || Controller.Frame > _lastAttackMoveTime + Controller.FRAMES_PER_SECOND * 3)
         {
             if (_lastAttackPosition != position)
             {
                 _lastAttackPosition = position;
-                _lastAttackPositionUpdate = Controller.frame;
+                _lastAttackPositionUpdate = Controller.Frame;
             }
             Controller.Attack(army, _lastAttackPosition.Value);
-            _lastAttackMoveTime = Controller.frame;
+            _lastAttackMoveTime = Controller.Frame;
         }
         
     }
@@ -121,13 +121,13 @@ public class ArmyMovementModule
     private int GetOwnArmyValue()
     {
         var myArmy = Controller.GetUnits(Units.ArmyUnits);
-        return (int)myArmy.Sum(u => Controller.gameData.Units[(int)u.UnitType].MineralCost);
+        return (int)myArmy.Sum(u => Controller.GameData.Units[(int)u.UnitType].MineralCost);
     }
 
     private int GetEnemyArmyValue()
     {
         var units = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible: true);
-        return (int)units.Sum(u => Controller.gameData.Units[(int)u.UnitType].MineralCost);
+        return (int)units.Sum(u => Controller.GameData.Units[(int)u.UnitType].MineralCost);
     }
 }
 

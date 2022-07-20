@@ -17,27 +17,30 @@ public static class Controller
 
     //editable
     private static readonly int frameDelay = 0; //too fast? increase this to e.g. 20
+    
+    // Reserved units
+    private static readonly List<ulong> ReservedUnits = new();
 
     //don't edit
-    private static readonly List<Action> actions = new();
-    private static readonly List<DebugCommand> debugCommands = new();
-    private static readonly Random random = new();
+    private static readonly List<Action> Actions = new();
+    private static readonly List<DebugCommand> DebugCommands = new();
+    private static readonly Random Random = new();
 
-    public static ResponseGameInfo gameInfo;
-    public static ResponseData gameData;
-    public static ResponseObservation obs;
-    public static ulong frame;
-    public static uint currentSupply;
-    public static uint maxSupply;
-    public static uint minerals;
-    public static uint vespene;
+    public static ResponseGameInfo GameInfo;
+    public static ResponseData GameData;
+    public static ResponseObservation Obs;
+    public static ulong Frame;
+    public static uint CurrentSupply;
+    public static uint MaxSupply;
+    public static uint Minerals;
+    public static uint Vespene;
 
-    public static readonly List<Vector3> enemyLocations = new();
-    public static Vector3 startingLocation;
-    public static readonly List<string> chatLog = new();
+    public static readonly List<Vector3> EnemyLocations = new();
+    public static Vector3 StartingLocation;
+    public static readonly List<string> ChatLog = new();
 
     // Debug data
-    private static uint nextUnitToTrain;
+    private static uint DebugNextUnitToTrain;
 
     public static Astar AStarPathingGrid { get; set; }
 
@@ -54,10 +57,10 @@ public static class Controller
 
     public static void ExtractMap()
     {
-        var canMoveMap = gameInfo.StartRaw.PathingGrid.Data.ToByteArray()
+        var canMoveMap = GameInfo.StartRaw.PathingGrid.Data.ToByteArray()
             .SelectMany(ByteToBools)
             .ToList();
-        var canMoveLines = canMoveMap.Chunk(gameInfo.StartRaw.MapSize.X)
+        var canMoveLines = canMoveMap.Chunk(GameInfo.StartRaw.MapSize.X)
             // .Select(x => x.Reverse().ToArray())
             .ToArray();
 
@@ -110,19 +113,19 @@ public static class Controller
 
     public static (IEnumerable<Action>, IEnumerable<DebugCommand>) CloseFrame()
     {
-        return (actions, debugCommands);
+        return (Actions, DebugCommands);
     }
 
 
     public static void OpenFrame()
     {
-        if (gameInfo == null || gameData == null || obs == null)
+        if (GameInfo == null || GameData == null || Obs == null)
         {
-            if (gameInfo == null)
+            if (GameInfo == null)
             {
                 Logger.Info("GameInfo is null! The application will terminate.");
             }
-            else if (gameData == null)
+            else if (GameData == null)
             {
                 Logger.Info("GameData is null! The application will terminate.");
             }
@@ -140,36 +143,36 @@ public static class Controller
             ExtractMap();
         }
 
-        actions.Clear();
-        debugCommands.Clear();
+        Actions.Clear();
+        DebugCommands.Clear();
 
-        foreach (var chat in obs.Chat)
+        foreach (var chat in Obs.Chat)
         {
-            chatLog.Add(chat.Message);
+            ChatLog.Add(chat.Message);
         }
 
-        frame = obs.Observation.GameLoop;
-        currentSupply = obs.Observation.PlayerCommon.FoodUsed;
-        maxSupply = obs.Observation.PlayerCommon.FoodCap;
-        minerals = obs.Observation.PlayerCommon.Minerals;
-        vespene = obs.Observation.PlayerCommon.Vespene;
+        Frame = Obs.Observation.GameLoop;
+        CurrentSupply = Obs.Observation.PlayerCommon.FoodUsed;
+        MaxSupply = Obs.Observation.PlayerCommon.FoodCap;
+        Minerals = Obs.Observation.PlayerCommon.Minerals;
+        Vespene = Obs.Observation.PlayerCommon.Vespene;
 
         //initialization
-        if (frame == 0)
+        if (Frame == 0)
         {
             var resourceCenters = GetUnits(Units.ResourceCenters);
             if (resourceCenters.Count > 0)
             {
                 var rcPosition = resourceCenters[0].Position;
-                startingLocation = rcPosition;
+                StartingLocation = rcPosition;
 
-                foreach (var startLocation in gameInfo.StartRaw.StartLocations)
+                foreach (var startLocation in GameInfo.StartRaw.StartLocations)
                 {
                     var enemyLocation = new Vector3(startLocation.X, startLocation.Y, 0);
                     var distance = Vector3.Distance(enemyLocation, rcPosition);
                     if (distance > 30)
                     {
-                        enemyLocations.Add(enemyLocation);
+                        EnemyLocations.Add(enemyLocation);
                     }
                 }
             }
@@ -185,7 +188,7 @@ public static class Controller
 
     public static void SetDebugPriorityUnitToTrain(uint unit)
     {
-        nextUnitToTrain = unit;
+        DebugNextUnitToTrain = unit;
     }
 
     private static void AddDebugDataOnScreen()
@@ -215,7 +218,7 @@ public static class Controller
                         {
                             Text = "Next build order : " + nextOrderStr + "\n" +
                                    "Waiting for expand : " + IsTimeForExpandQuery.Get() + "\n" +
-                                   "Next unit to train : " + GetUnitName(nextUnitToTrain),
+                                   "Next unit to train : " + GetUnitName(DebugNextUnitToTrain),
                             VirtualPos = new Point(),
                             Size = 12
                         }
@@ -229,12 +232,12 @@ public static class Controller
 
     public static string GetUnitName(uint unitType)
     {
-        return gameData.Units[(int)unitType].Name;
+        return GameData.Units[(int)unitType].Name;
     }
 
     public static void AddAction(Action action)
     {
-        actions.Add(action);
+        Actions.Add(action);
     }
 
     public static void AddDebugCommand(DebugCommand command)
@@ -244,7 +247,7 @@ public static class Controller
             return;
         }
 
-        debugCommands.Add(command);
+        DebugCommands.Add(command);
     }
 
     public static void Chat(string message, bool team = false)
@@ -279,7 +282,7 @@ public static class Controller
 
     private static int GetAbilityID(uint unit)
     {
-        return (int)gameData.Units[(int)unit].AbilityId;
+        return (int)GameData.Units[(int)unit].AbilityId;
     }
 
     public static List<Unit> GetGeysers()
@@ -358,7 +361,7 @@ public static class Controller
     {
         //ideally this should be cached in the future and cleared at each new frame
         var units = new List<Unit>();
-        foreach (var unit in obs.Observation.RawData.Units)
+        foreach (var unit in Obs.Observation.RawData.Units)
         {
             if (hashset.Contains(unit.UnitType) && unit.Alliance == alliance)
             {
@@ -384,7 +387,7 @@ public static class Controller
     {
         //ideally this should be cached in the future and cleared at each new frame
         var units = new List<Unit>();
-        foreach (var unit in obs.Observation.RawData.Units)
+        foreach (var unit in Obs.Observation.RawData.Units)
         {
             if (unit.UnitType == unitType && unit.Alliance == alliance)
             {
@@ -407,28 +410,28 @@ public static class Controller
 
     public static bool CanUnitAttackAir(uint unitType)
     {
-        var unitData = gameData.Units[(int)unitType];
+        var unitData = GameData.Units[(int)unitType];
 
         return unitData.Weapons.Any(x => x.Type == Weapon.Types.TargetType.Air || x.Type == Weapon.Types.TargetType.Any);
     }
 
     public static bool CanUnitAttackGround(uint unitType)
     {
-        var unitData = gameData.Units[(int)unitType];
+        var unitData = GameData.Units[(int)unitType];
 
         return unitData.Weapons.Any(x => x.Type == Weapon.Types.TargetType.Ground || x.Type == Weapon.Types.TargetType.Any);
     }
 
     public static bool CanAfford(uint unitType)
     {
-        var unitData = gameData.Units[(int)unitType];
+        var unitData = GameData.Units[(int)unitType];
         var baseCost = (uint)0;
         if (unitType == Units.ORBITAL_COMMAND)
         {
-            baseCost = gameData.Units[(int)Units.COMMAND_CENTER].MineralCost;
+            baseCost = GameData.Units[(int)Units.COMMAND_CENTER].MineralCost;
         }
 
-        return minerals >= unitData.MineralCost - baseCost && vespene >= unitData.VespeneCost;
+        return Minerals >= unitData.MineralCost - baseCost && Vespene >= unitData.VespeneCost;
     }
 
     public static uint GetProducerBuildingType(uint unitType)
@@ -488,8 +491,8 @@ public static class Controller
         else
         {
             //do we have enough supply?
-            var requiredSupply = gameData.Units[(int)unitType].FoodRequired;
-            if (requiredSupply > maxSupply - currentSupply)
+            var requiredSupply = GameData.Units[(int)unitType].FoodRequired;
+            if (requiredSupply > MaxSupply - CurrentSupply)
             {
                 return false;
             }
@@ -763,7 +766,7 @@ public static class Controller
         var resourceCenters = GetUnits(Units.ResourceCenters);
         if (startingSpot == null && resourceCenters.Count > 0)
         {
-            startingSpot = startingLocation;
+            startingSpot = StartingLocation;
         }
 
         //Logger.Error("Unable to construct: {0}. No resource center was found.", GetUnitName(unitType));
@@ -776,8 +779,8 @@ public static class Controller
         {
             var adjustedRadius = radius + nbRetry / 300;
 
-            constructionSpot = new Vector3(startingSpot.Value.X + random.Next(-adjustedRadius, adjustedRadius + 1),
-                startingSpot.Value.Y + random.Next(-adjustedRadius, adjustedRadius + 1), startingSpot.Value.Z);
+            constructionSpot = new Vector3(startingSpot.Value.X + Random.Next(-adjustedRadius, adjustedRadius + 1),
+                startingSpot.Value.Y + Random.Next(-adjustedRadius, adjustedRadius + 1), startingSpot.Value.Z);
             nbRetry++;
 
             if (nbRetry > 600)

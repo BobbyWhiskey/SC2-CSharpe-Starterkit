@@ -23,10 +23,10 @@ public class ArmyModuleV2
             var delta = 3;
 
             IEnumerable<Vector2> pathStack = null;
-            var startPosition = new Vector2((int)Controller.startingLocation.X,
-                (int)Controller.startingLocation.Y + delta);
-            var toPosition = new Vector2((int)Controller.enemyLocations.First().X,
-                (int)Controller.enemyLocations.First().Y);
+            var startPosition = new Vector2((int)Controller.StartingLocation.X,
+                (int)Controller.StartingLocation.Y + delta);
+            var toPosition = new Vector2((int)Controller.EnemyLocations.First().X,
+                (int)Controller.EnemyLocations.First().Y);
 
             pathStack = Controller.AStarPathingGrid.FindPath(startPosition, toPosition);
 
@@ -83,7 +83,7 @@ public class ArmyModuleV2
             return;
         }
 
-        if (Controller.frame % ((int)Controller.FRAMES_PER_SECOND * 1) == 0)
+        if (Controller.Frame % ((int)Controller.FRAMES_PER_SECOND * 1) == 0)
         {
             attackPercentage += 0.03;
         }
@@ -115,11 +115,11 @@ public class ArmyModuleV2
 
         // TODO MC Figure out why i have to reverse Y and X :(
         if (LastAttackPosition != position ||
-            LastAttackFrame + 5 * Controller.FRAMES_PER_SECOND < Controller.frame)
+            LastAttackFrame + 5 * Controller.FRAMES_PER_SECOND < Controller.Frame)
         {
             Controller.Attack(army, new Vector3(position.Y, position.X, 0));
             LastAttackPosition = position;
-            LastAttackFrame = Controller.frame;
+            LastAttackFrame = Controller.Frame;
         }
 
         Controller.ShowDebugPath(_mainPath);

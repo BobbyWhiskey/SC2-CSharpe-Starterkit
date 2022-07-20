@@ -166,7 +166,7 @@ public class BuildingModule
             var freeMinerals = allMinerals.Except(allOwnedMinerals).ToList();
 
             var targetMineral = freeMinerals.OrderBy(
-                fm => (fm.Position - Controller.startingLocation).LengthSquared()
+                fm => (fm.Position - Controller.StartingLocation).LengthSquared()
             ).First();
 
             var mineralCluster = Controller.GetInRange(targetMineral.Position, allMinerals, 10).ToList();
@@ -241,13 +241,13 @@ public class BuildingModule
         var position = Controller.GetUnits(Units.SupplyDepots).FirstOrDefault()?.Position;
 
         //keep on buildings depots if supply is tight
-        if (Controller.maxSupply - Controller.currentSupply <= 8
+        if (Controller.MaxSupply - Controller.CurrentSupply <= 8
             && Controller.GetPendingCount(Units.SupplyDepots) == 0)
         {
             await BuildIfPossible(Units.SUPPLY_DEPOT, startingSpot: position, radius: 4);
         }
 
-        if (Controller.maxSupply - Controller.currentSupply <= 3
+        if (Controller.MaxSupply - Controller.CurrentSupply <= 3
             && Controller.GetPendingCount(Units.SupplyDepots) < 4)
         {
             await BuildIfPossible(Units.SUPPLY_DEPOT, allowParalelBuild: true, startingSpot: position, radius: 4);

@@ -16,7 +16,7 @@ public class MarineMicro : IUnitMicro
         var dangerousUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
             .Where(x => Controller.CanUnitAttackGround(x.UnitType)).ToList();
 
-        if (Controller.frame % 10 == 0)
+        if (Controller.Frame % 10 == 0)
         {
             foreach (var marine in marines)
             {
@@ -39,10 +39,10 @@ public class MarineMicro : IUnitMicro
             if (enemyUnits.Count() > StimUnitCountThreshhold)
             {
                 var found = _lastActivationTimeMap.TryGetValue(marine.Tag, out var lastActivationTime);
-                if (!found || lastActivationTime < Controller.frame - 500)
+                if (!found || lastActivationTime < Controller.Frame - 500)
                 {
                     marine.Ability(Abilities.GENERAL_STIMPACK);
-                    _lastActivationTimeMap[marine.Tag] = Controller.frame;
+                    _lastActivationTimeMap[marine.Tag] = Controller.Frame;
                 }
 
             }

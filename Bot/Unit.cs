@@ -32,7 +32,7 @@ public class Unit
     public Unit(SC2APIProtocol.Unit unit)
     {
         Original = unit;
-        UnitTypeData = Controller.gameData.Units[(int)unit.UnitType];
+        UnitTypeData = Controller.GameData.Units[(int)unit.UnitType];
 
         Name = UnitTypeData.Name;
         Tag = unit.Tag;

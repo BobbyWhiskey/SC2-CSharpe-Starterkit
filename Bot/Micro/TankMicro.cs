@@ -8,7 +8,7 @@ public class TankMicro : IUnitMicro
     
     public void OnFrame()
     {
-        if (Controller.frame % 10 != 0)
+        if (Controller.Frame % 10 != 0)
         {
             // This seems to be needed because if we span Abilities.SIEGE_TANK too much the tank never actually sieges
             return;

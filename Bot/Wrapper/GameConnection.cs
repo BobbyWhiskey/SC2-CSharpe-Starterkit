@@ -227,8 +227,8 @@ public class GameConnection
 
         var dataResponse = await proxy.SendRequest(dataReq);
 
-        Controller.gameInfo = gameInfoResponse.GameInfo;
-        Controller.gameData = dataResponse.Data;
+        Controller.GameInfo = gameInfoResponse.GameInfo;
+        Controller.GameData = dataResponse.Data;
 
         while (true)
         {
@@ -251,7 +251,7 @@ public class GameConnection
                 break;
             }
 
-            Controller.obs = observation;
+            Controller.Obs = observation;
             var (actions, debugCommands) = await bot.OnFrame();
 
 

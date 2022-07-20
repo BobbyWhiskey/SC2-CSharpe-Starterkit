@@ -23,10 +23,10 @@ public class MarauderMicro : IUnitMicro
             {
                 var found = _lastActivationTimeMap.TryGetValue(marine.Tag, out var lastActivationTime);
 // TODO Move this before this if
-                if (!found || lastActivationTime < Controller.frame - 500)
+                if (!found || lastActivationTime < Controller.Frame - 500)
                 {
                     marine.Ability(Abilities.GENERAL_STIMPACK);
-                    _lastActivationTimeMap[marine.Tag] = Controller.frame;
+                    _lastActivationTimeMap[marine.Tag] = Controller.Frame;
                 }
             }
         }

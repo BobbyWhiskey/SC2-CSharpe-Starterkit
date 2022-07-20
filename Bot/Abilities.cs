@@ -101,6 +101,6 @@ internal static class Abilities
 
     public static int GetID(uint unit)
     {
-        return (int)Controller.gameData.Units[(int)unit].AbilityId;
+        return (int)Controller.GameData.Units[(int)unit].AbilityId;
     }
 }

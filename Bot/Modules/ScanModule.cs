@@ -35,10 +35,10 @@ public class ScanModule
 
         var ocs = Controller.GetUnits(Units.ORBITAL_COMMAND);
 
-        if (lastInvisibleScan + invisibleScanDelay < Controller.frame)
+        if (lastInvisibleScan + invisibleScanDelay < Controller.Frame)
         {
             // TODO We check raw data but it should also be available in Controller.GetUnits()
-            var invisibleOrBorrowedUnits = Controller.obs.Observation.RawData.Units.Where(x =>
+            var invisibleOrBorrowedUnits = Controller.Obs.Observation.RawData.Units.Where(x =>
                 x.Cloak == CloakState.Cloaked
                 || x.IsBurrowed)
                 .ToList();
@@ -50,25 +50,25 @@ public class ScanModule
                     // TODO Check we got units or building close by before scanning?
                     var unit = new Unit(invisibleOrBorrowedUnits.First());
                     cc.Ability(Abilities.SCANNER_SWEEP, unit);
-                    Logger.Info("Burrowed unit scanned!!");
-                    lastInvisibleScan = Controller.frame;
+                    Logger.Info("Burrowed/cloacked unit scanned!!");
+                    lastInvisibleScan = Controller.Frame;
                 }
             }
         }
 
-        if (Controller.obs.Observation.RawData.Units.Any(x =>
+        if (Controller.Obs.Observation.RawData.Units.Any(x =>
                 x.Cloak == CloakState.Cloaked))
         {
             Logger.Info("Observer Cloaked unit!!");
         }
 
-        if (Controller.obs.Observation.RawData.Units.Any(x =>
+        if (Controller.Obs.Observation.RawData.Units.Any(x =>
                 x.IsBurrowed))
         {
             Logger.Info("Burrowed unit detected!!");
         }
 
-        if (Controller.obs.Observation.RawData.Units.Any(x =>
+        if (Controller.Obs.Observation.RawData.Units.Any(x =>
                 x.Cloak == CloakState.CloakedDetected))
         {
             Logger.Info("Observer CloakedDetected unit!!");
@@ -103,9 +103,9 @@ public class ScanModule
                 var targetScan = orderedClusters.First();
 
                 // For all equals, find closest to enemy base:
-                targetScan = orderedClusters.Where(x => x.Value == targetScan.Value).MinBy(x => (x.Key - Controller.enemyLocations.First()).LengthSquared());
+                targetScan = orderedClusters.Where(x => x.Value == targetScan.Value).MinBy(x => (x.Key - Controller.EnemyLocations.First()).LengthSquared());
 
-                lastClusterScan[targetScan.Key] = Controller.frame;
+                lastClusterScan[targetScan.Key] = Controller.Frame;
 
                 unit.Ability(Abilities.SCANNER_SWEEP, targetScan.Key);
             }

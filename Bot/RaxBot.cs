@@ -39,11 +39,11 @@ internal class RaxBot : Bot
     {
         Controller.OpenFrame();
 
-        if (Controller.frame == 0)
+        if (Controller.Frame == 0)
         {
             Logger.Info("RaxBot");
             Logger.Info("--------------------------------------");
-            Logger.Info("Map: {0}", Controller.gameInfo.MapName);
+            Logger.Info("Map: {0}", Controller.GameInfo.MapName);
             Logger.Info("--------------------------------------");
         }
 
@@ -53,7 +53,7 @@ internal class RaxBot : Bot
         {
             if (structures[0].Integrity < 0.4) //being attacked or burning down                 
             {
-                if (!Controller.chatLog.Contains("gg"))
+                if (!Controller.ChatLog.Contains("gg"))
                 {
                     Controller.Chat("gg");
                 }
@@ -78,7 +78,7 @@ internal class RaxBot : Bot
             }
         }
 
-        if (Controller.frame % 5 == 0)
+        if (Controller.Frame % 5 == 0)
         {
             await _buildingModule.OnFrame();
         }
@@ -87,7 +87,7 @@ internal class RaxBot : Bot
         _scanModule.OnFrame();
         //_armyMovementModule2.OnFrame();
 
-        if (Controller.frame % 10 == 0)
+        if (Controller.Frame % 10 == 0)
         {
             Controller.DistributeWorkers();
             _researchModule.OnFrame();

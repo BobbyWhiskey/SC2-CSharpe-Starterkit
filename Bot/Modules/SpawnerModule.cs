@@ -10,7 +10,7 @@ public class SpawnerModule
     public void OnFrame()
     {
         var useRatioFromBuild = true;
-        if (IsTimeForExpandQuery.Get() && Controller.minerals < 500)
+        if (IsTimeForExpandQuery.Get() && Controller.Minerals < 500)
         {
             return;
         }

@@ -36,7 +36,7 @@ public static class BuildOrderQueries
         var lastBuildOrder = GetNextStep();
         if (lastBuildOrder is WaitStep waitStep)
         {
-            if (Controller.frame < waitStep.StartedFrame + waitStep.Delay)
+            if (Controller.Frame < waitStep.StartedFrame + waitStep.Delay)
             {
                 return false;
             }
@@ -69,9 +69,9 @@ public static class BuildOrderQueries
             {
                 if (waitStep.StartedFrame == 0)
                 {
-                    waitStep.StartedFrame = Controller.frame;
+                    waitStep.StartedFrame = Controller.Frame;
                 }
-                if (Controller.frame < waitStep.Delay + waitStep.StartedFrame)
+                if (Controller.Frame < waitStep.Delay + waitStep.StartedFrame)
                 {
                     return step;
                 }
