@@ -6,6 +6,7 @@ public class MarineMicro : IUnitMicro
 {
     private static readonly int StimRangeActivation = 10;
     private static readonly int StimUnitCountThreshhold = 2;
+    private static readonly int RangeToFlee = 4;
     private static int StimRangeActivationDelay = 500;
 
     private readonly Dictionary<ulong, ulong> _lastActivationTimeMap = new();
@@ -22,7 +23,7 @@ public class MarineMicro : IUnitMicro
             {
                 var enemy = Controller.GetFirstInRange(marine.Position,
                     dangerousUnits
-                    , 3);
+                    , RangeToFlee);
                 if (enemy != null)
                 {
                     marine.Move(marine.Position - enemy.Position + marine.Position);

@@ -9,6 +9,11 @@ public static class BuildOrderQueries
     public static BuildOrderDefinition currentBuild = new MarineMedivacIntoTankBuild();
     //public static BuildOrderDefinition currentBuild = new MassMarineRush();
 
+    private static ulong _buildStepStuckThreshold = Controller.SecsToFrames(60);
+    private static ulong _lastBuildStepStartedFrame = 0;
+    private static IBuildStep? _lastBuildStep = null; 
+    private static bool _detectedBuildStick = false; 
+
     public static bool IsBuildOrderCompleted()
     {
         var groups = currentBuild.buildOrder.OfType<BuildingStep>().GroupBy(x => x.BuildingType);
@@ -57,6 +62,24 @@ public static class BuildOrderQueries
         return Controller.GetUnits(key).Count() >= maxUnitcount;
     }
 
+    public static bool IsBuildOrderStuck()
+    {
+        if (_lastBuildStep != null 
+            && !(_lastBuildStep is WaitStep)
+            && Controller.Frame > _lastBuildStepStartedFrame + _buildStepStuckThreshold )
+        {
+            if (!_detectedBuildStick)
+            {
+                Logger.Warning("Build order stuck! Fallback on autopilot mode");
+                _detectedBuildStick = true;
+            }
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
     public static IBuildStep? GetNextStep()
     {
         var countDic = new Dictionary<uint, int>();
@@ -73,6 +96,12 @@ public static class BuildOrderQueries
                 }
                 if (Controller.Frame < waitStep.Delay + waitStep.StartedFrame)
                 {
+                    if (_lastBuildStep != step)
+                    {
+                        _lastBuildStep = step;
+                        _lastBuildStepStartedFrame = Controller.Frame;
+                    }
+
                     return step;
                 }
             }
@@ -111,12 +140,18 @@ public static class BuildOrderQueries
                 // TODO MC Warning: This count does not include the unit that has been planned, but not yet started to construct. See if we have this info in the observer
                 if (Controller.GetUnits(unitsToCount).Count < targetCount)
                 {
+                    if (_lastBuildStep != step)
+                    {
+                        _lastBuildStep = step;
+                        _lastBuildStepStartedFrame = Controller.Frame;
+                    }
+                    
                     return step;
                 }
             }
-
         }
 
+        _lastBuildStep = null;
         return null;
     }
 }

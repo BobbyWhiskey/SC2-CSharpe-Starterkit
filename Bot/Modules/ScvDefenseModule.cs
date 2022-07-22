@@ -6,6 +6,9 @@ public class ScvDefenseModule
 {
     public void OnFrame()
     {
+        // TODO Check if that was causing bad games
+        return;
+        
         if (Controller.Frame % 10 != 0)
         {
             return;

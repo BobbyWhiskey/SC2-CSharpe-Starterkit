@@ -257,7 +257,6 @@ public class GameConnection
 
             if (debugCommands.Any())
             {
-                // TODO MC Just testing debug thing
                 var debugRequest = new Request();
                 debugRequest.Debug = new RequestDebug
                 {

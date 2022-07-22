@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
-using Bot.AStar;
+using AStar;
+using AStar.Options;
 using Bot.BuildOrders;
 using Bot.Queries;
 using SC2APIProtocol;
@@ -18,14 +19,15 @@ public static class Controller
     //editable
     private static readonly int frameDelay = 0; //too fast? increase this to e.g. 20
     
-    // Reserved units
+    // Reserved by any of the module/micro
     private static readonly List<ulong> ReservedUnits = new();
 
     //don't edit
     private static readonly List<Action> Actions = new();
     private static readonly List<DebugCommand> DebugCommands = new();
     private static readonly Random Random = new();
-
+    
+    public static readonly ICollection<Vector3> MineralClusters = new List<Vector3>();
     public static ResponseGameInfo GameInfo;
     public static ResponseData GameData;
     public static ResponseObservation Obs;
@@ -42,7 +44,9 @@ public static class Controller
     // Debug data
     private static uint DebugNextUnitToTrain;
 
-    public static Astar AStarPathingGrid { get; set; }
+    //public static Astar AStarPathingGrid { get; set; }
+    public static WorldGrid? WorldGrid { get; set; }
+    public static PathFinder PathFinder { get; set; }
 
     public static bool[][] PathingMap { get; set; }
 
@@ -74,29 +78,25 @@ public static class Controller
             // .Select(x => x.Reverse().ToArray())
             .ToArray();
 
-
         PathingMap = canMoveLines;
 
+        var gridShort = new short[GameInfo.StartRaw.MapSize.X,GameInfo.StartRaw.MapSize.Y];
 
-        var grid = new List<List<Node>>();
         var x = 0;
 
         foreach (var line in canMoveLines)
         {
             var y = 0;
-            var gridLine = new List<Node>();
             foreach (var value in line)
             {
-                gridLine.Add(new Node(new Vector2(x, y), value));
+                gridShort[y, x] = (short)(value ? 1 : 0);
                 y++;
             }
-
-
-            grid.Add(gridLine);
             x++;
         }
 
-        AStarPathingGrid = new Astar(grid);
+        WorldGrid = new WorldGrid(gridShort);
+        PathFinder = new PathFinder(WorldGrid, new PathFinderOptions(){SearchLimit = int.MaxValue, UseDiagonals = true});
     }
 
     private static bool[] ByteToBools(byte value)
@@ -148,9 +148,27 @@ public static class Controller
         }
 
 
-        if (PathingMap == null)
+        if (WorldGrid == null)
         {
             ExtractMap();
+        }
+
+        if (!MineralClusters.Any())
+        {
+            var allMinerals = GetUnits(Units.MineralFields, Alliance.Neutral);
+            var processedMinerals = new List<Unit>();
+            while (true)
+            {
+                var mineral = allMinerals.Except(processedMinerals).FirstOrDefault();
+                if (mineral == null)
+                {
+                    break;
+                }
+                var cluster = Controller.GetInRange(mineral.Position, allMinerals, 14).ToList();
+                var clusterPosition = new Vector3(cluster.Average(x => x.Position.X),cluster.Average(x => x.Position.Y), cluster.Average(x => x.Position.Z) );
+                MineralClusters.Add(clusterPosition);
+                processedMinerals.AddRange(cluster);
+            }
         }
 
         Actions.Clear();
@@ -207,6 +225,8 @@ public static class Controller
         {
             return;
         }
+        
+        //ShowDebugAStarGrid();
 
         var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
         var nextWaitOrder = BuildOrderQueries.GetNextStep() as WaitStep;
@@ -214,6 +234,11 @@ public static class Controller
         if (nextWaitOrder != null)
         {
             nextOrderStr = "Waiting " + nextWaitOrder.Delay / FRAMES_PER_SECOND + " sec";
+        }
+
+        if (BuildOrderQueries.IsBuildOrderStuck())
+        {
+            nextOrderStr = "BUILD ORDER IS STUCK!! :(";
         }
 
         AddDebugCommand(new DebugCommand
@@ -237,7 +262,7 @@ public static class Controller
             }
         });
 
-        //ShowDebugAStarGrid();
+
     }
 
     public static string GetUnitName(uint unitType)
@@ -300,12 +325,13 @@ public static class Controller
         return GetUnits(Units.GasGeysers, Alliance.Neutral);
     }
 
-    public static void Attack(List<Unit> units, Vector3 target)
+    public static void Attack(List<Unit> units, Vector3 target, bool queueAction = false)
     {
         var action = CreateRawUnitCommand(Abilities.ATTACK);
         action.ActionRaw.UnitCommand.TargetWorldSpacePos = new Point2D();
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.X = target.X;
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;
+        action.ActionRaw.UnitCommand.QueueCommand = queueAction;
         foreach (var unit in units)
         {
             action.ActionRaw.UnitCommand.UnitTags.Add(unit.Tag);
@@ -852,8 +878,10 @@ public static class Controller
 
         return true;
     }
+    
+    
 
-    public static void ShowDebugPath(IEnumerable<Vector2> pathStack, Color? color = null, int elevation = 12)
+    public static void ShowDebugPath(List<System.Drawing.Point> pathStack, Color? color = null, int elevation = 12)
     {
         if (!IsDebug)
         {
@@ -892,24 +920,18 @@ public static class Controller
         }
 
         var debugBoxes = new List<DebugBox>();
-        var x = 0;
-        var y = 0;
 
-        foreach (var line in AStarPathingGrid.Grid)
+        for (int x = 0; x < GameInfo.StartRaw.MapSize.X; x++)
         {
-            x = 0;
-            foreach (var c in line)
+            for (int y = 0; y < GameInfo.StartRaw.MapSize.Y; y++)
             {
-                if (!c.Walkable)
+                if (WorldGrid[x, y] == 0 &&
+                    ( (x == 0 || y == 0 || x == GameInfo.StartRaw.MapSize.X-1 || y == GameInfo.StartRaw.MapSize.Y-1
+                     ||( (WorldGrid[x + 1, y] != 0)
+                         || WorldGrid[x, y+ 1] != 0
+                         || WorldGrid[x - 1, y] != 0
+                         || WorldGrid[x, y - 1] != 0))))
                 {
-                    // debugTexts.Add(new DebugText()
-                    //     {
-                    //         Text = "NO!",
-                    //         Size = 12,
-                    //         WorldPos = new Point() { X = x, Y = y, Z = 12 }
-                    //     });
-                    //         
-                    //
                     debugBoxes.Add(new DebugBox
                     {
                         Min = new Point
@@ -920,10 +942,38 @@ public static class Controller
                             { R = 250, B = 1, G = 1 }
                     });
                 }
-                x++;
             }
-            y++;
         }
+        //
+        // foreach (var line in AStarPathingGrid.Grid)
+        // {
+        //     x = 0;
+        //     foreach (var c in line)
+        //     {
+        //         if (!c.Walkable)
+        //         {
+        //             // debugTexts.Add(new DebugText()
+        //             //     {
+        //             //         Text = "NO!",
+        //             //         Size = 12,
+        //             //         WorldPos = new Point() { X = x, Y = y, Z = 12 }
+        //             //     });
+        //             //         
+        //             //
+        //             debugBoxes.Add(new DebugBox
+        //             {
+        //                 Min = new Point
+        //                     { X = x + 1, Y = y + 1, Z = 3 },
+        //                 Max = new Point
+        //                     { X = x - 0, Y = y - 0, Z = 12 },
+        //                 Color = new Color
+        //                     { R = 250, B = 1, G = 1 }
+        //             });
+        //         }
+        //         x++;
+        //     }
+        //     y++;
+        // }
 
         AddDebugCommand(new DebugCommand
         {

@@ -9,13 +9,15 @@ public class BuildingModule
 {
     public async Task OnFrame()
     {
-        if (BuildOrderQueries.IsBuildOrderCompleted() || BuildOrderQueries.GetNextStep() is WaitStep)
+        if ( BuildOrderQueries.IsBuildOrderCompleted() 
+             || BuildOrderQueries.GetNextStep() is WaitStep
+             || BuildOrderQueries.IsBuildOrderStuck())
         {
             await BuildSupplyDepots();
         }
 
         // TODO MC Not sure if here, but repair damaged buildings 
-        if (!BuildOrderQueries.IsBuildOrderCompleted())
+        if (!BuildOrderQueries.IsBuildOrderCompleted() && !BuildOrderQueries.IsBuildOrderStuck())
         {
             await AdvanceBuildOrder();
         }

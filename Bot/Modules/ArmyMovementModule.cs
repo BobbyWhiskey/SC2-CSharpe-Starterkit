@@ -13,7 +13,7 @@ public class ArmyMovementModule
     public void OnFrame()
     {
         if (Controller.Frame % 5 != 0)
-        {
+        { 
             return; 
         }
         
@@ -35,7 +35,7 @@ public class ArmyMovementModule
             {
                 if (Controller.Frame - _lastAttackPositionUpdate > 200)
                 {
-                    var enemies = Controller.GetUnits(Units.All, Alliance.Enemy);
+                    var enemies = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible:true);
                     if (enemies.Any())
                     {
                         AttackWithArmy(enemies.First().Position);
@@ -45,7 +45,8 @@ public class ArmyMovementModule
                         if (_lastAttackPosition.HasValue)
                         {
                             // Meh 
-                            _lastAttackPosition += Vector3.Multiply(0.2f, Controller.EnemyLocations[0] - _lastAttackPosition.Value);
+                            var attackLocation = _lastAttackPosition + Vector3.Multiply(0.2f, Controller.EnemyLocations[0] - _lastAttackPosition.Value);
+                            AttackWithArmy(attackLocation.Value);
                             //_lastAttackPosition = _lastAttackPosition.Value.MidWay(Controller.enemyLocations[0]);
                             //_lastAttackPositionUpdate = Controller.frame;
                         }
@@ -58,13 +59,14 @@ public class ArmyMovementModule
             }
             else if (Controller.EnemyLocations.Count > 0)
             {
-                _lastAttackPosition = Controller.StartingLocation +
+                var attackLocation = Controller.StartingLocation +
                                       Vector3.Multiply(0.3f, Controller.EnemyLocations[0] - Controller.StartingLocation);
-                
+                AttackWithArmy(attackLocation);
                 // _lastAttackPosition = Controller.enemyLocations[0].MidWay(Controller.GetResourceCenters().First().position);
                 //_lastAttackPositionUpdate = Controller.frame;
             }
-
+            
+            // Dirty fix: Reattack just to make sure we don't leave any units behind
             if (_lastAttackPosition != null)
             {
                 AttackWithArmy(_lastAttackPosition.Value);
