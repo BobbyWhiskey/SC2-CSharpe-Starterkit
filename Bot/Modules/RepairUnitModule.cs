@@ -8,7 +8,7 @@ public class RepairUnitModule
     public void OnFrame()
     {
         // TODO Check if that was causing bad games
-        return;
+        //return;
         
         var mechanicals = Controller.GetUnits(Units.Mechanical, includeReservedUnits: true);
         RepairUnits(mechanicals);

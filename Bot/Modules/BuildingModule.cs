@@ -242,6 +242,11 @@ public class BuildingModule
     {
         var position = Controller.GetUnits(Units.SupplyDepots).FirstOrDefault()?.Position;
 
+        if (200 == Controller.CurrentSupply)
+        {
+            return;
+        }
+
         //keep on buildings depots if supply is tight
         if (Controller.MaxSupply - Controller.CurrentSupply <= 8
             && Controller.GetPendingCount(Units.SupplyDepots) == 0)

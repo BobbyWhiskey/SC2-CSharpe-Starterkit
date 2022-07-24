@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using AStar;
+using AStar.Heuristics;
 using AStar.Options;
 using Bot.BuildOrders;
 using Bot.Queries;
@@ -20,7 +21,7 @@ public static class Controller
     private static readonly int frameDelay = 0; //too fast? increase this to e.g. 20
     
     // Reserved by any of the module/micro
-    private static readonly List<ulong> ReservedUnits = new();
+    private static readonly HashSet<ulong> ReservedUnits = new();
 
     //don't edit
     private static readonly List<Action> Actions = new();
@@ -61,11 +62,21 @@ public static class Controller
 
     public static void ReserveUnit(ulong tag)
     {
+        if (ReservedUnits.Contains(tag) && Controller.IsDebug)
+        {
+            throw new Exception("Unit already reseved duuuuh!");
+        }
+
         ReservedUnits.Add(tag);
     }
 
     public static void ReleaseUnit(ulong tag)
     {
+        if (!ReservedUnits.Contains(tag)&& Controller.IsDebug)
+        {
+            throw new Exception("Unit already released duuuuh!");
+        }
+        
         ReservedUnits.Remove(tag); 
     }
 
@@ -96,7 +107,13 @@ public static class Controller
         }
 
         WorldGrid = new WorldGrid(gridShort);
-        PathFinder = new PathFinder(WorldGrid, new PathFinderOptions(){SearchLimit = int.MaxValue, UseDiagonals = true});
+        PathFinder = new PathFinder(WorldGrid, 
+            new PathFinderOptions()
+            {
+                SearchLimit = int.MaxValue,
+                UseDiagonals = false,
+                HeuristicFormula = HeuristicFormula.EuclideanNoSQR
+            });
     }
 
     private static bool[] ByteToBools(byte value)
@@ -895,9 +912,9 @@ public static class Controller
             debugBoxes.Add(new DebugBox
             {
                 Min = new Point
-                    { X = node.X + 1, Y = node.Y + 1, Z = 3 },
+                    { X = (float)(node.X + 0.55), Y = (float)(node.Y + 0.55), Z = 3 },
                 Max = new Point
-                    { X = node.X, Y = node.Y, Z = elevation },
+                    { X = (float)(node.X + 0.45), Y = (float)(node.Y + 0.45), Z = elevation },
                 Color = color ?? new Color
                     { R = 1, B = 250, G = 1 }
             });
@@ -982,5 +999,10 @@ public static class Controller
                 Boxes = { debugBoxes }
             }
         });
+    }
+
+    public static bool IsUnitReserved(ulong unitTag)
+    {
+        return ReservedUnits.Contains(unitTag);
     }
 }

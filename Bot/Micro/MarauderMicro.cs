@@ -1,4 +1,5 @@
-﻿using SC2APIProtocol;
+﻿using Bot.Micro.Shared;
+using SC2APIProtocol;
 
 namespace Bot.Micro;
 
@@ -11,22 +12,30 @@ public class MarauderMicro : IUnitMicro
 
     public void OnFrame()
     {
-        var marines = Controller.GetUnits(Units.MARAUDER);
+        var marauders = Controller.GetUnits(Units.MARAUDER, includeReservedUnits:true);
 
+        var dangerousUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
+            .Where(x => Controller.CanUnitAttackGround(x.UnitType)).ToList();
+
+        foreach (var unit in marauders)
+        {
+            KeepDistanceToEnemyMicro.OnFrame(unit, dangerousUnits,3, 2, (ulong)(Controller.FRAMES_PER_SECOND * 0.2) );
+        }
+        
         // TODO Check if we researched stim
-        foreach (var marine in marines)
+        foreach (var unit in marauders)
         {
             var enemyUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
-                .Where(x => (marine.Position - x.Position).Length() < StimRangeActivation);
+                .Where(x => (unit.Position - x.Position).Length() < StimRangeActivation);
 
             if (enemyUnits.Any())
             {
-                var found = _lastActivationTimeMap.TryGetValue(marine.Tag, out var lastActivationTime);
+                var found = _lastActivationTimeMap.TryGetValue(unit.Tag, out var lastActivationTime);
 // TODO Move this before this if
                 if (!found || lastActivationTime < Controller.Frame - 500)
                 {
-                    marine.Ability(Abilities.GENERAL_STIMPACK);
-                    _lastActivationTimeMap[marine.Tag] = Controller.Frame;
+                    unit.Ability(Abilities.GENERAL_STIMPACK);
+                    _lastActivationTimeMap[unit.Tag] = Controller.Frame;
                 }
             }
         }

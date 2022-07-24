@@ -7,7 +7,7 @@ public class ScvDefenseModule
     public void OnFrame()
     {
         // TODO Check if that was causing bad games
-        return;
+        //return;
         
         if (Controller.Frame % 10 != 0)
         {
@@ -28,9 +28,14 @@ public class ScvDefenseModule
                 var scv = scvs
                     .Where(x => x.Order.AbilityId != Abilities.ATTACK)
                     .Where(x => (x.Position - cc.Position).LengthSquared() < Math.Pow(12, 2));
-                foreach (var unit in scv)
+
+                // If the CC or scvs are under attack we make them all attack
+                if (cc.Integrity < 0.9 || scv.Any(x => x.Integrity < 0.9))
                 {
-                    unit.Ability(Abilities.ATTACK, closeEnemy.Position);
+                    foreach (var unit in scv)
+                    {
+                        unit.Ability(Abilities.ATTACK, closeEnemy.Position);
+                    }
                 }
             }
             else

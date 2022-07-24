@@ -115,7 +115,7 @@ public class CatFactModule
         "There is a show in Iceland called \"Keeping Up With the Kattarshians.\" It's a cat reality show that features 4 kittens who live together in fully-furnished \"cat\" house, Big Brother-style.",
         "Researchers say your cat *does* know her name. She just doesn't care.",
         "The Hungarian word for \"quotation marks\" is \"macskaköröm,\" which literally translates to \"cat claws.\"",
-        "The reactor of this bot has a cat."
+        "The creator of this bot has a cat."
     };
 
     private bool _factSaid;

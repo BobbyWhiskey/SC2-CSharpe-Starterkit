@@ -86,8 +86,8 @@ internal class RaxBot : Bot
             await _buildingModule.OnFrame();
         }
 
-        _armyMovementModule.OnFrame();
-        //_armyMovementModule2.OnFrame();
+        //_armyMovementModule.OnFrame();
+        _armyMovementModule2.OnFrame();
         
         _scanModule.OnFrame();
         _scoutingModule.OnFrame();

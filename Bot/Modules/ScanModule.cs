@@ -37,10 +37,9 @@ public class ScanModule
 
         if (lastInvisibleScan + invisibleScanDelay < Controller.Frame)
         {
-            // TODO We check raw data but it should also be available in Controller.GetUnits()
             var invisibleOrBorrowedUnits = Controller.GetUnits(Units.All, Alliance.Enemy).Where(x =>
-                x.Cloak == CloakState.Cloaked
-                || x.IsBurrowed)
+                (x.Cloak == CloakState.Cloaked && !x.IsVisible)
+                || x.IsBurrowed && !x.IsVisible)
                 .ToList();
             
             if (invisibleOrBorrowedUnits.Any())

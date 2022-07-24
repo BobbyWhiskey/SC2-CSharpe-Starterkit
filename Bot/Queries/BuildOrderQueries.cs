@@ -64,6 +64,11 @@ public static class BuildOrderQueries
 
     public static bool IsBuildOrderStuck()
     {
+        if (_detectedBuildStick)
+        {
+            return true;
+        }
+        
         if (_lastBuildStep != null 
             && !(_lastBuildStep is WaitStep)
             && Controller.Frame > _lastBuildStepStartedFrame + _buildStepStuckThreshold )

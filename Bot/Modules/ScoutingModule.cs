@@ -6,7 +6,7 @@ namespace Bot.Modules;
 
 public class ScoutingModule
 {
-    private static ulong ScoutingInterval = Controller.SecsToFrames(40);
+    private static ulong ScoutingInterval = Controller.SecsToFrames(75);
     private static ulong ScoutingStartingFrame = Controller.SecsToFrames(60);
     private ulong LastScoutingFrame = ulong.MinValue;
     private Random _random = new Random();
@@ -77,10 +77,7 @@ public class ScoutingModule
                 
                 mineralToScout = this._mineralLinesInfo[_random.Next(0, this._mineralLinesInfo.Count)];
                 Controller.Attack(new List<Unit>(){viking}, mineralToScout.CenterPosition, true);
-                
-                mineralToScout = this._mineralLinesInfo[_random.Next(0, this._mineralLinesInfo.Count)];
-                Controller.Attack(new List<Unit>(){viking}, mineralToScout.CenterPosition, true);
-                
+
                 //viking.Ability(Abilities.ATTACK, mineralToScout.CenterPosition);
 
                 LastScoutingFrame = Controller.Frame;
@@ -89,7 +86,6 @@ public class ScoutingModule
             if (LastScoutingFrame == ulong.MinValue)
             {
                 // Just scout with SCV at the begining
-                 
                 var scvs = Controller.GetUnits(Units.SCV);
                 if (scvs.Any())
                 {
@@ -127,14 +123,13 @@ public class ScoutingModule
         var unit = Controller.GetUnits(Units.All, includeReservedUnits: true).FirstOrDefault(x => x.Tag == CurrentScoutingUnit);
         if (unit == null)
         {
-            CurrentScoutingUnit = 0;
             Controller.ReleaseUnit(CurrentScoutingUnit);
-        }
-        else if (unit != null 
-            && (Controller.GetFirstInRange(unit.Position, Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy), 14) != null) || unit.Order.AbilityId == 0)
-        {
             CurrentScoutingUnit = 0;
+        }
+        else if (Controller.GetFirstInRange(unit.Position, Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy), 14) != null || unit.Order.AbilityId == 0)
+        {
             Controller.ReleaseUnit(unit.Tag);
+            CurrentScoutingUnit = 0;
             
             unit.Move(Controller.StartingLocation);
         }

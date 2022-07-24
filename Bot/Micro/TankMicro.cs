@@ -8,7 +8,7 @@ public class TankMicro : IUnitMicro
     
     public void OnFrame()
     {
-        if (Controller.Frame % 10 != 0)
+        if (Controller.Frame % 5 != 0)
         {
             // This seems to be needed because if we span Abilities.SIEGE_TANK too much the tank never actually sieges
             return;
@@ -21,7 +21,7 @@ public class TankMicro : IUnitMicro
 
         foreach (var tank in tanks) 
         {
-            var unitsInRange = Controller.GetInRange(tank.Position,enemyArmy,  13 - 1);
+            var unitsInRange = Controller.GetInRange(tank.Position,enemyArmy,  13 + 1);
             
             if (unitsInRange.Count() > UnitCountSiegeThreshold)
             {

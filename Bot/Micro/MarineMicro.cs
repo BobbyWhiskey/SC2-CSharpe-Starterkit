@@ -1,4 +1,5 @@
-﻿using SC2APIProtocol;
+﻿using Bot.Micro.Shared;
+using SC2APIProtocol;
 
 namespace Bot.Micro;
 
@@ -6,33 +7,38 @@ public class MarineMicro : IUnitMicro
 {
     private static readonly int StimRangeActivation = 10;
     private static readonly int StimUnitCountThreshhold = 2;
-    private static readonly int RangeToFlee = 4;
+    private static readonly int RangeToFlee = 2;
     private static int StimRangeActivationDelay = 500;
 
     private readonly Dictionary<ulong, ulong> _lastActivationTimeMap = new();
 
     public void OnFrame()
     {
-        var marines = Controller.GetUnits(Units.MARINE);
+        var marines = Controller.GetUnits(Units.MARINE, includeReservedUnits:true);
         var dangerousUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
             .Where(x => Controller.CanUnitAttackGround(x.UnitType)).ToList();
 
-        if (Controller.Frame % 10 == 0)
-        {
-            foreach (var marine in marines)
-            {
-                var enemy = Controller.GetFirstInRange(marine.Position,
-                    dangerousUnits
-                    , RangeToFlee);
-                if (enemy != null)
-                {
-                    marine.Move(marine.Position - enemy.Position + marine.Position);
-                }
-            }
-        }
-
-        // TODO Check if we researched stim
         foreach (var marine in marines)
+        {
+            KeepDistanceToEnemyMicro.OnFrame(marine, dangerousUnits,3, RangeToFlee, (ulong)(Controller.FRAMES_PER_SECOND * 0.2) );
+        }
+        
+    // if (Controller.Frame % 3 == 0)
+    // {
+    //     foreach (var marine in marines)
+    //     {
+    //         var enemy = Controller.GetFirstInRange(marine.Position,
+    //             dangerousUnits
+    //             , RangeToFlee);
+    //         if (enemy != null)
+    //         {
+    //             marine.Move(marine.Position - enemy.Position + marine.Position);
+    //         }
+    //     }
+    // }
+
+    // TODO Check if we researched stim
+    foreach (var marine in marines)
         {
             var enemyUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
                 .Where(x => (marine.Position - x.Position).Length() < StimRangeActivation);
