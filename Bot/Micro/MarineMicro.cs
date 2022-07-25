@@ -8,7 +8,7 @@ public class MarineMicro : IUnitMicro
     private static readonly int StimRangeActivation = 10;
     private static readonly int StimUnitCountThreshold = 2;
     private static readonly int RangeToFlee = 2;
-    private static readonly int StimRangeActivationDelay = 500;
+    private static readonly int StimRangeActivationDelay = 3;
 
     private readonly Dictionary<ulong, ulong> _lastActivationTimeMap = new();
 
@@ -43,10 +43,11 @@ public class MarineMicro : IUnitMicro
             var enemyUnits = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy)
                 .Where(x => (marine.Position - x.Position).Length() < StimRangeActivation);
 
-            if (enemyUnits.Count() > StimUnitCountThreshold)
+            if (enemyUnits.Count() > StimUnitCountThreshold && marine.Integrity > 0.4f)
             {
                 var found = _lastActivationTimeMap.TryGetValue(marine.Tag, out var lastActivationTime);
-                if (!found || lastActivationTime < Controller.Frame - Controller.SecsToFrames(StimRangeActivationDelay) || marine.Integrity >= 1)
+                if (!found 
+                    || lastActivationTime < Controller.Frame - Controller.SecsToFrames(StimRangeActivationDelay))
                 {
                     marine.Ability(Abilities.GENERAL_STIMPACK);
                     _lastActivationTimeMap[marine.Tag] = Controller.Frame;
