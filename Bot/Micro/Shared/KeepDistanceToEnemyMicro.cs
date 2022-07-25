@@ -15,7 +15,7 @@ public static class KeepDistanceToEnemyMicro
             if (enemy != null)
             {
                 unit.Move(unit.Position - enemy.Position + unit.Position);
-                if (Controller.IsUnitReserved(unit.Tag))
+                if (!Controller.IsUnitReserved(unit.Tag))
                 {
                     Controller.ReserveUnit(unit.Tag);
                     _lastActivationTimeMap[unit.Tag] = Controller.Frame;

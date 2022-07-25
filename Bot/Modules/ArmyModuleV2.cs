@@ -171,7 +171,7 @@ public class ArmyModuleV2
     private void Attack()
     {
         var myArmy = Controller.GetUnits(Units.ArmyUnits);
-        if (myArmy.Count < 20)
+        if (myArmy.Count < 25)
         {
             ArmyState = ArmyState.DEFEND;
             attackPercentage = 0.25;
@@ -221,12 +221,14 @@ public class ArmyModuleV2
 
     private void Defend()
     {
-        if (Controller.GetUnits(Units.ArmyUnits).Count > 20)
+        var closeArmy = GetEnemiesCloseToBaseArmy().ToList();
+        
+        if (Controller.GetUnits(Units.ArmyUnits).Count > 20 && !closeArmy.Any())
         {
             ArmyState = ArmyState.ATTACK;
             return;
         }
-        var closeArmy = GetEnemiesCloseToBaseArmy().ToList();
+        
         if (closeArmy.Any())
         {
             AttackWithArmy(closeArmy.First().Position);
@@ -259,10 +261,7 @@ public class ArmyModuleV2
         {
             // Sometime the pathfinding fails breafly
             // Fallback on non pathing way.
-            var delta = AverageArmyDivergence/10 ;
-            var movementVector = position - AverageArmyPosition;
-            var attackPosition = Vector3.Multiply(movementVector, 0.2f + (float)delta) + AverageArmyPosition;
-            AttackWithArmy(attackPosition);
+            AttackWithArmy(position);
         }
         
         // var delta = AverageArmyDivergence/10 ;

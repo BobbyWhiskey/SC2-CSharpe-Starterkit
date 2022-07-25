@@ -243,7 +243,7 @@ public static class Controller
             return;
         }
         
-        //ShowDebugAStarGrid();
+        ShowDebugAStarGrid();
 
         var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
         var nextWaitOrder = BuildOrderQueries.GetNextStep() as WaitStep;
