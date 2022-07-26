@@ -959,7 +959,7 @@ public static class Controller
 
     public static void ShowDebugPath(List<System.Drawing.Point>? pathStack, Color? color = null, int elevation = 12)
     {
-        if (!IsDebug)
+        if (!IsDebug || !Controller.HeightMap.Any())
         {
             return;
         }
@@ -994,7 +994,7 @@ public static class Controller
 
     public static void ShowDebugAStarGrid()
     {
-        if (!IsDebug)
+        if (!IsDebug || !HeightMap.Any())
         {
             return;
         }
