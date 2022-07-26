@@ -16,6 +16,11 @@ public static class Vector3Extensions
         return new Vector3(vector.X / length, vector.Y / length, vector.Z / length);
     }
 
+    public static Vector3 ToVector3(this System.Drawing.Point point)
+    {
+        return new Vector3(point.X, point.Y, 0);
+    }
+    
     public static Point ToPoint(this Vector3 vector)
     {
         return new Point

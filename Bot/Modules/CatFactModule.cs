@@ -124,7 +124,7 @@ public class CatFactModule
     {
         try
         {
-            if (Controller.Frame == Controller.SecsToFrames(1))
+            if (!Controller.IsDebug && Controller.Frame == Controller.SecsToFrames(1))
             {
                 var random = new Random();
                 var i = random.Next(0, _facts.Count);

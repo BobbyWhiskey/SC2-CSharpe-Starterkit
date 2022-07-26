@@ -116,6 +116,19 @@ public class BuildingModule
             {
                 BuildBuildingAddons(Units.STARPORT, new HashSet<uint> { nextUnit });
             }
+            else if (nextUnit == Units.BUNKER)
+            {
+                //asdfasdfsdfgdfglkj
+                //BuildBuildingAddons(Units.STARPORT, new HashSet<uint> { nextUnit });
+
+                if (Controller.GetPendingCount(Units.BUNKER) == 0)
+                {
+                    var start = new Vector3(Controller.StartingLocation.X + 3, Controller.StartingLocation.Y, 0);
+                    var path = Controller.PathFinder.FindPath(start, Controller.EnemyLocations.First());
+                    var position = path[(int)(path.Length * 0.2)];
+                    await Controller.Construct(Units.BUNKER, position.ToVector3(), 0);
+                }
+            }
             else
             {
                 await BuildIfPossible(nextUnit, allowParalelBuild: true);
@@ -167,8 +180,13 @@ public class BuildingModule
 
             var freeMinerals = allMinerals.Except(allOwnedMinerals).ToList();
 
+            var start = new Vector3(Controller.StartingLocation.X , Controller.StartingLocation.Y+ 3, 0);
+            var path = Controller.PathFinder.FindPath(start, Controller.EnemyLocations.First());
+            var approxExpansionPosition = path[(int)(path.Length * 0.1)].ToVector3();
+            approxExpansionPosition.Z = Controller.StartingLocation.Z;
+            
             var targetMineral = freeMinerals.OrderBy(
-                fm => (fm.Position - Controller.StartingLocation).LengthSquared()
+                fm => (fm.Position - approxExpansionPosition).LengthSquared()
             ).First();
 
             var mineralCluster = Controller.GetInRange(targetMineral.Position, allMinerals, 10).ToList();

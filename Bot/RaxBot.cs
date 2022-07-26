@@ -30,6 +30,7 @@ internal class RaxBot : Bot
     private readonly ResearchModule _researchModule = new();
 
     private readonly ScanModule _scanModule = new();
+    private readonly BunkerModule _bunkerModule = new();
     private readonly SpawnerModule _spawnerModule = new();
     private readonly ScoutingModule _scoutingModule = new();
     private readonly RepairUnitModule _repairUnitModule = new();
@@ -88,7 +89,8 @@ internal class RaxBot : Bot
 
         //_armyMovementModule.OnFrame();
         _armyMovementModule2.OnFrame();
-        
+
+        _bunkerModule.OnFrame();
         _scanModule.OnFrame();
         _scoutingModule.OnFrame();
         _repairUnitModule.OnFrame();

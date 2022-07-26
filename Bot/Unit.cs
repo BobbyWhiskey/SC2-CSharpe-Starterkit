@@ -11,7 +11,7 @@ public class Unit
 {
     public CloakState Cloak { get; }
     public DisplayType DisplayType { get; }
-    private SC2APIProtocol.Unit Original { get; }
+    public SC2APIProtocol.Unit Original { get; }
     private UnitTypeData UnitTypeData { get; }
     public int AssignedWorkers { get; }
     public float BuildProgress { get; }

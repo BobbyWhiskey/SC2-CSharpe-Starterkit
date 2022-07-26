@@ -9,14 +9,16 @@ public class ArmyModuleV2
     private bool _isInitialized;
     private List<Point> _mainPath;
 
-    private static ulong AbsoluteAttackOrderDelay = (ulong)(1 * Controller.FRAMES_PER_SECOND); 
-    
+    private static ulong AbsoluteAttackOrderDelay = (ulong)(1 * Controller.FRAMES_PER_SECOND);
+
     private Vector3 _lastAttackPosition;
     private double _lastAttackMoveTime;
     private ulong _lastAttackPositionUpdate;
     private ArmyState ArmyState { get; set; } = ArmyState.DEFEND;
 
-    private double attackPercentage { get; set; } = 0.25;
+    private const double MainDefencePercentage = 0.19;
+
+    private double attackPercentage { get; set; } = MainDefencePercentage;
 
     private Point LastAttackPosition { get; set; }
 
@@ -38,10 +40,24 @@ public class ArmyModuleV2
 
             if (path == null || path.Length == 0)
             {
-                Controller.ShowDebugPath(new List<Point>(new[] { startPosition }), new Color
-                    { G = 250, B = 1, R = 1 }, 16);
-                Controller.ShowDebugPath(new List<Point>(new[] { toPosition }), new Color
-                    { G = 1, B = 250, R = 1 }, 16);
+                Controller.ShowDebugPath(new List<Point>(new[]
+                {
+                    startPosition
+                }), new Color
+                {
+                    G = 250,
+                    B = 1,
+                    R = 1
+                }, 16);
+                Controller.ShowDebugPath(new List<Point>(new[]
+                {
+                    toPosition
+                }), new Color
+                {
+                    G = 1,
+                    B = 250,
+                    R = 1
+                }, 16);
 
                 //_isInitialized = true;
                 return;
@@ -77,7 +93,7 @@ public class ArmyModuleV2
     private void CollectStats()
     {
         var attackPosition = GetAttackPercentageToPosition(attackPercentage);
-        
+
         if (Controller.Frame % 15 == 0)
         {
             var positions = Controller.GetUnits(Units.ArmyUnits).Select(x => x.Position).ToList();
@@ -85,14 +101,14 @@ public class ArmyModuleV2
             {
                 this.AverageArmyPosition = new Vector3(positions.Average(x => x.X), positions.Average(x => x.Y), positions.Average(x => x.Z));
                 var mainArmyPositions = Controller.GetUnits(Units.ArmyUnits)
-                   //.Where(x => (x.Position - AverageArmyPosition).Length() < AverageArmyDivergence)
-                   .OrderBy(x => (x.Position - AverageArmyPosition).Length())
-                   .Take(positions.Count()/2)
-                   .Select(x => x.Position).ToList();
+                    //.Where(x => (x.Position - AverageArmyPosition).Length() < AverageArmyDivergence)
+                    .OrderBy(x => (x.Position - AverageArmyPosition).Length())
+                    .Take(positions.Count() / 2)
+                    .Select(x => x.Position).ToList();
 
                 if (mainArmyPositions.Any())
                 {
-                    this.AdjustedArmyPosition = new Vector3(mainArmyPositions.Average(x => x.X), mainArmyPositions.Average(x => x.Y), mainArmyPositions.Average(x => x.Z));    
+                    this.AdjustedArmyPosition = new Vector3(mainArmyPositions.Average(x => x.X), mainArmyPositions.Average(x => x.Y), mainArmyPositions.Average(x => x.Z));
                 }
 
                 var divergences = positions.Select(x => x - AverageArmyPosition).ToList();
@@ -101,16 +117,33 @@ public class ArmyModuleV2
                 this.DivergenceWithAttackPercentage = (float)Math.Min(
                     (new Vector3(attackPosition.X, attackPosition.Y, 0)
                      - AverageArmyPosition with
-                        {
-                            Z = 0
-                        }
-                     ).Length(), 15);
+                     {
+                         Z = 0
+                     }
+                    ).Length(), 15);
             }
         }
         Controller.AddDebugCommand(new DebugCommand()
         {
             Draw = new DebugDraw()
             {
+                Text =
+                {
+                    new DebugText()
+                    {
+                        VirtualPos = new SC2APIProtocol.Point()
+                        {
+                            X = 0.0f,
+                            Y = 0.1f,
+                        },
+                        Size = 12,
+                        Text = "Army Divergence " + AverageArmyDivergence +
+                               //"ArmyDivergence to AttackPosition\n" + DivergenceWithAttackPercentage +
+                               "\nArmyState " + ArmyState
+                               + "\n "
+                               
+                    },
+                },
                 Spheres =
                 {
                     new DebugSphere()
@@ -137,7 +170,12 @@ public class ArmyModuleV2
                     },
                     new DebugSphere()
                     {
-                        P = new SC2APIProtocol.Point(){X = attackPosition.X, Y = attackPosition.Y, Z = AverageArmyPosition.Z},
+                        P = new SC2APIProtocol.Point()
+                        {
+                            X = attackPosition.X,
+                            Y = attackPosition.Y,
+                            Z = AverageArmyPosition.Z + 2
+                        },
                         R = 5,
                         Color = new Color()
                         {
@@ -174,18 +212,18 @@ public class ArmyModuleV2
         if (myArmy.Count < 25)
         {
             ArmyState = ArmyState.DEFEND;
-            attackPercentage = 0.25;
+            attackPercentage = MainDefencePercentage;
             return;
         }
 
         var visibleEnemyArmy = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy);
         var cachedEnemyUnits = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: false);
-        
-        if (GetEnemyArmyValue() > GetOwnArmyValue() 
+
+        if (GetEnemyArmyValue() > GetOwnArmyValue()
             || GetEnemiesCloseToBaseArmy().Count() > 2)
         {
             ArmyState = ArmyState.DEFEND;
-            attackPercentage = 0.25;
+            attackPercentage = MainDefencePercentage;
             return;
         }
 
@@ -193,11 +231,11 @@ public class ArmyModuleV2
         {
             AttackWithArmyInSteps(visibleEnemyArmy.First().Position);
         }
-        
+
         else if (cachedEnemyUnits.Any())
         {
             var target = cachedEnemyUnits.MinBy(x => (x.Position - AverageArmyPosition).LengthSquared());
-            
+
             AttackWithArmyInSteps(target!.Position);
         }
         else
@@ -216,26 +254,26 @@ public class ArmyModuleV2
 
             AttackMoveToMainPath(attackPercentage);
         }
-        
+
     }
 
     private void Defend()
     {
         var closeArmy = GetEnemiesCloseToBaseArmy().ToList();
-        
+
         if (Controller.GetUnits(Units.ArmyUnits).Count > 20 && !closeArmy.Any())
         {
             ArmyState = ArmyState.ATTACK;
             return;
         }
-        
+
         if (closeArmy.Any())
         {
             AttackWithArmy(closeArmy.First().Position);
         }
         else
         {
-            AttackMoveToMainPath(0.25);
+            AttackMoveToMainPath(MainDefencePercentage);
         }
     }
 
@@ -243,8 +281,13 @@ public class ArmyModuleV2
     {
         const int attackStepSize = 15;
         var attackPath = Controller.PathFinder.FindPath(new Point((int)AdjustedArmyPosition.X, (int)AdjustedArmyPosition.Y), new Point((int)position.X, (int)position.Y));
-        
-        Controller.ShowDebugPath(attackPath.ToList(), new Color(){R = 250, B = 1, G = 1});
+
+        Controller.ShowDebugPath(attackPath.ToList(), new Color()
+        {
+            R = 250,
+            B = 1,
+            G = 1
+        });
 
         if (attackPath.Length > 0)
         {
@@ -263,7 +306,7 @@ public class ArmyModuleV2
             // Fallback on non pathing way.
             AttackWithArmy(position);
         }
-        
+
         // var delta = AverageArmyDivergence/10 ;
         // var movementVector = position - AverageArmyPosition;
         // var normalizedMovement = movementVector.Normalize();
@@ -274,8 +317,8 @@ public class ArmyModuleV2
         //     attackPosition = AverageArmyPosition + (normalizedMovement * 20);
         // }
         // AttackWithArmy(attackPosition);
-        
-        
+
+
         //position
         //
         // if (_lastAttackPosition != attackPosition 
@@ -301,8 +344,8 @@ public class ArmyModuleV2
         List<Unit> army = Controller.GetUnits(Units.ArmyUnits);
 
         var positionInInt = new Vector3((int)position.X, (int)position.Y, (int)position.Z);
-        
-        if (_lastAttackPosition != positionInInt 
+
+        if (_lastAttackPosition != positionInInt
             || Controller.Frame > _lastAttackMoveTime + Controller.FRAMES_PER_SECOND * 3)
         {
             if (_lastAttackPosition != positionInInt)
@@ -332,16 +375,7 @@ public class ArmyModuleV2
                         }
                     }
                 }
-                ,
-                Text =
-                {
-                    new DebugText()
-                    {
-                        WorldPos = new SC2APIProtocol.Point(){X = position.X, Y = position.Y, Z = AverageArmyPosition.Z},
-                        Text = "Army divergence " + AverageArmyDivergence +
-                               "\nArmyDivergence to AttackPosition " + DivergenceWithAttackPercentage
-                    }
-                }
+
             }
         });
     }
@@ -362,14 +396,14 @@ public class ArmyModuleV2
         var units = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible: true);
         return (int)units.Sum(u => Controller.GameData.Units[(int)u.UnitType].MineralCost);
     }
-    
+
     private IEnumerable<Unit> GetEnemiesCloseToBaseArmy()
     {
         var enemyArmy = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: true);
         var resourceCenters = Controller.GetResourceCenters();
         return enemyArmy.Where(unit => resourceCenters.Any(rc => (rc.Position - unit.Position).Length() < 25));
     }
-    
+
     private void AttackMoveToMainPath(double d)
     {
         var position = GetAttackPercentageToPosition(d);

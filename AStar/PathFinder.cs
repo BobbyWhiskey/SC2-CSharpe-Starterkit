@@ -163,5 +163,10 @@ namespace AStar
 
             return path.ToArray();
         }
+
+        public Point[] FindPath(Vector3 startingLocation, Vector3 first)
+        {
+            return this.FindPath(new Point((int)startingLocation.X, (int)startingLocation.Y), new Point((int)first.X, (int)first.Y));
+        }
     }
 }

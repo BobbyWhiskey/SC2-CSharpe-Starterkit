@@ -169,6 +169,11 @@ public static class Controller
         {
             ExtractMap();
         }
+        
+        if (HeightMap == null)
+        {
+            InitHeightMap();
+        }
 
         if (!MineralClusters.Any())
         {
@@ -281,6 +286,32 @@ public static class Controller
 
 
     }
+    
+    private static void InitHeightMap() {
+        HeightMap = new List<List<float>>();
+        for (var x = 0; x < GameInfo.StartRaw.MapSize.X; x++) {
+            HeightMap.Add(new List<float>(new float[GameInfo.StartRaw.MapSize.Y]));
+        }
+
+        var heightVector = Controller.GameInfo.StartRaw.TerrainHeight.Data
+            .ToByteArray()
+            .Select(ByteToFloat)
+            .ToList();
+
+        for (var x = 0; x < GameInfo.StartRaw.MapSize.X; x++) {
+            for (var y = 0; y < GameInfo.StartRaw.MapSize.Y; y++) {
+                HeightMap[x][y] = heightVector[y * GameInfo.StartRaw.MapSize.X + x]; // heightVector[4] is (4, 0)
+            }
+        }
+    }
+    
+    private static float ByteToFloat(byte byteValue) {
+        // Computed from 3 unit positions and 3 height map bytes
+        // Seems to work fine
+        return 0.125f * byteValue - 15.888f;
+    }
+
+    public static List<List<float>> HeightMap { get; set; }
 
     public static string GetUnitName(uint unitType)
     {
@@ -906,9 +937,12 @@ public static class Controller
         }
 
         var debugBoxes = new List<DebugBox>();
-
+        
+        
         foreach (var node in pathStack)
         {
+            elevation = (int)(Controller.HeightMap[node.X][node.Y] + 1.2);
+
             debugBoxes.Add(new DebugBox
             {
                 Min = new Point
@@ -918,6 +952,7 @@ public static class Controller
                 Color = color ?? new Color
                     { R = 1, B = 250, G = 1 }
             });
+            
         }
 
         AddDebugCommand(new DebugCommand
@@ -954,9 +989,9 @@ public static class Controller
                         Min = new Point
                             { X = x + 1, Y = y + 1, Z = 3 },
                         Max = new Point
-                            { X = x - 0, Y = y - 0, Z = 12 },
+                            { X = x - 0, Y = y - 0, Z = (int)Controller.HeightMap[x][y] + 2 },
                         Color = new Color
-                            { R = 250, B = 1, G = 1 }
+                            { R = 250, B = 1, G = 200 }
                     });
                 }
             }
