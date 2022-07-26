@@ -118,8 +118,6 @@ public class CatFactModule
         "The creator of this bot has a cat."
     };
 
-    private bool _factSaid;
-
     public void OnFrame()
     {
         try
@@ -130,7 +128,6 @@ public class CatFactModule
                 var i = random.Next(0, _facts.Count);
                 var fact = _facts[i];
                 Controller.Chat($"Fun cat fact #{i}: {fact}");
-                _factSaid = true;
             }
         }
         catch (Exception ex)

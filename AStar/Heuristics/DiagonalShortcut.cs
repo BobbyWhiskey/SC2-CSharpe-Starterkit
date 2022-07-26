@@ -1,4 +1,5 @@
 using System;
+using AStar.Collections.PathFinder;
 
 namespace AStar.Heuristics
 {

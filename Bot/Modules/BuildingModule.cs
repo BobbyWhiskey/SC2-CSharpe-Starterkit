@@ -23,37 +23,7 @@ public class BuildingModule
         }
         else
         {
-            await BuildRefineries();
-
-            await BuildResearch();
-
-            await BuildUnitProducers();
-
-            if (IsTimeForExpandQuery.Get())
-            {
-                await BuildExpansion();
-            }
-
-            UpgradeCommandCenter();
-
-
-            BuildBuildingAddons(Units.BARRACKS, new HashSet<uint>
-            {
-                Units.BARRACKS_TECHLAB,
-                Units.BARRACKS_REACTOR
-            });
-
-            BuildBuildingAddons(Units.FACTORY, new HashSet<uint>
-            {
-                Units.FACTORY_TECHLAB,
-                Units.FACTORY_REACTOR
-            });
-
-            BuildBuildingAddons(Units.STARPORT, new HashSet<uint>
-            {
-                Units.STARPORT_TECHLAB,
-                Units.STARPORT_REACTOR
-            });
+            await AutoPilotMode();
         }
 
         // Leave this meanwhile ithere is a better strategy to place buildiings
@@ -62,6 +32,40 @@ public class BuildingModule
         {
             depot.Ability(Abilities.DEPOT_LOWER);
         }
+    }
+
+    private async Task AutoPilotMode()
+    {
+        await BuildRefineries();
+
+        await BuildResearch();
+
+        await BuildUnitProducers();
+
+        if (IsTimeForExpandQuery.Get())
+        {
+            await BuildExpansion();
+        }
+
+        UpgradeCommandCenter();
+
+        BuildBuildingAddons(Units.BARRACKS, new HashSet<uint>
+        {
+            Units.BARRACKS_TECHLAB,
+            Units.BARRACKS_REACTOR
+        });
+
+        BuildBuildingAddons(Units.FACTORY, new HashSet<uint>
+        {
+            Units.FACTORY_TECHLAB,
+            Units.FACTORY_REACTOR
+        });
+
+        BuildBuildingAddons(Units.STARPORT, new HashSet<uint>
+        {
+            Units.STARPORT_TECHLAB,
+            Units.STARPORT_REACTOR
+        });
     }
 
 
@@ -123,10 +127,14 @@ public class BuildingModule
 
                 if (Controller.GetPendingCount(Units.BUNKER) == 0)
                 {
-                    var start = new Vector3(Controller.StartingLocation.X + 3, Controller.StartingLocation.Y, 0);
+                    var ccs = Controller.GetUnits(Units.ResourceCenters)
+                        .OrderBy(x => (x.Position - Controller.EnemyLocations.First()).LengthSquared())
+                        .ToList();
+                    
+                    var start = new Vector3(ccs.First().Position.X + 2, ccs.First().Position.Y + 2, 0);
                     var path = Controller.PathFinder.FindPath(start, Controller.EnemyLocations.First());
-                    var position = path[(int)(path.Length * 0.2)];
-                    await Controller.Construct(Units.BUNKER, position.ToVector3(), 0);
+                    var position = path[6];
+                    await Controller.Construct(Units.BUNKER, position.ToVector3(), 1);
                 }
             }
             else
@@ -182,7 +190,15 @@ public class BuildingModule
 
             var start = new Vector3(Controller.StartingLocation.X , Controller.StartingLocation.Y+ 3, 0);
             var path = Controller.PathFinder.FindPath(start, Controller.EnemyLocations.First());
-            var approxExpansionPosition = path[(int)(path.Length * 0.1)].ToVector3();
+            
+            Controller.ShowDebugPath(path.ToList(), new Color(){R = 1, G = 200, B = 1});
+            
+            var approxExpansionPosition = path[15].ToVector3();
+            Controller.DrawSphere( new DebugSphere()
+            {
+                P = approxExpansionPosition.ToPoint(),
+                Color = new Color(){R = 1, G = 200, B = 1}
+            });
             approxExpansionPosition.Z = Controller.StartingLocation.Z;
             
             var targetMineral = freeMinerals.OrderBy(

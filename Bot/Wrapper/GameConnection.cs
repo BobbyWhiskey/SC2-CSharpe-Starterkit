@@ -9,16 +9,16 @@ public class GameConnection
     private const string address = "127.0.0.1";
     private const int stepSize = 1;
     private readonly ProtobufProxy proxy = new();
-    private string starcraftDir;
+    private string? starcraftDir;
 
-    private string starcraftExe;
-    private string starcraftMaps;
+    private string? starcraftExe;
+    private string? starcraftMaps;
 
     private void StartSC2Instance(int port)
     {
-        var processStartInfo = new ProcessStartInfo(starcraftExe);
+        var processStartInfo = new ProcessStartInfo(starcraftExe!);
         processStartInfo.Arguments = string.Format("-listen {0} -port {1} -displayMode 0", address, port);
-        processStartInfo.WorkingDirectory = Path.Combine(starcraftDir, "Support64");
+        processStartInfo.WorkingDirectory = Path.Combine(starcraftDir!, "Support64");
 
         Logger.Info("Launching SC2:");
         Logger.Info("--> File: {0}", starcraftExe);
@@ -55,7 +55,7 @@ public class GameConnection
         var createGame = new RequestCreateGame();
         createGame.Realtime = false;
 
-        var mapPath = Path.Combine(starcraftMaps, mapName);
+        var mapPath = Path.Combine(starcraftMaps!, mapName);
 
         if (!File.Exists(mapPath))
         {

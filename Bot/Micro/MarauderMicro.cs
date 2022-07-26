@@ -6,7 +6,6 @@ namespace Bot.Micro;
 public class MarauderMicro : IUnitMicro
 {
     private static readonly int StimRangeActivation = 10;
-    private static int StimRangeActivationDelay = 500;
 
     private readonly Dictionary<ulong, ulong> _lastActivationTimeMap = new();
 
@@ -32,7 +31,7 @@ public class MarauderMicro : IUnitMicro
             {
                 var found = _lastActivationTimeMap.TryGetValue(unit.Tag, out var lastActivationTime);
 // TODO Move this before this if
-                if (!found || lastActivationTime < Controller.Frame - 500)
+                if (!found || lastActivationTime < Controller.Frame - Controller.SecsToFrames(11))
                 {
                     unit.Ability(Abilities.GENERAL_STIMPACK);
                     _lastActivationTimeMap[unit.Tag] = Controller.Frame;

@@ -18,10 +18,10 @@ internal class CLArgs
             {
                 StartPort = int.Parse(args[i + 1]);
             }
-            else if (args[i] == "-l" || args[i] == "--LadderServer")
-            {
-                LadderServer = args[i + 1];
-            }
+            // else if (args[i] == "-l" || args[i] == "--LadderServer")
+            // {
+            //     LadderServer = args[i + 1];
+            // }
             else if (args[i] == "-c" || args[i] == "--ComputerOpponent")
             {
                 if (ComputerRace == Race.NoRace)
@@ -105,7 +105,7 @@ internal class CLArgs
 
     public int StartPort { get; set; }
 
-    public string LadderServer { get; set; }
+    //public string LadderServer { get; set; }
 
     public Race ComputerRace { get; set; } = Race.NoRace;
     public Difficulty ComputerDifficulty { get; set; } = Difficulty.Unset;

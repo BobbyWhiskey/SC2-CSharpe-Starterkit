@@ -28,10 +28,24 @@ public class RepairUnitModule
         {
             if (scvs.All(x => x.Order.TargetUnitTag != damagedUnit.Tag))
             {
-                var scv = Controller.GetFirstInRange(damagedUnit.Position, freeScv, 40);
-                if (scv != null)
+                var scvsInRange = Controller.GetInRange(damagedUnit.Position, scvs, 40)
+                    .OrderBy(x => (x.Position - damagedUnit.Position).LengthSquared());
+                
+                if (scvsInRange.Any())
                 {
-                    scv.Ability(Abilities.REPAIR, damagedUnit);
+                    if (damagedUnit.UnitType == Units.BUNKER)
+                    {
+                        var repairScvs = scvsInRange.Take(2);
+                        foreach (var repairScv in repairScvs)
+                        {
+                            repairScv.Ability(Abilities.REPAIR, damagedUnit);
+                        }
+                    }
+                    else
+                    {
+                        scvsInRange.First().Ability(Abilities.REPAIR, damagedUnit);
+                    }
+                    
                 }
 
                 //ReservedUnits.Add(scv.Tag);

@@ -7,18 +7,15 @@ namespace Bot.Modules;
 public class ArmyModuleV2
 {
     private bool _isInitialized;
-    private List<Point> _mainPath;
-
-    private static ulong AbsoluteAttackOrderDelay = (ulong)(1 * Controller.FRAMES_PER_SECOND);
+    private List<Point> _mainPath = null!;
 
     private Vector3 _lastAttackPosition;
     private double _lastAttackMoveTime;
-    private ulong _lastAttackPositionUpdate;
     private ArmyState ArmyState { get; set; } = ArmyState.DEFEND;
 
-    private const double MainDefencePercentage = 0.19;
+    private const double MainDefencePercentage = 0.14;
 
-    private double attackPercentage { get; set; } = MainDefencePercentage;
+    private double AttackPercentage { get; set; } = MainDefencePercentage;
 
     private Point LastAttackPosition { get; set; }
 
@@ -71,7 +68,7 @@ public class ArmyModuleV2
 
         CollectStats();
 
-        //Controller.ShowDebugPath(_mainPath);
+        Controller.ShowDebugPath(_mainPath);
 
         switch (ArmyState)
         {
@@ -92,7 +89,7 @@ public class ArmyModuleV2
 
     private void CollectStats()
     {
-        var attackPosition = GetAttackPercentageToPosition(attackPercentage);
+        var attackPosition = GetAttackPercentageToPosition(AttackPercentage);
 
         if (Controller.Frame % 15 == 0)
         {
@@ -212,7 +209,7 @@ public class ArmyModuleV2
         if (myArmy.Count < 25)
         {
             ArmyState = ArmyState.DEFEND;
-            attackPercentage = MainDefencePercentage;
+            AttackPercentage = MainDefencePercentage;
             return;
         }
 
@@ -223,7 +220,7 @@ public class ArmyModuleV2
             || GetEnemiesCloseToBaseArmy().Count() > 2)
         {
             ArmyState = ArmyState.DEFEND;
-            attackPercentage = MainDefencePercentage;
+            AttackPercentage = MainDefencePercentage;
             return;
         }
 
@@ -244,15 +241,15 @@ public class ArmyModuleV2
                 && AverageArmyDivergence < 13
                 && DivergenceWithAttackPercentage < 13)
             {
-                attackPercentage += 0.015;
+                AttackPercentage += 0.015;
             }
 
-            if (attackPercentage > 1)
+            if (AttackPercentage > 1)
             {
-                attackPercentage = 1;
+                AttackPercentage = 1;
             }
 
-            AttackMoveToMainPath(attackPercentage);
+            AttackMoveToMainPath(AttackPercentage);
         }
 
     }
@@ -348,11 +345,7 @@ public class ArmyModuleV2
         if (_lastAttackPosition != positionInInt
             || Controller.Frame > _lastAttackMoveTime + Controller.FRAMES_PER_SECOND * 3)
         {
-            if (_lastAttackPosition != positionInInt)
-            {
-                _lastAttackPosition = positionInInt;
-                _lastAttackPositionUpdate = Controller.Frame;
-            }
+            _lastAttackPosition = positionInInt;
             Controller.Attack(army, _lastAttackPosition);
             _lastAttackMoveTime = Controller.Frame;
         }

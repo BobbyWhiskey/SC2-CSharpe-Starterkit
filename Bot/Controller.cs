@@ -29,9 +29,9 @@ public static class Controller
     private static readonly Random Random = new();
     
     public static readonly ICollection<Vector3> MineralClusters = new List<Vector3>();
-    public static ResponseGameInfo GameInfo;
-    public static ResponseData GameData;
-    public static ResponseObservation Obs;
+    public static ResponseGameInfo GameInfo = null!;
+    public static ResponseData GameData = null!;
+    public static ResponseObservation Obs = null!;
     public static ulong Frame;
     public static uint CurrentSupply;
     public static uint MaxSupply;
@@ -46,10 +46,10 @@ public static class Controller
     private static uint DebugNextUnitToTrain;
 
     //public static Astar AStarPathingGrid { get; set; }
-    public static WorldGrid? WorldGrid { get; set; }
-    public static PathFinder PathFinder { get; set; }
+    public static WorldGrid WorldGrid { get; set; } = null!;
+    public static PathFinder PathFinder { get; set; } = null!;
 
-    public static bool[][] PathingMap { get; set; }
+    public static bool[][] PathingMap { get; set; } = null!;
 
     public static void Pause()
     {
@@ -112,7 +112,7 @@ public static class Controller
             {
                 SearchLimit = int.MaxValue,
                 UseDiagonals = false,
-                HeuristicFormula = HeuristicFormula.EuclideanNoSQR
+                HeuristicFormula = HeuristicFormula.Custom1
             });
     }
 
@@ -311,9 +311,9 @@ public static class Controller
         return 0.125f * byteValue - 15.888f;
     }
 
-    public static List<List<float>> HeightMap { get; set; }
+    public static List<List<float>> HeightMap { get; set; } = new List<List<float>>();
 
-    public static string GetUnitName(uint unitType)
+    public static string? GetUnitName(uint unitType)
     {
         return GameData.Units[(int)unitType].Name;
     }
@@ -854,12 +854,11 @@ public static class Controller
         {
             var adjustedRadius = radius + nbRetry / 200;
 
-            constructionSpot = new Vector3(startingSpot.Value.X + Random.Next(-adjustedRadius, adjustedRadius + 1),
+            constructionSpot = new Vector3(startingSpot!.Value.X + Random.Next(-adjustedRadius, adjustedRadius + 1),
                 startingSpot.Value.Y + Random.Next(-adjustedRadius, adjustedRadius + 1), startingSpot.Value.Z);
             nbRetry++;
 
-            if (nbRetry > 600)
-            {
+            
                 AddDebugCommand(new DebugCommand
                 {
                     Draw = new DebugDraw
@@ -876,7 +875,8 @@ public static class Controller
                         }
                     }
                 });
-
+            if (nbRetry > 600)
+            {
                 // TODO This is just temporary so we don't have infinite loop. Fix this
                 Logger.Warning("Could not find space for building " + Controller.GetUnitName(unitType));
                 break;
@@ -899,6 +899,34 @@ public static class Controller
         }
 
         ConstructAtPosition(unitType, constructionSpot);
+    }
+
+    public static void DrawBox(DebugBox box)
+    {
+        AddDebugCommand(new DebugCommand
+        {
+            Draw = new DebugDraw
+            {
+                Boxes =
+                {
+                    box
+                }
+            }
+        });
+    }
+
+    public static void DrawSphere(DebugSphere sphere)
+    {
+        AddDebugCommand(new DebugCommand
+        {
+            Draw = new DebugDraw
+            {
+                Spheres =
+                {
+                    sphere
+                }
+            }
+        });
     }
 
     public static List<Unit> GetResourceCenters()
@@ -929,7 +957,7 @@ public static class Controller
     
     
 
-    public static void ShowDebugPath(List<System.Drawing.Point> pathStack, Color? color = null, int elevation = 12)
+    public static void ShowDebugPath(List<System.Drawing.Point>? pathStack, Color? color = null, int elevation = 12)
     {
         if (!IsDebug)
         {
@@ -939,7 +967,7 @@ public static class Controller
         var debugBoxes = new List<DebugBox>();
         
         
-        foreach (var node in pathStack)
+        foreach (var node in pathStack!)
         {
             elevation = (int)(Controller.HeightMap[node.X][node.Y] + 1.2);
 

@@ -6,23 +6,23 @@ namespace Bot;
 
 public class ProtobufProxy
 {
-    private const int connectTimeout = 20000;
-    private const int readWriteTimeout = 120000;
-    private ClientWebSocket clientSocket;
+    private const int ConnectTimeout = 20000;
+    private const int ReadWriteTimeout = 120000;
+    private ClientWebSocket _clientSocket = null!;
 
     public async Task Connect(string address, int port)
     {
-        clientSocket = new ClientWebSocket();
+        _clientSocket = new ClientWebSocket();
         // Disable PING control frames (https://tools.ietf.org/html/rfc6455#section-5.5.2).
         // It seems SC2 built in websocket server does not do PONG but tries to process ping as
         // request and then sends empty response to client. 
-        clientSocket.Options.KeepAliveInterval = TimeSpan.FromDays(30);
+        _clientSocket.Options.KeepAliveInterval = TimeSpan.FromDays(30);
         var adr = string.Format("ws://{0}:{1}/sc2api", address, port);
         var uri = new Uri(adr);
         using (var cancellationSource = new CancellationTokenSource())
         {
-            cancellationSource.CancelAfter(connectTimeout);
-            await clientSocket.ConnectAsync(uri, cancellationSource.Token);
+            cancellationSource.CancelAfter(ConnectTimeout);
+            await _clientSocket.ConnectAsync(uri, cancellationSource.Token);
         }
 
         await Ping();
@@ -55,8 +55,8 @@ public class ProtobufProxy
         request.WriteTo(outStream);
         using (var cancellationSource = new CancellationTokenSource())
         {
-            cancellationSource.CancelAfter(readWriteTimeout);
-            await clientSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, (int)outStream.Position),
+            cancellationSource.CancelAfter(ReadWriteTimeout);
+            await _clientSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, (int)outStream.Position),
                 WebSocketMessageType.Binary, true, cancellationSource.Token);
         }
     }
@@ -80,8 +80,8 @@ public class ProtobufProxy
                     left = receiveBuf.Length - curPos;
                 }
 
-                cancellationSource.CancelAfter(readWriteTimeout);
-                var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuf, curPos, left),
+                cancellationSource.CancelAfter(ReadWriteTimeout);
+                var result = await _clientSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuf, curPos, left),
                     cancellationSource.Token);
                 if (result.MessageType != WebSocketMessageType.Binary)
                 {

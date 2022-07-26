@@ -13,7 +13,7 @@ public class Program
     private static readonly Race opponentRace = Race.Random;
     private static readonly Difficulty opponentDifficulty = Difficulty.VeryHard;
 
-    public static GameConnection gc;
+    public static GameConnection gc = null!;
 
     public static void Main(string[] args)
     {
@@ -44,6 +44,7 @@ public class Program
 
     private static string PickRandomMap()
     {
+        //return "AcropolisLE.SC2Map";
         // D:\Games\BattleNet\StarCraft II\Maps
         var files = Directory.GetFiles(@"D:\Games\BattleNet\StarCraft II\Maps");
         var random = new Random();

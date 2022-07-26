@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using System.Numerics;
+﻿using System.Numerics;
 using SC2APIProtocol;
 
 namespace Bot.Modules;

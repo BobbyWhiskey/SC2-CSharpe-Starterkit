@@ -18,7 +18,7 @@ public static class Logger
     }
 
 
-    private static void WriteLine(string type, string line, params object[] parameters)
+    private static void WriteLine(string type, string line, params object?[] parameters)
     {
         if (_logFile == null)
         {
@@ -49,17 +49,17 @@ public static class Logger
         }
     }
 
-    public static void Info(string line, params object[] parameters)
+    public static void Info(string line, params object?[] parameters)
     {
         WriteLine("INFO", line, parameters);
     }
 
-    public static void Warning(string line, params object[] parameters)
+    public static void Warning(string line, params object?[] parameters)
     {
         WriteLine("WARNING", line, parameters);
     }
 
-    public static void Error(string line, params object[] parameters)
+    public static void Error(string line, params object?[] parameters)
     {
         WriteLine("ERROR", line, parameters);
     }
