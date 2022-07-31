@@ -14,10 +14,13 @@ public class ArmyModuleV2
     private ArmyState ArmyState { get; set; } = ArmyState.DEFEND;
 
     private const double MainDefencePercentage = 0.14;
+    private const int ArmyCountThresholdAttack = 20; 
 
     private double AttackPercentage { get; set; } = MainDefencePercentage;
 
     private Point LastAttackPosition { get; set; }
+    
+    private Vector3 RallyPoint { get; set; }
 
     public ulong LastAttackFrame { get; set; }
 
@@ -25,45 +28,7 @@ public class ArmyModuleV2
     {
         if (!_isInitialized)
         {
-            // Just a bit of offset to get our of the CC range
-            var delta = 3;
-
-            var startPosition = new Point((int)Controller.StartingLocation.X,
-                (int)Controller.StartingLocation.Y + delta);
-            var toPosition = new Point((int)Controller.EnemyLocations.First().X,
-                (int)Controller.EnemyLocations.First().Y);
-
-            var path = Controller.PathFinder.FindPath(startPosition, toPosition);
-
-            if (path == null || path.Length == 0)
-            {
-                Controller.ShowDebugPath(new List<Point>(new[]
-                {
-                    startPosition
-                }), new Color
-                {
-                    G = 250,
-                    B = 1,
-                    R = 1
-                }, 16);
-                Controller.ShowDebugPath(new List<Point>(new[]
-                {
-                    toPosition
-                }), new Color
-                {
-                    G = 1,
-                    B = 250,
-                    R = 1
-                }, 16);
-
-                //_isInitialized = true;
-                return;
-                throw new Exception("CANNOT CREATE ATTACK PATH");
-            }
-
-            _mainPath = path.ToList();
-
-            _isInitialized = true;
+            Initialize();
         }
 
         CollectStats();
@@ -85,6 +50,46 @@ public class ArmyModuleV2
                 Roam();
                 break;
         }
+    }
+
+    private void Initialize()
+    {
+
+        // Just a bit of offset to get our of the CC range
+        var delta = 3;
+
+        var startPosition = new Point((int)Controller.StartingLocation.X,
+            (int)Controller.StartingLocation.Y + delta);
+        var toPosition = new Point((int)Controller.EnemyLocations.First().X,
+            (int)Controller.EnemyLocations.First().Y);
+
+        var path = Controller.PathFinder.FindPath(startPosition, toPosition);
+
+        if (path == null || path.Length == 0)
+        {
+            Controller.ShowDebugPath(new List<Point>(new[]
+            {
+                startPosition
+            }), new Color
+            {
+                G = 250,
+                B = 1,
+                R = 1
+            }, 16);
+            Controller.ShowDebugPath(new List<Point>(new[]
+            {
+                toPosition
+            }), new Color
+            {
+                G = 1,
+                B = 250,
+                R = 1
+            }, 16);
+
+        }
+
+        _mainPath = path.ToList();
+        _isInitialized = true;
     }
 
     private void CollectStats()
@@ -206,7 +211,7 @@ public class ArmyModuleV2
     private void Attack()
     {
         var myArmy = Controller.GetUnits(Units.ArmyUnits);
-        if (myArmy.Count < 25)
+        if (myArmy.Count < ArmyCountThresholdAttack)
         {
             ArmyState = ArmyState.DEFEND;
             AttackPercentage = MainDefencePercentage;
@@ -253,12 +258,12 @@ public class ArmyModuleV2
         }
 
     }
-
+    
     private void Defend()
     {
         var closeArmy = GetEnemiesCloseToBaseArmy().ToList();
 
-        if (Controller.GetUnits(Units.ArmyUnits).Count > 20
+        if (Controller.GetUnits(Units.ArmyUnits.Except(Units.SupportUnits)).Count > ArmyCountThresholdAttack
             && !closeArmy.Any()
             && GetEnemyArmyValue() < GetOwnArmyValue())
         {
@@ -279,7 +284,7 @@ public class ArmyModuleV2
     private void AttackWithArmyInSteps(Vector3 position)
     {
         const int attackStepSize = 12;
-        var attackPath = Controller.PathFinder.FindPath(new Point((int)AdjustedArmyPosition.X, (int)AdjustedArmyPosition.Y), new Point((int)position.X, (int)position.Y));
+        var attackPath = Controller.PathFinder!.FindPath(new Point((int)AdjustedArmyPosition.X, (int)AdjustedArmyPosition.Y), new Point((int)position.X, (int)position.Y));
 
         Controller.ShowDebugPath(attackPath.ToList(), new Color()
         {

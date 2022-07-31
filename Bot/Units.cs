@@ -609,6 +609,12 @@ internal static class Units
         WARP_GATE
     };
 
+    public static readonly HashSet<uint> SupportUnits = new()
+    {
+        MEDIVAC,
+        RAVEN
+    };
+
     public static readonly HashSet<uint> ArmyUnits = new()
     {
         HELLBAT,

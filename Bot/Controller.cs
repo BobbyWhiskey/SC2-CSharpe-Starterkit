@@ -252,6 +252,7 @@ public static class Controller
         ShowDebugAStarGrid();
         ShowDebugMineralLines();
         ShowDebugNeutralUnits();
+        ShowDebugAllUnits();
 
         var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
         var nextWaitOrder = BuildOrderQueries.GetNextStep() as WaitStep;
@@ -280,6 +281,35 @@ public static class Controller
                                    "Waiting for expand : " + IsTimeForExpandQuery.Get() + "\n" +
                                    "Next unit to train : " + GetUnitName(DebugNextUnitToTrain),
                             VirtualPos = new Point(),
+                            Size = 12
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private static void ShowDebugAllUnits()
+    {
+        var allUnits = Controller.Obs.Observation.RawData.Units
+            .Where(x => x.Alliance != Alliance.Self )
+            .Select(x => new Unit(x))
+            .GroupBy(x => x.UnitType)
+            .Select(x => Controller.GetUnitName(x.Key))
+            .OrderBy(x => x);
+        
+        AddDebugCommand(new DebugCommand
+        {
+            Draw = new DebugDraw
+            {
+                Text =
+                {
+                    new[]
+                    {
+                        new DebugText
+                        {
+                            Text = "All units but mine:\n-" + String.Join(",\n-", allUnits),
+                            VirtualPos = new Point(){X = 0.80f, Y = 0.05f},
                             Size = 12
                         }
                     }
@@ -341,7 +371,7 @@ public static class Controller
             }
             debugTexts.Add(new DebugText()
             {
-                Text = "<-Mineral line " + index++,
+                Text = "Mineral line " + index++,
                 Color = color,
                 Size = 16,
                 WorldPos = mineralCluster.CenterPosition.ToPoint()
@@ -510,7 +540,7 @@ public static class Controller
         return counter;
     }
 
-    public static List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self,
+    public static List<Unit> GetUnits(IEnumerable<uint> hashset, Alliance alliance = Alliance.Self,
         bool onlyCompleted = false, bool onlyVisible = false, bool includeReservedUnits = false)
     {
         var units = new List<Unit>();
