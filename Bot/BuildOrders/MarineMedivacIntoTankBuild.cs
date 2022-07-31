@@ -22,9 +22,11 @@ public class MarineMedivacIntoTankBuild : BuildOrderDefinition
             new BuildingStep(Units.STARPORT),
             new BuildingStep(Units.FACTORY_TECHLAB),
             new BuildingStep(Units.REFINERY),
+            new BuildingStep(Units.SUPPLY_DEPOT),
             new BuildingStep(Units.REFINERY),
+            new BuildingStep(Units.SUPPLY_DEPOT),
             new WaitStep(120),
-            new BuildingStep(Units.STARPORT_REACTOR)
+            new BuildingStep(Units.STARPORT_REACTOR),
         };
 
         idealUnitMax = new Dictionary<uint, double>

@@ -125,16 +125,34 @@ public class BuildingModule
                 //asdfasdfsdfgdfglkj
                 //BuildBuildingAddons(Units.STARPORT, new HashSet<uint> { nextUnit });
 
-                if (Controller.GetPendingCount(Units.BUNKER) == 0)
+                if (Controller.GetPendingCount(Units.BUNKER) == 0 && Controller.CanAfford(Units.BUNKER))
                 {
-                    var ccs = Controller.GetUnits(Units.ResourceCenters)
-                        .OrderBy(x => (x.Position - Controller.EnemyLocations.First()).LengthSquared())
-                        .ToList();
-                    
-                    var start = new Vector3(ccs.First().Position.X + 2, ccs.First().Position.Y + 2, 0);
-                    var path = Controller.PathFinder.FindPath(start, Controller.EnemyLocations.First());
-                    var position = path[6];
-                    await Controller.Construct(Units.BUNKER, position.ToVector3(), 1);
+                    var lastExpansion = MineralLinesQueries.GetLineralLinesInfo()
+                        .Where(x => x.Owner == Alliance.Ally)
+                        .MaxBy(x => x.WalkingDistanceToStartingLocation);
+                    var pathToEnemy = Controller.PathFinder!.FindPath(lastExpansion.CenterPosition, Controller.EnemyLocations.First());
+                    Controller.ShowDebugPath(pathToEnemy.ToList());
+                    await Controller.Construct(Units.BUNKER,  pathToEnemy.Take(12).Last().ToVector3(), 1);
+                    //
+                    // var approxExpansionPosition = GetApproxFirstExpansionLocation();
+                    //
+                    // //Controller.ShowDebugPath(path.ToList(), new Color(){R = 1, G = 250, B = 1});
+                    // //Controller.ShowDebugPath(path.ToList());
+                    // //Controller.ShowDebugPath(path.ToList(), new Color(){R = 200, G = 1, B = 1});
+                    // // Controller.DrawSphere( new DebugSphere()
+                    // // {
+                    // //     P = approxExpansionPosition.ToPoint(),
+                    // //     R = 3,
+                    // //     Color = new Color(){R = 1, G = 200, B = 1}
+                    // // });
+                    // var ccs = Controller.GetUnits(Units.ResourceCenters)
+                    //     .OrderBy(x => (x.Position - approxExpansionPosition).LengthSquared())
+                    //     .ToList();
+                    //
+                    // var start = new Vector3(ccs.First().Position.X + 2, ccs.First().Position.Y + 2, 0);
+                    // var path = Controller.PathFinder!.FindPath(start, Controller.EnemyLocations.First());
+                    // var position = path[6];
+                    // await Controller.Construct(Units.BUNKER, position.ToVector3(), 1);
                 }
             }
             else
@@ -142,6 +160,16 @@ public class BuildingModule
                 await BuildIfPossible(nextUnit, allowParalelBuild: true);
             }
         }
+    }
+
+    private static Vector3 GetApproxFirstExpansionLocation()
+    {
+        var start = new Vector3(Controller.StartingLocation.X, Controller.StartingLocation.Y, 0);
+        var path = Controller.PathFinder!.FindPath(start, Controller.EnemyLocations.First());
+
+        var approxExpansionPosition = path[25].ToVector3();
+        approxExpansionPosition.Z = Controller.StartingLocation.Z + 2;
+        return approxExpansionPosition;
     }
 
     private void UpgradeCommandCenter()
@@ -174,46 +202,32 @@ public class BuildingModule
 
     private async Task BuildExpansion()
     {
+        var freeMineralLine = MineralLinesQueries.GetLineralLinesInfo()
+            .Where(x => x.Owner == Alliance.Neutral)
+            .MinBy(x => x.WalkingDistanceToStartingLocation);
+        if (freeMineralLine != null)
+        {
+            Controller.DrawSphere(new DebugSphere()
+            {
+                P = freeMineralLine.CenterPosition.ToPoint(),
+                R = 3,
+                Color = new Color()
+                {
+                    R = 1,
+                    G = 200,
+                    B = 1
+                }
+            });
+        }
+
         if (Controller.CanAfford(Units.COMMAND_CENTER) && Controller.GetPendingCount(Units.COMMAND_CENTER, false) == 0)
         {
-            var allMinerals = Controller.GetUnits(Units.MineralFields, Alliance.Neutral);
-            var allOwnedMinerals = new List<Unit>();
 
-            var ccs = Controller.GetUnits(Units.ResourceCenters);
-
-            foreach (var cc in ccs)
+            if (freeMineralLine != null)
             {
-                allOwnedMinerals.AddRange(Controller.GetInRange(cc.Position, allMinerals, 10));
+                // TODO MC probably not the method to call, we need something more specific for how to place a CC correctly
+                await Controller.Construct(Units.COMMAND_CENTER, freeMineralLine.CenterPosition, 5);
             }
-
-            var freeMinerals = allMinerals.Except(allOwnedMinerals).ToList();
-
-            var start = new Vector3(Controller.StartingLocation.X , Controller.StartingLocation.Y+ 3, 0);
-            var path = Controller.PathFinder.FindPath(start, Controller.EnemyLocations.First());
-            
-            Controller.ShowDebugPath(path.ToList(), new Color(){R = 1, G = 200, B = 1});
-            
-            var approxExpansionPosition = path[15].ToVector3();
-            Controller.DrawSphere( new DebugSphere()
-            {
-                P = approxExpansionPosition.ToPoint(),
-                Color = new Color(){R = 1, G = 200, B = 1}
-            });
-            approxExpansionPosition.Z = Controller.StartingLocation.Z;
-            
-            var targetMineral = freeMinerals.OrderBy(
-                fm => (fm.Position - approxExpansionPosition).LengthSquared()
-            ).First();
-
-            var mineralCluster = Controller.GetInRange(targetMineral.Position, allMinerals, 10).ToList();
-            var gasGeyser = Controller.GetInRange(targetMineral.Position, Controller.GetGeysers(), 14).ToList();
-
-            var avgX = mineralCluster.Concat(gasGeyser).Select(m => m.Position.X).Average();
-            var avgY = mineralCluster.Concat(gasGeyser).Select(m => m.Position.Y).Average();
-            var avgZ = mineralCluster.Concat(gasGeyser).Select(m => m.Position.Z).Average();
-
-            // TODO MC probably not the method to call, we need something more specific for how to place a CC correctly
-            await Controller.Construct(Units.COMMAND_CENTER, new Vector3(avgX, avgY, avgZ), 5);
         }
     }
 
@@ -276,7 +290,7 @@ public class BuildingModule
     {
         var position = Controller.GetUnits(Units.SupplyDepots).FirstOrDefault()?.Position;
 
-        if (200 == Controller.CurrentSupply)
+        if (200 == Controller.MaxSupply)
         {
             return;
         }

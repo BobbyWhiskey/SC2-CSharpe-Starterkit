@@ -167,7 +167,10 @@ internal static class Units
     public static uint PURIFIER_MINERAL_FIELD_750 = 885;
     public static uint BATTLE_STATION_MINERAL_FIELD = 886;
     public static uint BATTLE_STATION_MINERAL_FIELD_750 = 887;
+    
+    public static uint MINERAL_FIELD_450 = 1996;
 
+    public static uint ALL_UNITS_UINT = 0;
 
     public static readonly HashSet<uint> All = new()
     {
@@ -690,7 +693,7 @@ internal static class Units
         PURIFIER_MINERAL_FIELD,
         PURIFIER_MINERAL_FIELD_750,
         BATTLE_STATION_MINERAL_FIELD,
-        BATTLE_STATION_MINERAL_FIELD_750
+        BATTLE_STATION_MINERAL_FIELD_750,
     };
 
     public static readonly HashSet<uint> GasGeysers = new()

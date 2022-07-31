@@ -68,7 +68,7 @@ public class ArmyModuleV2
 
         CollectStats();
 
-        Controller.ShowDebugPath(_mainPath);
+        //Controller.ShowDebugPath(_mainPath);
 
         switch (ArmyState)
         {
@@ -258,7 +258,9 @@ public class ArmyModuleV2
     {
         var closeArmy = GetEnemiesCloseToBaseArmy().ToList();
 
-        if (Controller.GetUnits(Units.ArmyUnits).Count > 20 && !closeArmy.Any())
+        if (Controller.GetUnits(Units.ArmyUnits).Count > 20
+            && !closeArmy.Any()
+            && GetEnemyArmyValue() < GetOwnArmyValue())
         {
             ArmyState = ArmyState.ATTACK;
             return;
@@ -276,7 +278,7 @@ public class ArmyModuleV2
 
     private void AttackWithArmyInSteps(Vector3 position)
     {
-        const int attackStepSize = 15;
+        const int attackStepSize = 12;
         var attackPath = Controller.PathFinder.FindPath(new Point((int)AdjustedArmyPosition.X, (int)AdjustedArmyPosition.Y), new Point((int)position.X, (int)position.Y));
 
         Controller.ShowDebugPath(attackPath.ToList(), new Color()

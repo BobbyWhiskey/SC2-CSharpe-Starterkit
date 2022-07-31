@@ -28,7 +28,7 @@ public static class Controller
     private static readonly List<DebugCommand> DebugCommands = new();
     private static readonly Random Random = new();
     
-    public static readonly ICollection<Vector3> MineralClusters = new List<Vector3>();
+    //public static readonly ICollection<Vector3> MineralClusters = new List<Vector3>();
     public static ResponseGameInfo GameInfo = null!;
     public static ResponseData GameData = null!;
     public static ResponseObservation Obs = null!;
@@ -46,10 +46,10 @@ public static class Controller
     private static uint DebugNextUnitToTrain;
 
     //public static Astar AStarPathingGrid { get; set; }
-    public static WorldGrid WorldGrid { get; set; } = null!;
-    public static PathFinder PathFinder { get; set; } = null!;
+    public static WorldGrid? WorldGrid { get; set; }
+    public static PathFinder? PathFinder { get; set; }
 
-    public static bool[][] PathingMap { get; set; } = null!;
+    public static bool[][]? PathingMap { get; set; }
 
     public static void Pause()
     {
@@ -104,6 +104,24 @@ public static class Controller
                 y++;
             }
             x++;
+        }
+        
+        // Manually add mineral fields because they are not there by default
+        var minerals = Controller.GetUnits(Units.MineralFields, Alliance.Neutral);
+        minerals.AddRange(Controller.GetUnits(Units.MINERAL_FIELD_450, Alliance.Neutral)); // Those kind minerals are not in mineral lines
+        foreach (var mineral in minerals)
+        {
+            gridShort[(int)(mineral.Position.X - 1), (int)mineral.Position.Y] = 0;
+            gridShort[(int)(mineral.Position.X), (int)mineral.Position.Y] = 0;
+        }
+        
+        // Remove the command center in the grid
+        for(x = (int)(Controller.StartingLocation.X - 3); x < Controller.StartingLocation.X + 3; x++)
+        {
+            for(int y = (int)(Controller.StartingLocation.Y - 3); y < Controller.StartingLocation.Y + 3; y++)
+            {
+                gridShort[x, y] = 1;
+            }   
         }
 
         WorldGrid = new WorldGrid(gridShort);
@@ -165,33 +183,6 @@ public static class Controller
         }
 
 
-        if (WorldGrid == null)
-        {
-            ExtractMap();
-        }
-        
-        if (HeightMap == null)
-        {
-            InitHeightMap();
-        }
-
-        if (!MineralClusters.Any())
-        {
-            var allMinerals = GetUnits(Units.MineralFields, Alliance.Neutral);
-            var processedMinerals = new List<Unit>();
-            while (true)
-            {
-                var mineral = allMinerals.Except(processedMinerals).FirstOrDefault();
-                if (mineral == null)
-                {
-                    break;
-                }
-                var cluster = Controller.GetInRange(mineral.Position, allMinerals, 14).ToList();
-                var clusterPosition = new Vector3(cluster.Average(x => x.Position.X),cluster.Average(x => x.Position.Y), cluster.Average(x => x.Position.Z) );
-                MineralClusters.Add(clusterPosition);
-                processedMinerals.AddRange(cluster);
-            }
-        }
 
         Actions.Clear();
         DebugCommands.Clear();
@@ -227,6 +218,16 @@ public static class Controller
                 }
             }
         }
+        
+        if (WorldGrid == null)
+        {
+            ExtractMap();
+        }
+        
+        if (HeightMap == null)
+        {
+            InitHeightMap();
+        }
 
         AddDebugDataOnScreen();
 
@@ -249,6 +250,8 @@ public static class Controller
         }
         
         ShowDebugAStarGrid();
+        ShowDebugMineralLines();
+        ShowDebugNeutralUnits();
 
         var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
         var nextWaitOrder = BuildOrderQueries.GetNextStep() as WaitStep;
@@ -283,10 +286,77 @@ public static class Controller
                 }
             }
         });
-
-
     }
-    
+
+    private static void ShowDebugNeutralUnits()
+    {
+        var neutrals = Controller.GetUnits(Units.ALL_UNITS_UINT, Alliance.Neutral);
+
+        foreach (var unit in neutrals)
+        {
+            Controller.DrawText(new DebugText()
+            {
+                Text = Controller.GetUnitName(unit.UnitType) + " " + unit.UnitType,
+                WorldPos = unit.Position.ToPoint(),
+            });
+
+            Controller.DrawSphere(new DebugSphere()
+            {
+                R = 1,
+                P = unit.Position.ToPoint(),
+            });
+        }
+    }
+
+    private static void DrawText(DebugText debugText)
+    {
+        AddDebugCommand(new DebugCommand
+        {
+            Draw = new DebugDraw
+            {
+                Text =
+                {
+                    debugText
+                }
+            }
+        });
+    }
+
+    private static void ShowDebugMineralLines()
+    {
+        var debugTexts = new List<DebugText>();
+        var ordered = MineralLinesQueries.GetLineralLinesInfo().OrderBy(x => x.WalkingDistanceToStartingLocation);
+        var index = 1;
+        
+        foreach (var mineralCluster in ordered)
+        {
+            var color = new Color();
+            if (mineralCluster.Owner == Alliance.Ally)
+            {
+                color = new Color(){R = 1, G = 200, B = 1};
+            }
+            else if(mineralCluster.Owner == Alliance.Enemy)
+            {
+                color = new Color(){R = 250, G = 1, B = 1};
+            }
+            debugTexts.Add(new DebugText()
+            {
+                Text = "<-Mineral line " + index++,
+                Color = color,
+                Size = 16,
+                WorldPos = mineralCluster.CenterPosition.ToPoint()
+            });
+        }
+        
+        AddDebugCommand(new DebugCommand()
+        {
+            Draw = new DebugDraw()
+            {
+                Text = { debugTexts }
+            }
+        });
+    }
+
     private static void InitHeightMap() {
         HeightMap = new List<List<float>>();
         for (var x = 0; x < GameInfo.StartRaw.MapSize.X; x++) {
@@ -311,7 +381,7 @@ public static class Controller
         return 0.125f * byteValue - 15.888f;
     }
 
-    public static List<List<float>> HeightMap { get; set; } = new List<List<float>>();
+    public static List<List<float>> HeightMap { get; set; }
 
     public static string? GetUnitName(uint unitType)
     {
@@ -459,7 +529,7 @@ public static class Controller
         var units = new List<Unit>();
         foreach (var unit in Obs.Observation.RawData.Units)
         {
-            if (unit.UnitType == unitType && unit.Alliance == alliance)
+            if ((unitType == 0 || unit.UnitType == unitType) && unit.Alliance == alliance)
             {
                 if (onlyCompleted && unit.BuildProgress < 1)
                 {

@@ -37,10 +37,16 @@ public class ScanModule
 
         if (lastInvisibleScan + invisibleScanDelay < Controller.Frame)
         {
-            var invisibleOrBorrowedUnits = Controller.GetUnits(Units.All, Alliance.Enemy).Where(x =>
-                (x.Cloak == CloakState.Cloaked && !x.IsVisible)
-                || x.IsBurrowed && !x.IsVisible)
+            var invisibleOrBorrowedUnits = Controller.Obs.Observation.RawData.Units.Where(x =>
+                x.UnitType == Units.ROACH_BURROWED
+                || x.DisplayType == DisplayType.Hidden ).Select(x => new Unit(x))
                 .ToList();
+            
+            if (Controller.Obs.Observation.RawData.Units.Any(x =>
+                    x.UnitType == Units.ROACH_BURROWED))
+            {
+                Logger.Info("Units.ROACH_BURROWED detected!!");
+            }
             
             if (invisibleOrBorrowedUnits.Any())
             {
@@ -62,13 +68,20 @@ public class ScanModule
         if (Controller.Obs.Observation.RawData.Units.Any(x =>
                 x.Cloak == CloakState.Cloaked))
         {
-            Logger.Info("Observer Cloaked unit!!");
+            Logger.Info("Observed Cloaked unit!!");
         }
+
 
         if (Controller.Obs.Observation.RawData.Units.Any(x =>
                 x.IsBurrowed))
         {
             Logger.Info("Burrowed unit detected!!");
+        }
+        
+        if (Controller.Obs.Observation.RawData.Units.Any(x =>
+                x.UnitType == Units.ROACH_BURROWED))
+        {
+            Logger.Info("Units.ROACH_BURROWED detected!!");
         }
 
         if (Controller.Obs.Observation.RawData.Units.Any(x =>

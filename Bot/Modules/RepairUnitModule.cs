@@ -2,7 +2,7 @@
 
 public class RepairUnitModule
 {
-    private const float RepairThreshold = 0.9f;
+    private const float RepairThreshold = 1f;
     private List<ulong> ReservedUnits = new List<ulong>();
     
     public void OnFrame()
@@ -19,35 +19,43 @@ public class RepairUnitModule
 
     private static void RepairUnits(List<Unit> mechanicals)
     {
-
-        var damagedUnits = mechanicals.Where(x => x.Integrity < RepairThreshold);
+        var damagedUnits = mechanicals.Where(x => x.Integrity < RepairThreshold && x.BuildProgress == 1);
         var scvs = Controller.GetUnits(Units.SCV);
-        var freeScv = scvs.Where(x => x.Order.AbilityId != Abilities.REPAIR).ToList();
+        var freeScvs = scvs.Where(x => x.Order.AbilityId != Abilities.REPAIR).ToList();
 
         foreach (var damagedUnit in damagedUnits)
         {
-            if (scvs.All(x => x.Order.TargetUnitTag != damagedUnit.Tag))
+            var nbScvToSend = 1;
+            if (damagedUnit.UnitType == Units.BUNKER)
             {
-                var scvsInRange = Controller.GetInRange(damagedUnit.Position, scvs, 40)
-                    .OrderBy(x => (x.Position - damagedUnit.Position).LengthSquared());
-                
-                if (scvsInRange.Any())
+                if (damagedUnit.Integrity > 0.5)
                 {
-                    if (damagedUnit.UnitType == Units.BUNKER)
-                    {
-                        var repairScvs = scvsInRange.Take(2);
-                        foreach (var repairScv in repairScvs)
-                        {
-                            repairScv.Ability(Abilities.REPAIR, damagedUnit);
-                        }
-                    }
-                    else
-                    {
-                        scvsInRange.First().Ability(Abilities.REPAIR, damagedUnit);
-                    }
-                    
+                    nbScvToSend = 2;
                 }
+                else
+                {
+                    nbScvToSend = 4;
+                }
+            }
 
+            var scvsAlreadyRepairing = scvs.Where(x => x.Order.TargetUnitTag == damagedUnit.Tag && x.Order.AbilityId == Abilities.REPAIR).ToList();
+            
+            if (scvsAlreadyRepairing.Count < nbScvToSend)
+            {
+                var freeScvsInRange = Controller.GetInRange(damagedUnit.Position, freeScvs, 40)
+                    .Except(scvsAlreadyRepairing)
+                    .OrderBy(x => (x.Position - damagedUnit.Position).LengthSquared())
+                    .ToList();
+                
+                if (freeScvsInRange.Any())
+                {
+                    var scvsToOrder = freeScvsInRange.Take(nbScvToSend);
+                    foreach (var repairScv in scvsToOrder)
+                    {
+                        repairScv.Ability(Abilities.REPAIR, damagedUnit);
+                    }
+
+                }
                 //ReservedUnits.Add(scv.Tag);
             }
         }

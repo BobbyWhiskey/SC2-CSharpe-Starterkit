@@ -82,7 +82,7 @@ internal class RaxBot : Bot
             }
         }
 
-        if (Controller.Frame % 5 == 0)
+        //if (Controller.Frame % 5 == 0)
         {
             await _buildingModule.OnFrame();
         }

@@ -7,7 +7,7 @@ public class MarineMicro : IUnitMicro
 {
     private static readonly int StimRangeActivation = 10;
     private static readonly int StimUnitCountThreshold = 2;
-    private static readonly int RangeToFlee = 2;
+    private static readonly int RangeToFlee = 3;
     private static readonly int StimRangeActivationDelay = 11;
 
     private readonly Dictionary<ulong, ulong> _lastActivationTimeMap = new();

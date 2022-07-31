@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using AStar.Options;
 using NUnit.Framework;
 using Shouldly;
@@ -21,6 +23,18 @@ namespace AStar.Tests
             _world = Helper.ConvertStringToPathfinderGrid(level);
         }
 
+        [Test]
+        public void sdgfdfgfg()
+        {
+            var list = new List<string>();
+            list.Add("allo");
+            list.Add("allo");
+
+            var taken = list.Take(4);
+            
+            Assert.True(taken.Count() == 2);
+        }
+        
         [Test]
         public void ShouldPathPredictablyByPoint()
         {

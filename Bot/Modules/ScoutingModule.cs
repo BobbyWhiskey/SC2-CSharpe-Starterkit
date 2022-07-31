@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Bot.Queries;
 using SC2APIProtocol;
 
 namespace Bot.Modules;
@@ -9,8 +10,6 @@ public class ScoutingModule
     private static ulong ScoutingStartingFrame = Controller.SecsToFrames(60);
     private ulong LastScoutingFrame = ulong.MinValue;
     private Random _random = new Random();
-    
-    private List<MineralOwnershipInfo>? _mineralLinesInfo;
 
     private ulong CurrentScoutingUnit = 0;
 
@@ -21,20 +20,7 @@ public class ScoutingModule
         
         CheckOnScout();
 
-        if (_mineralLinesInfo == null)
-        {
-            _mineralLinesInfo = new List<MineralOwnershipInfo>();
-            
-            var infos = Controller.MineralClusters.Select(x => new MineralOwnershipInfo()
-            {
-                CenterPosition = x,
-            });
-
-            foreach (var mineralOwnershipInfo in infos)
-            {
-                _mineralLinesInfo.Add(mineralOwnershipInfo);
-            }
-        }
+        
         
         
         // if (CurrentScoutingUnit != 0)
@@ -58,6 +44,8 @@ public class ScoutingModule
              || Controller.Frame > ScoutingStartingFrame && LastScoutingFrame == 0))
         {
             var vikings = Controller.GetUnits(Units.VIKING_FIGHTER);
+            var mineralLines = MineralLinesQueries.GetLineralLinesInfo();
+            
             if (vikings.Any())
             {
                 var viking = vikings.First();
@@ -65,16 +53,16 @@ public class ScoutingModule
                 Controller.ReserveUnit(viking.Tag);
                 CurrentScoutingUnit = viking.Tag;
 
-                var mineralToScout = this._mineralLinesInfo[_random.Next(0, this._mineralLinesInfo.Count)];
+                var mineralToScout = mineralLines[_random.Next(0, mineralLines.Count)];
                 Controller.Attack(new List<Unit>(){viking}, mineralToScout.CenterPosition);
                 
-                mineralToScout = this._mineralLinesInfo[_random.Next(0, this._mineralLinesInfo.Count)];
+                mineralToScout = mineralLines[_random.Next(0, mineralLines.Count)];
                 Controller.Attack(new List<Unit>(){viking}, mineralToScout.CenterPosition, true);
                 
-                mineralToScout = this._mineralLinesInfo[_random.Next(0, this._mineralLinesInfo.Count)];
+                mineralToScout = mineralLines[_random.Next(0, mineralLines.Count)];
                 Controller.Attack(new List<Unit>(){viking}, mineralToScout.CenterPosition, true);
                 
-                mineralToScout = this._mineralLinesInfo[_random.Next(0, this._mineralLinesInfo.Count)];
+                mineralToScout = mineralLines[_random.Next(0, mineralLines.Count)];
                 Controller.Attack(new List<Unit>(){viking}, mineralToScout.CenterPosition, true);
 
                 //viking.Ability(Abilities.ATTACK, mineralToScout.CenterPosition);
@@ -100,7 +88,8 @@ public class ScoutingModule
                     }
                     else
                     {
-                        var mineralToScout = this._mineralLinesInfo[_random.Next(0, this._mineralLinesInfo.Count)];
+                        
+                        var mineralToScout = mineralLines[_random.Next(0, mineralLines.Count)];
                         scv.Move(mineralToScout.CenterPosition);
                     }
 
@@ -134,10 +123,4 @@ public class ScoutingModule
         }
     }
 
-    public class MineralOwnershipInfo
-    {
-        public bool EnemyExtensionDetected { get; set; }
-        public Vector3 CenterPosition { get; set; }
-        public ulong LastUpdateFrame { get; set; }
-    }
 }

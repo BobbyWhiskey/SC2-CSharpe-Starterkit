@@ -10,7 +10,7 @@ public class Program
     private static readonly Bot bot = new RaxBot();
 
     // Settings for single player mode.
-    private static readonly Race opponentRace = Race.Random;
+    private static readonly Race opponentRace = Race.Protoss;
     private static readonly Difficulty opponentDifficulty = Difficulty.VeryHard;
 
     public static GameConnection gc = null!;
@@ -45,6 +45,9 @@ public class Program
     private static string PickRandomMap()
     {
         //return "AcropolisLE.SC2Map";
+        //return "GlitteringAshesAIE.SC2Map";
+        return "BlackburnAIE.SC2Map";
+        //return "WorldofSleepersLE.SC2Map";
         // D:\Games\BattleNet\StarCraft II\Maps
         var files = Directory.GetFiles(@"D:\Games\BattleNet\StarCraft II\Maps");
         var random = new Random();
