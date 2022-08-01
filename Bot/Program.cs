@@ -49,6 +49,7 @@ public class Program
         //return "BlackburnAIE.SC2Map";
         //return "WorldofSleepersLE.SC2Map";
         // D:\Games\BattleNet\StarCraft II\Maps
+        return "HardwireAIE.SC2Map";
         var files = Directory.GetFiles(@"D:\Games\BattleNet\StarCraft II\Maps");
         var random = new Random();
         var randomFileName = files[random.NextInt64(0, files.Length)];

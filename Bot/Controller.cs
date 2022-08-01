@@ -107,9 +107,9 @@ public static class Controller
         }
         
         // Manually add mineral fields because they are not there by default
-        var minerals = Controller.GetUnits(Units.MineralFields, Alliance.Neutral);
-        minerals.AddRange(Controller.GetUnits(Units.MINERAL_FIELD_450, Alliance.Neutral)); // Those kind minerals are not in mineral lines
-        foreach (var mineral in minerals)
+        //var minerals = Controller.GetUnits(Units.MineralFields, Alliance.Neutral);
+        //minerals.AddRange(Controller.GetUnits(Units.MINERAL_FIELD_450, Alliance.Neutral)); // Those kind minerals are not in mineral lines
+        foreach (var mineral in Controller.GetUnits(Units.MINERAL_FIELD_450, Alliance.Neutral))
         {
             gridShort[(int)(mineral.Position.X - 1), (int)mineral.Position.Y] = 0;
             gridShort[(int)(mineral.Position.X), (int)mineral.Position.Y] = 0;
@@ -248,11 +248,12 @@ public static class Controller
         {
             return;
         }
-        
+
+        //ShowPlayerPosisions();
         ShowDebugAStarGrid();
         ShowDebugMineralLines();
-        ShowDebugNeutralUnits();
-        ShowDebugAllUnits();
+        //ShowDebugNeutralUnits();
+        ShowDebugAllUnitsList();
 
         var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
         var nextWaitOrder = BuildOrderQueries.GetNextStep() as WaitStep;
@@ -289,7 +290,24 @@ public static class Controller
         });
     }
 
-    private static void ShowDebugAllUnits()
+    private static void ShowPlayerPosisions()
+    {
+        DrawText(new DebugText()
+        {
+            Color = new Color(),
+            WorldPos = Controller.StartingLocation.ToPoint(),
+            Text = "Starting position",
+        });
+        
+        DrawText(new DebugText()
+        {
+            Color = new Color(),
+            WorldPos = Controller.EnemyLocations.First().ToPoint(),
+            Text = "Enemy position"
+        });
+    }
+
+    private static void ShowDebugAllUnitsList()
     {
         var allUnits = Controller.Obs.Observation.RawData.Units
             .Where(x => x.Alliance != Alliance.Self )
@@ -371,7 +389,7 @@ public static class Controller
             }
             debugTexts.Add(new DebugText()
             {
-                Text = "Mineral line " + index++,
+                Text = "Mineral line " + index++ + " " + mineralCluster.WalkingDistanceToStartingLocation,
                 Color = color,
                 Size = 16,
                 WorldPos = mineralCluster.CenterPosition.ToPoint()
@@ -1057,7 +1075,7 @@ public static class Controller
     
     
 
-    public static void ShowDebugPath(List<System.Drawing.Point>? pathStack, Color? color = null, int elevation = 12)
+    public static void ShowDebugPath(IEnumerable<System.Drawing.Point>? pathStack, Color? color = null, int elevation = 12)
     {
         if (!IsDebug || !Controller.HeightMap.Any())
         {

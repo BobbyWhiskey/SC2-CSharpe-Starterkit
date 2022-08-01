@@ -37,7 +37,7 @@ public static class MineralLinesQueries
             var infos = mineralClusters.Select(x => new MineralOwnershipInfo()
             {
                 CenterPosition = x,
-                WalkingDistanceToStartingLocation =  Controller.PathFinder!.FindPath(Controller.StartingLocation with{ X= Controller.StartingLocation.X+3}, x).Length
+                WalkingDistanceToStartingLocation =  Controller.PathFinder!.FindPath(Controller.StartingLocation with{ X= Controller.StartingLocation.X}, x).Length
             });
 
             foreach (var mineralOwnershipInfo in infos)
@@ -46,6 +46,7 @@ public static class MineralLinesQueries
             }
         }
 
+        // TODO MC Thats not good because we're in a query that may be gonna be called every frame
         if (Controller.Frame % 10 == 0)
         {
             // Update the ownership

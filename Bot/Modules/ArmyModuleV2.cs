@@ -14,7 +14,7 @@ public class ArmyModuleV2
     private ArmyState ArmyState { get; set; } = ArmyState.DEFEND;
 
     private const double MainDefencePercentage = 0.14;
-    private const int ArmyCountThresholdAttack = 20; 
+    private const int ArmyCountThresholdAttack = 25; 
 
     private double AttackPercentage { get; set; } = MainDefencePercentage;
 
