@@ -46,9 +46,11 @@ public static class MineralLinesQueries
             }
         }
 
-        // TODO MC Thats not good because we're in a query that may be gonna be called every frame
-        if (Controller.Frame % 10 == 0)
+        // Cache for one frame
+        if (Controller.Frame != LastFrameUpdatedOwnership)
         {
+            LastFrameUpdatedOwnership = Controller.Frame;
+            
             // Update the ownership
             foreach (var mineralOwnershipInfo in _mineralLinesInfo.OrderBy(x => x.WalkingDistanceToStartingLocation))
             {
@@ -72,6 +74,8 @@ public static class MineralLinesQueries
 
         return _mineralLinesInfo;
     }
+
+    public static ulong LastFrameUpdatedOwnership { get; set; }
 
     public class MineralOwnershipInfo
     {

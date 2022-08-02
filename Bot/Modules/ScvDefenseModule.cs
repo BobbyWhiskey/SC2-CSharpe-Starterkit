@@ -21,20 +21,21 @@ public class ScvDefenseModule
         foreach (var cc in ccs)
         {
             //var closeArmy = enemyArmy.Where(x => (x.Position - cc.Position).LengthSquared() < Math.Pow(10, 2));
-            var closeEnemy = Controller.GetFirstInRange(cc.Position, enemyArmy, 10);
+            var closeEnemy = Controller.GetInRange(cc.Position, enemyArmy, 10).ToList();
+            var closeArmy = Controller.GetInRange(cc.Position, Controller.GetUnits(Units.ArmyUnits), 10).ToList();
 
-            if (closeEnemy != null)
+            if (closeEnemy.Any())
             {
                 var scv = scvs
                     .Where(x => x.Order.AbilityId != Abilities.ATTACK)
                     .Where(x => (x.Position - cc.Position).LengthSquared() < Math.Pow(12, 2));
 
                 // If the CC or scvs are under attack we make them all attack
-                if (cc.Integrity < 0.9 || scv.Any(x => x.Integrity < 0.9))
+                if (cc.Integrity < 0.5)
                 {
                     foreach (var unit in scv)
                     {
-                        unit.Ability(Abilities.ATTACK, closeEnemy.Position);
+                        unit.Ability(Abilities.ATTACK, closeEnemy.First().Position);
                     }
                 }
             }
@@ -42,7 +43,8 @@ public class ScvDefenseModule
             {
                 var scv = scvs
                     .Where(x => x.Order.AbilityId == Abilities.ATTACK)
-                    .Where(x => (x.Position - cc.Position).LengthSquared() < Math.Pow(12, 2));
+                    .Where(x => (x.Position - cc.Position).LengthSquared() < Math.Pow(12, 2))
+                    .ToList();
 
                 if (scv.Any())
                 {

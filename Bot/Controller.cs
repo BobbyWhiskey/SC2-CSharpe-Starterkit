@@ -389,7 +389,7 @@ public static class Controller
             }
             debugTexts.Add(new DebugText()
             {
-                Text = "Mineral line " + index++ + " " + mineralCluster.WalkingDistanceToStartingLocation,
+                Text = "Mineral line " + index++,
                 Color = color,
                 Size = 16,
                 WorldPos = mineralCluster.CenterPosition.ToPoint()
@@ -919,7 +919,6 @@ public static class Controller
 
     public static IEnumerable<Unit> GetInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
     {
-        
         // TODO MC Should we ajuste for unit height here too?
         
         //squared distance is faster to calculate
