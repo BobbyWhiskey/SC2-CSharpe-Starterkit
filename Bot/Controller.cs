@@ -250,7 +250,7 @@ public static class Controller
         }
 
         //ShowPlayerPosisions();
-        ShowDebugAStarGrid();
+        //ShowDebugAStarGrid();
         ShowDebugMineralLines();
         //ShowDebugNeutralUnits();
         ShowDebugAllUnitsList();

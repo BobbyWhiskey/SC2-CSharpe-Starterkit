@@ -28,7 +28,7 @@ public class RepairUnitModule
             var nbScvToSend = 1;
             if (damagedUnit.UnitType == Units.BUNKER)
             {
-                if (damagedUnit.Integrity > 0.5)
+                if (damagedUnit.Integrity > 0.75)
                 {
                     nbScvToSend = 2;
                 }

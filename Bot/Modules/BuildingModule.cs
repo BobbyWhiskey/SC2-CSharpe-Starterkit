@@ -130,29 +130,12 @@ public class BuildingModule
                     var lastExpansion = MineralLinesQueries.GetLineralLinesInfo()
                         .Where(x => x.Owner == Alliance.Ally)
                         .MaxBy(x => x.WalkingDistanceToStartingLocation);
-                    var pathToEnemy = Controller.PathFinder!.FindPath(lastExpansion.CenterPosition, Controller.EnemyLocations.First());
-                    Controller.ShowDebugPath(pathToEnemy.ToList());
-                    await Controller.Construct(Units.BUNKER,  pathToEnemy.Take(12).Last().ToVector3(), 1);
-                    //
-                    // var approxExpansionPosition = GetApproxFirstExpansionLocation();
-                    //
-                    // //Controller.ShowDebugPath(path.ToList(), new Color(){R = 1, G = 250, B = 1});
-                    // //Controller.ShowDebugPath(path.ToList());
-                    // //Controller.ShowDebugPath(path.ToList(), new Color(){R = 200, G = 1, B = 1});
-                    // // Controller.DrawSphere( new DebugSphere()
-                    // // {
-                    // //     P = approxExpansionPosition.ToPoint(),
-                    // //     R = 3,
-                    // //     Color = new Color(){R = 1, G = 200, B = 1}
-                    // // });
-                    // var ccs = Controller.GetUnits(Units.ResourceCenters)
-                    //     .OrderBy(x => (x.Position - approxExpansionPosition).LengthSquared())
-                    //     .ToList();
-                    //
-                    // var start = new Vector3(ccs.First().Position.X + 2, ccs.First().Position.Y + 2, 0);
-                    // var path = Controller.PathFinder!.FindPath(start, Controller.EnemyLocations.First());
-                    // var position = path[6];
-                    // await Controller.Construct(Units.BUNKER, position.ToVector3(), 1);
+                    if (lastExpansion != null)
+                    {
+                        var pathToEnemy = Controller.PathFinder!.FindPath(lastExpansion.CenterPosition, Controller.EnemyLocations.First());
+                        Controller.ShowDebugPath(pathToEnemy.ToList());
+                        await Controller.Construct(Units.BUNKER,  pathToEnemy.Take(20).Last().ToVector3(), 1);
+                    }
                 }
             }
             else

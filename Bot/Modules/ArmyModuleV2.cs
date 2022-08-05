@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Bot.Queries;
 using SC2APIProtocol;
 using Point = System.Drawing.Point;
 
@@ -14,6 +15,7 @@ public class ArmyModuleV2
     private ArmyState ArmyState { get; set; } = ArmyState.DEFEND;
 
     private const double MainDefencePercentage = 0.14;
+    private const int MainDefenceLength = 13;
     private const int ArmyCountThresholdAttack = 25; 
 
     private double AttackPercentage { get; set; } = MainDefencePercentage;
@@ -277,7 +279,7 @@ public class ArmyModuleV2
         }
         else
         {
-            AttackMoveToMainPath(MainDefencePercentage);
+            AttackMoveToMainPathDistance(MainDefenceLength);
         }
     }
 
@@ -402,6 +404,19 @@ public class ArmyModuleV2
         var enemyArmy = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: true);
         var resourceCenters = Controller.GetResourceCenters();
         return enemyArmy.Where(unit => resourceCenters.Any(rc => (rc.Position - unit.Position).Length() < 25));
+    }
+
+    private async Task AttackMoveToMainPathDistance(int length)
+    {
+        var lastExpansion = MineralLinesQueries.GetLineralLinesInfo()
+            .Where(x => x.Owner == Alliance.Ally)
+            .MaxBy(x => x.WalkingDistanceToStartingLocation);
+        if (lastExpansion != null)
+        {
+            var pathToEnemy = Controller.PathFinder!.FindPath(lastExpansion.CenterPosition, Controller.EnemyLocations.First());
+            //Controller.ShowDebugPath(pathToEnemy.ToList());
+            AttackWithArmyInSteps(pathToEnemy.Take(length).Last().ToVector3());
+        }
     }
 
     private void AttackMoveToMainPath(double d)

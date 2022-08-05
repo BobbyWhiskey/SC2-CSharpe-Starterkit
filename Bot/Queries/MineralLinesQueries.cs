@@ -37,7 +37,8 @@ public static class MineralLinesQueries
             var infos = mineralClusters.Select(x => new MineralOwnershipInfo()
             {
                 CenterPosition = x,
-                WalkingDistanceToStartingLocation =  Controller.PathFinder!.FindPath(Controller.StartingLocation with{ X= Controller.StartingLocation.X}, x).Length
+                WalkingDistanceToStartingLocation =  Controller.PathFinder!.FindPath(Controller.StartingLocation with{ X= Controller.StartingLocation.X}, x).Length,
+                WalkingDistanceToEnemyLocation =  Controller.PathFinder!.FindPath(Controller.EnemyLocations.First() with{ X= Controller.EnemyLocations.First().X}, x).Length
             });
 
             foreach (var mineralOwnershipInfo in infos)
@@ -84,5 +85,7 @@ public static class MineralLinesQueries
         public int WalkingDistanceToStartingLocation { get; set; }
         
         public Alliance Owner { get; set; }
+        
+        public int WalkingDistanceToEnemyLocation { get; set; }
     }
 }
