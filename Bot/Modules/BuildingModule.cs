@@ -128,7 +128,7 @@ public class BuildingModule
                 if (Controller.GetPendingCount(Units.BUNKER) == 0 && Controller.CanAfford(Units.BUNKER))
                 {
                     var lastExpansion = MineralLinesQueries.GetLineralLinesInfo()
-                        .Where(x => x.Owner == Alliance.Ally)
+                        .Where(x => x.Owner == Alliance.Self)
                         .MaxBy(x => x.WalkingDistanceToStartingLocation);
                     if (lastExpansion != null)
                     {

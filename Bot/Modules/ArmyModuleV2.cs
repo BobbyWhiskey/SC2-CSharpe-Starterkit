@@ -14,6 +14,8 @@ public class ArmyModuleV2
     private double _lastAttackMoveTime;
     private ArmyState ArmyState { get; set; } = ArmyState.DEFEND;
 
+    private double ArmyValueDiffThreshold = 1.1;
+
     private const double MainDefencePercentage = 0.14;
     private const int MainDefenceLength = 13;
     private const int ArmyCountThresholdAttack = 25; 
@@ -26,7 +28,7 @@ public class ArmyModuleV2
 
     public ulong LastAttackFrame { get; set; }
 
-    public void OnFrame()
+    public async Task OnFrame()
     {
         if (!_isInitialized)
         {
@@ -40,7 +42,7 @@ public class ArmyModuleV2
         switch (ArmyState)
         {
             case ArmyState.DEFEND:
-                Defend();
+                await Defend();
                 break;
             case ArmyState.ATTACK:
                 Attack();
@@ -94,6 +96,18 @@ public class ArmyModuleV2
         _isInitialized = true;
     }
 
+    private Vector3 CalculateArmyApproxPosition(ICollection<Unit> units)
+    {
+        var positions = units.Select(x => x.Position).ToList();
+        var averageArmyPosition = new Vector3(positions.Average(x => x.X), positions.Average(x => x.Y), positions.Average(x => x.Z));
+        var mainArmyPositions = units
+            .OrderBy(x => (x.Position - averageArmyPosition).Length())
+            .Take(positions.Count() / 2 + 1)
+            .Select(x => x.Position).ToList();
+        
+        return new Vector3(mainArmyPositions.Average(x => x.X), mainArmyPositions.Average(x => x.Y), mainArmyPositions.Average(x => x.Z));
+    }
+
     private void CollectStats()
     {
         var attackPosition = GetAttackPercentageToPosition(AttackPercentage);
@@ -113,6 +127,12 @@ public class ArmyModuleV2
                 if (mainArmyPositions.Any())
                 {
                     this.AdjustedArmyPosition = new Vector3(mainArmyPositions.Average(x => x.X), mainArmyPositions.Average(x => x.Y), mainArmyPositions.Average(x => x.Z));
+                }
+
+                var enemyArmy = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy, onlyVisible:true);
+                if (enemyArmy.Any())
+                {
+                    this.AdjustedEnemyArmyPosition = CalculateArmyApproxPosition(enemyArmy);
                 }
 
                 var divergences = positions.Select(x => x - AverageArmyPosition).ToList();
@@ -174,6 +194,17 @@ public class ArmyModuleV2
                     },
                     new DebugSphere()
                     {
+                        P = AdjustedEnemyArmyPosition.ToPoint(),
+                        R = 5,
+                        Color = new Color()
+                        {
+                            R = 250,
+                            B = 250,
+                            G = 1,
+                        }
+                    },
+                    new DebugSphere()
+                    {
                         P = new SC2APIProtocol.Point()
                         {
                             X = attackPosition.X,
@@ -195,6 +226,7 @@ public class ArmyModuleV2
     }
 
     public Vector3 AdjustedArmyPosition { get; set; }
+    public Vector3 AdjustedEnemyArmyPosition { get; set; }
 
     public float DivergenceWithAttackPercentage { get; set; }
 
@@ -204,10 +236,66 @@ public class ArmyModuleV2
 
     private void Roam()
     {
+        if (GetEnemiesCloseToBaseArmy().Any())
+        {
+            ArmyState = ArmyState.DEFEND;
+            return;
+        }
+        
+        var armyValue = GetEnemyArmyValue();
+        if (armyValue > GetOwnArmyValue())
+        {
+            ArmyState = ArmyState.RETREAT;
+            LastRetreatEnemyArmyValue = armyValue;
+            return;
+        }
+        else if (armyValue > 0)
+        {
+            ArmyState = ArmyState.ATTACK;
+            return;
+        }
+        
+        // Arrived at destination?
+        if (RoamingTarget == null || (RoamingTarget - AdjustedArmyPosition).Value.Length() < 5)
+        {
+            var possibleTargets = MineralLinesQueries.GetLineralLinesInfo()
+                .Where(x => x.CenterPosition != RoamingTarget)
+                .OrderBy(x => x.WalkingDistanceToEnemyLocation)
+                .Take(4);
+            
+            RoamingTarget = possibleTargets.OrderBy(x => Guid.NewGuid()).First().CenterPosition;
+        }
+        
+        AttackWithArmyInSteps(RoamingTarget.Value);
     }
+
+    public int LastRetreatEnemyArmyValue { get; set; }
+
+    public Vector3? RoamingTarget { get; set; }
 
     private void Retreat()
     {
+        var enemyArmy = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy);
+        if (!enemyArmy.Any() || GetEnemiesCloseToBaseArmy().Any())
+        {
+            ArmyState = ArmyState.DEFEND;
+            return;
+        }
+
+        var siegedTanks = Controller.GetUnits(Units.SIEGE_TANK_SIEGED);
+        foreach (var tank in siegedTanks)
+        {
+            tank.Ability(Abilities.UNSIEGE_TANK);
+        }
+        
+        var myArmy = Controller.GetUnits(Units.ArmyUnits);
+        var retreatTo = MineralLinesQueries.GetLastExpension().CenterPosition;
+        Controller.Move(myArmy, retreatTo);
+        // foreach (var unit in myArmy)
+        // {
+        //     
+        //     unit.Move(retreatTo);
+        // }
     }
 
     private void Attack()
@@ -215,25 +303,27 @@ public class ArmyModuleV2
         var myArmy = Controller.GetUnits(Units.ArmyUnits);
         if (myArmy.Count < ArmyCountThresholdAttack)
         {
-            ArmyState = ArmyState.DEFEND;
-            AttackPercentage = MainDefencePercentage;
-            return;
+            //ArmyState = ArmyState.DEFEND;
+            //AttackPercentage = MainDefencePercentage;
+            //return;
         }
 
         var visibleEnemyArmy = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy);
         var cachedEnemyUnits = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: false);
-
-        if (GetEnemyArmyValue() > GetOwnArmyValue()
+        var enemyArmyValue = GetEnemyArmyValue();
+        if (enemyArmyValue > GetOwnArmyValue() * ArmyValueDiffThreshold
             || GetEnemiesCloseToBaseArmy().Count() > 2)
         {
-            ArmyState = ArmyState.DEFEND;
+            //ArmyState = ArmyState.DEFEND;
+            ArmyState = ArmyState.RETREAT;
+            LastRetreatEnemyArmyValue = enemyArmyValue;
             AttackPercentage = MainDefencePercentage;
             return;
         }
 
         if (visibleEnemyArmy.Count() > 2)
         {
-            AttackWithArmyInSteps(visibleEnemyArmy.First().Position);
+            AttackWithArmyInSteps(CalculateArmyApproxPosition(visibleEnemyArmy));
         }
 
         else if (cachedEnemyUnits.Any())
@@ -261,11 +351,21 @@ public class ArmyModuleV2
 
     }
     
-    private void Defend()
+    private async Task Defend()
     {
         var closeArmy = GetEnemiesCloseToBaseArmy().ToList();
 
+        if (!closeArmy.Any() 
+            && Controller.GetUnits(Units.ArmyUnits).Count > StartRoamingThreshold
+            && Controller.GetUnits(Units.ArmyUnits).Count < StopRoamingThreshold
+            && GetOwnArmyValue() > LastRetreatEnemyArmyValue * ArmyValueDiffThreshold)
+        {
+            ArmyState = ArmyState.ROAM;
+            return;
+        }
+
         if (Controller.GetUnits(Units.ArmyUnits.Except(Units.SupportUnits)).Count > ArmyCountThresholdAttack
+            && GetOwnArmyValue() > LastRetreatEnemyArmyValue * ArmyValueDiffThreshold
             && !closeArmy.Any()
             && GetEnemyArmyValue() < GetOwnArmyValue())
         {
@@ -279,9 +379,13 @@ public class ArmyModuleV2
         }
         else
         {
-            AttackMoveToMainPathDistance(MainDefenceLength);
+           await AttackMoveToMainPathDistance(MainDefenceLength);
         }
     }
+
+    private const int StopRoamingThreshold = 30;
+
+    private const int StartRoamingThreshold = 6;
 
     private void AttackWithArmyInSteps(Vector3 position)
     {
@@ -389,7 +493,7 @@ public class ArmyModuleV2
 
     private int GetOwnArmyValue()
     {
-        var myArmy = Controller.GetUnits(Units.ArmyUnits);
+        var myArmy = Controller.GetUnits(Units.ArmyUnits.Except(Units.SupportUnits));
         return (int)myArmy.Sum(u => Controller.GameData.Units[(int)u.UnitType].MineralCost);
     }
 
@@ -409,7 +513,7 @@ public class ArmyModuleV2
     private async Task AttackMoveToMainPathDistance(int length)
     {
         var lastExpansion = MineralLinesQueries.GetLineralLinesInfo()
-            .Where(x => x.Owner == Alliance.Ally)
+            .Where(x => x.Owner == Alliance.Self)
             .MaxBy(x => x.WalkingDistanceToStartingLocation);
         if (lastExpansion != null)
         {

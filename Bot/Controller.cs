@@ -107,12 +107,21 @@ public static class Controller
         }
         
         // Manually add mineral fields because they are not there by default
-        //var minerals = Controller.GetUnits(Units.MineralFields, Alliance.Neutral);
-        //minerals.AddRange(Controller.GetUnits(Units.MINERAL_FIELD_450, Alliance.Neutral)); // Those kind minerals are not in mineral lines
-        foreach (var mineral in Controller.GetUnits(Units.MINERAL_FIELD_450, Alliance.Neutral))
+        foreach (var mineral in Controller.GetUnits(365, Alliance.Neutral))
         {
             gridShort[(int)(mineral.Position.X - 1), (int)mineral.Position.Y] = 0;
             gridShort[(int)(mineral.Position.X), (int)mineral.Position.Y] = 0;
+        }
+        
+        foreach (var rock in Controller.GetUnits(365, Alliance.Neutral))
+        {
+            for (x = -3; x < 3; x++)
+            {
+                for (int y = -3; y < 3; y++)
+                {
+                    gridShort[(int)(rock.Position.X+x), (int)rock.Position.Y+y] = 0;
+                }
+            }
         }
         
         // Remove the command center in the grid
@@ -338,19 +347,32 @@ public static class Controller
 
     private static void ShowDebugNeutralUnits()
     {
-        var neutrals = Controller.GetUnits(Units.ALL_UNITS_UINT, Alliance.Neutral);
+        //var neutrals = Controller.GetUnits(Units.ALL_UNITS_UINT, Alliance.Neutral);
+        var neutrals = Controller.Obs.Observation.RawData.Units.Select(x => new Unit(x));
 
         foreach (var unit in neutrals)
         {
+            var color = new Color();
+            if (unit.Original.Alliance == Alliance.Self)
+            {
+                color = new Color(){ R = 1, G = 250, B = 1};
+            }
+            else if (unit.Original.Alliance == Alliance.Enemy)
+            {
+                color = new Color(){ R = 250, G = 1, B = 1};
+            }
+            
             Controller.DrawText(new DebugText()
             {
                 Text = Controller.GetUnitName(unit.UnitType) + " " + unit.UnitType,
+                Color = color,
                 WorldPos = unit.Position.ToPoint(),
             });
 
             Controller.DrawSphere(new DebugSphere()
             {
                 R = 1,
+                Color = color,
                 P = unit.Position.ToPoint(),
             });
         }
@@ -379,7 +401,7 @@ public static class Controller
         foreach (var mineralCluster in ordered)
         {
             var color = new Color();
-            if (mineralCluster.Owner == Alliance.Ally)
+            if (mineralCluster.Owner == Alliance.Self)
             {
                 color = new Color(){R = 1, G = 200, B = 1};
             }
@@ -494,6 +516,20 @@ public static class Controller
     public static void Attack(List<Unit> units, Vector3 target, bool queueAction = false)
     {
         var action = CreateRawUnitCommand(Abilities.ATTACK);
+        action.ActionRaw.UnitCommand.TargetWorldSpacePos = new Point2D();
+        action.ActionRaw.UnitCommand.TargetWorldSpacePos.X = target.X;
+        action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;
+        action.ActionRaw.UnitCommand.QueueCommand = queueAction;
+        foreach (var unit in units)
+        {
+            action.ActionRaw.UnitCommand.UnitTags.Add(unit.Tag);
+        }
+        AddAction(action);
+    }
+    
+    public static void Move(List<Unit> units, Vector3 target, bool queueAction = false)
+    {
+        var action = CreateRawUnitCommand(Abilities.MOVE);
         action.ActionRaw.UnitCommand.TargetWorldSpacePos = new Point2D();
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.X = target.X;
         action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;

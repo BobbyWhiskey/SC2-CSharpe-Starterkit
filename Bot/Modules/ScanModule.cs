@@ -87,9 +87,14 @@ public class ScanModule
         if (Controller.Obs.Observation.RawData.Units.Any(x =>
                 x.Cloak == CloakState.CloakedDetected))
         {
-            Logger.Info("Observer CloakedDetected unit!!");
+            Logger.Info("CloakedDetected unit!!");
         }
 
+        if (Controller.Obs.Observation.RawData.Units.Any(x =>
+                x.DisplayType == DisplayType.Hidden))
+        {
+            Logger.Info("DisplayType.Hidden unit!!");
+        }
         // if (Controller.obs.Observation.RawData.Units.Any(x => x.UnitType == Units.OBSERVER))
         // {
         //     Logger.Info("Observer cloaked unit!!");

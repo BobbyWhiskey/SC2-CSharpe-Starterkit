@@ -20,14 +20,14 @@ public class SpawnerModule
             // Fixed number of units
             foreach (var keyValuePair in BuildOrderQueries.currentBuild.idealUnitFixedNumber)
             {
-                if (Controller.GetUnits(keyValuePair.Key).Count < keyValuePair.Value)
+                if (Controller.GetUnits(keyValuePair.Key, includeReservedUnits:true).Count < keyValuePair.Value)
                 {
                     TrainUnit(keyValuePair.Key);
                 }
             }
 
             // Ratio units
-            var myArmy = Controller.GetUnits(Units.ArmyUnits).ToList();
+            var myArmy = Controller.GetUnits(Units.ArmyUnits, includeReservedUnits:true).ToList();
             var groupedArmy = myArmy.GroupBy(GroupByArmyDuplicateUnit).ToList();
             var unitRatio = groupedArmy.Select(x => (x.Key, (double)x.Count() / myArmy.Count));
             var normalizedTargetRatio = BuildOrderQueries.currentBuild.idealUnitRatio.Select(x =>

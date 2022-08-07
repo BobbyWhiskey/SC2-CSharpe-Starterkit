@@ -609,6 +609,7 @@ internal static class Units
         WARP_GATE
     };
 
+    // TODO Add other races
     public static readonly HashSet<uint> SupportUnits = new()
     {
         MEDIVAC,

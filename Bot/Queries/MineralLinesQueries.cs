@@ -60,7 +60,7 @@ public static class MineralLinesQueries
                 var enemyBuildingInRange = Controller.GetFirstInRange(mineralOwnershipInfo.CenterPosition, Controller.GetUnits(Units.ResourceCenters, Alliance.Enemy), 15);
                 if (allyBuildingInRange != null)
                 {
-                    mineralOwnershipInfo.Owner = Alliance.Ally;
+                    mineralOwnershipInfo.Owner = Alliance.Self;
                 }
                 else if (enemyBuildingInRange != null)
                 {
@@ -74,6 +74,14 @@ public static class MineralLinesQueries
         }
 
         return _mineralLinesInfo;
+    }
+
+    public static MineralOwnershipInfo GetLastExpension()
+    {
+        return GetLineralLinesInfo()
+            .Where(x => x.Owner == Alliance.Self)
+            .OrderBy(x => x.WalkingDistanceToStartingLocation)
+            .Last();
     }
 
     public static ulong LastFrameUpdatedOwnership { get; set; }
