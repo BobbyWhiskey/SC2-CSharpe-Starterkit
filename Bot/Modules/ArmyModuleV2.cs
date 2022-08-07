@@ -14,7 +14,7 @@ public class ArmyModuleV2
     private double _lastAttackMoveTime;
     private ArmyState ArmyState { get; set; } = ArmyState.DEFEND;
 
-    private double ArmyValueDiffThreshold = 1.1;
+    private double ArmyValueDiffThreshold = 1.15;
 
     private const double MainDefencePercentage = 0.14;
     private const int MainDefenceLength = 13;
@@ -147,82 +147,88 @@ public class ArmyModuleV2
                     ).Length(), 15);
             }
         }
-        Controller.AddDebugCommand(new DebugCommand()
+        if (Controller.IsDebug)
         {
-            Draw = new DebugDraw()
+            Controller.AddDebugCommand(new DebugCommand()
             {
-                Text =
+                Draw = new DebugDraw()
                 {
-                    new DebugText()
+                    Text =
                     {
-                        VirtualPos = new SC2APIProtocol.Point()
+                        new DebugText()
                         {
-                            X = 0.0f,
-                            Y = 0.1f,
+                            VirtualPos = new SC2APIProtocol.Point()
+                            {
+                                X = 0.0f,
+                                Y = 0.1f,
+                            },
+                            Size = 12,
+                            Text = "Army Divergence " + AverageArmyDivergence +
+                                   //"ArmyDivergence to AttackPosition\n" + DivergenceWithAttackPercentage +
+                                   "\nArmyState " + ArmyState +
+                                   "\nLastRetreatEnemyArmyValue " + LastRetreatEnemyArmyValue +
+                                   "\nOwnArmyValue " + GetOwnArmyValue() + 
+                                   "\nEnemyArmyValue " + GetEnemyArmyValue()
+                                   + "\n "
+
                         },
-                        Size = 12,
-                        Text = "Army Divergence " + AverageArmyDivergence +
-                               //"ArmyDivergence to AttackPosition\n" + DivergenceWithAttackPercentage +
-                               "\nArmyState " + ArmyState
-                               + "\n "
-                               
                     },
-                },
-                Spheres =
-                {
-                    new DebugSphere()
+                    Spheres =
                     {
-                        P = AverageArmyPosition.ToPoint(),
-                        R = AverageArmyDivergence,
-                        Color = new Color()
+                        new DebugSphere()
                         {
-                            R = 1,
-                            B = 1,
-                            G = 250
-                        }
-                    },
-                    new DebugSphere()
-                    {
-                        P = AdjustedArmyPosition.ToPoint(),
-                        R = 5,
-                        Color = new Color()
-                        {
-                            R = 1,
-                            B = 250,
-                            G = 1,
-                        }
-                    },
-                    new DebugSphere()
-                    {
-                        P = AdjustedEnemyArmyPosition.ToPoint(),
-                        R = 5,
-                        Color = new Color()
-                        {
-                            R = 250,
-                            B = 250,
-                            G = 1,
-                        }
-                    },
-                    new DebugSphere()
-                    {
-                        P = new SC2APIProtocol.Point()
-                        {
-                            X = attackPosition.X,
-                            Y = attackPosition.Y,
-                            Z = AverageArmyPosition.Z + 2
+                            P = AverageArmyPosition.ToPoint(),
+                            R = AverageArmyDivergence,
+                            Color = new Color()
+                            {
+                                R = 1,
+                                B = 1,
+                                G = 250
+                            }
                         },
-                        R = 5,
-                        Color = new Color()
+                        new DebugSphere()
                         {
-                            R = 250,
-                            B = 1,
-                            G = 1
+                            P = AdjustedArmyPosition.ToPoint(),
+                            R = 5,
+                            Color = new Color()
+                            {
+                                R = 1,
+                                B = 250,
+                                G = 1,
+                            }
+                        },
+                        new DebugSphere()
+                        {
+                            P = AdjustedEnemyArmyPosition.ToPoint(),
+                            R = 5,
+                            Color = new Color()
+                            {
+                                R = 250,
+                                B = 250,
+                                G = 1,
+                            }
+                        },
+                        new DebugSphere()
+                        {
+                            P = new SC2APIProtocol.Point()
+                            {
+                                X = attackPosition.X,
+                                Y = attackPosition.Y,
+                                Z = AverageArmyPosition.Z + 2
+                            },
+                            R = 5,
+                            Color = new Color()
+                            {
+                                R = 250,
+                                B = 1,
+                                G = 1
+                            }
                         }
                     }
                 }
-            }
 
-        });
+            });
+        }
     }
 
     public Vector3 AdjustedArmyPosition { get; set; }
