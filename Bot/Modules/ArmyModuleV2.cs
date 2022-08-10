@@ -13,8 +13,17 @@ public class ArmyModuleV2
     private Vector3 _lastAttackPosition;
     private double _lastAttackMoveTime;
     private ArmyState ArmyState { get; set; } = ArmyState.DEFEND;
+    
+    public int LastRetreatEnemyArmyValue { get; set; }
 
-    private double ArmyValueDiffThreshold = 1.15;
+    public Vector3? RoamingTarget { get; set; }
+
+    private const double ArmyRetreatValueDiffThreshold = 1;
+    private const double ArmyCounterAttackValueDiffThreshold = 1.3;
+    
+    private const int StopRoamingThreshold = 30;
+
+    private const int StartRoamingThreshold = 14;
 
     private const double MainDefencePercentage = 0.14;
     private const int MainDefenceLength = 13;
@@ -58,39 +67,7 @@ public class ArmyModuleV2
 
     private void Initialize()
     {
-
-        // Just a bit of offset to get our of the CC range
-        var delta = 3;
-
-        var startPosition = new Point((int)Controller.StartingLocation.X,
-            (int)Controller.StartingLocation.Y + delta);
-        var toPosition = new Point((int)Controller.EnemyLocations.First().X,
-            (int)Controller.EnemyLocations.First().Y);
-
-        var path = Controller.PathFinder.FindPath(startPosition, toPosition);
-
-        if (path == null || path.Length == 0)
-        {
-            Controller.ShowDebugPath(new List<Point>(new[]
-            {
-                startPosition
-            }), new Color
-            {
-                G = 250,
-                B = 1,
-                R = 1
-            }, 16);
-            Controller.ShowDebugPath(new List<Point>(new[]
-            {
-                toPosition
-            }), new Color
-            {
-                G = 1,
-                B = 250,
-                R = 1
-            }, 16);
-
-        }
+        var path = Controller.PathFinder.FindPath(Controller.StartingLocation, Controller.EnemyLocations.First());
 
         _mainPath = path.ToList();
         _isInitialized = true;
@@ -253,6 +230,7 @@ public class ArmyModuleV2
         {
             ArmyState = ArmyState.RETREAT;
             LastRetreatEnemyArmyValue = armyValue;
+            RoamingTarget = null;
             return;
         }
         else if (armyValue > 0)
@@ -275,10 +253,6 @@ public class ArmyModuleV2
         AttackWithArmyInSteps(RoamingTarget.Value);
     }
 
-    public int LastRetreatEnemyArmyValue { get; set; }
-
-    public Vector3? RoamingTarget { get; set; }
-
     private void Retreat()
     {
         var enemyArmy = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy);
@@ -286,6 +260,12 @@ public class ArmyModuleV2
         {
             ArmyState = ArmyState.DEFEND;
             return;
+        }
+
+        var enemyArmyValue = GetEnemyArmyValue();
+        if (enemyArmyValue > LastRetreatEnemyArmyValue)
+        {
+            LastRetreatEnemyArmyValue = enemyArmyValue;
         }
 
         var siegedTanks = Controller.GetUnits(Units.SIEGE_TANK_SIEGED);
@@ -317,7 +297,7 @@ public class ArmyModuleV2
         var visibleEnemyArmy = Controller.GetUnits(Units.ArmyUnits, Alliance.Enemy);
         var cachedEnemyUnits = Controller.GetUnits(Units.All, Alliance.Enemy, onlyVisible: false);
         var enemyArmyValue = GetEnemyArmyValue();
-        if (enemyArmyValue > GetOwnArmyValue() * ArmyValueDiffThreshold
+        if (enemyArmyValue > GetOwnArmyValue() * ArmyRetreatValueDiffThreshold
             || GetEnemiesCloseToBaseArmy().Count() > 2)
         {
             //ArmyState = ArmyState.DEFEND;
@@ -364,14 +344,14 @@ public class ArmyModuleV2
         if (!closeArmy.Any() 
             && Controller.GetUnits(Units.ArmyUnits).Count > StartRoamingThreshold
             && Controller.GetUnits(Units.ArmyUnits).Count < StopRoamingThreshold
-            && GetOwnArmyValue() > LastRetreatEnemyArmyValue * ArmyValueDiffThreshold)
+            && GetOwnArmyValue() > LastRetreatEnemyArmyValue * ArmyCounterAttackValueDiffThreshold)
         {
             ArmyState = ArmyState.ROAM;
             return;
         }
 
         if (Controller.GetUnits(Units.ArmyUnits.Except(Units.SupportUnits)).Count > ArmyCountThresholdAttack
-            && GetOwnArmyValue() > LastRetreatEnemyArmyValue * ArmyValueDiffThreshold
+            && GetOwnArmyValue() > LastRetreatEnemyArmyValue * ArmyCounterAttackValueDiffThreshold
             && !closeArmy.Any()
             && GetEnemyArmyValue() < GetOwnArmyValue())
         {
@@ -389,14 +369,10 @@ public class ArmyModuleV2
         }
     }
 
-    private const int StopRoamingThreshold = 30;
-
-    private const int StartRoamingThreshold = 6;
-
     private void AttackWithArmyInSteps(Vector3 position)
     {
         const int attackStepSize = 12;
-        var attackPath = Controller.PathFinder!.FindPath(new Point((int)AdjustedArmyPosition.X, (int)AdjustedArmyPosition.Y), new Point((int)position.X, (int)position.Y));
+        var attackPath = Controller.PathFinder!.FindPath(AdjustedArmyPosition,position);
 
         Controller.ShowDebugPath(attackPath.ToList(), new Color()
         {
@@ -498,7 +474,7 @@ public class ArmyModuleV2
     }
 
     private int GetOwnArmyValue()
-    {
+    { // TODO MC Should we only count army that is
         var myArmy = Controller.GetUnits(Units.ArmyUnits.Except(Units.SupportUnits));
         return (int)myArmy.Sum(u => Controller.GameData.Units[(int)u.UnitType].MineralCost);
     }

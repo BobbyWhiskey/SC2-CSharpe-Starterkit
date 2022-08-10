@@ -38,7 +38,7 @@ public class MarineMedivacIntoTankBuild : BuildOrderDefinition
         idealUnitRatio = new Dictionary<uint, double>
         {
             { Units.MARINE, 8 },
-            { Units.MARAUDER, 2 },
+            { Units.MARAUDER, 3 },
             { Units.MEDIVAC, 1 },
             { Units.SIEGE_TANK, 1 },
             { Units.VIKING_FIGHTER, 0.5 }

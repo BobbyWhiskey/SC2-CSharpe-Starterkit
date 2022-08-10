@@ -47,7 +47,7 @@ public static class Controller
 
     //public static Astar AStarPathingGrid { get; set; }
     public static WorldGrid? WorldGrid { get; set; }
-    public static PathFinder? PathFinder { get; set; }
+    public static IFindAPath? PathFinder { get; set; }
 
     public static bool[][]? PathingMap { get; set; }
 
@@ -107,7 +107,7 @@ public static class Controller
         }
         
         // Manually add mineral fields because they are not there by default
-        foreach (var mineral in Controller.GetUnits(365, Alliance.Neutral))
+        foreach (var mineral in Controller.GetUnits(Units.MINERAL_FIELD_450, Alliance.Neutral))
         {
             gridShort[(int)(mineral.Position.X - 1), (int)mineral.Position.Y] = 0;
             gridShort[(int)(mineral.Position.X), (int)mineral.Position.Y] = 0;
@@ -134,7 +134,7 @@ public static class Controller
         }
 
         WorldGrid = new WorldGrid(gridShort);
-        PathFinder = new PathFinder(WorldGrid, 
+        PathFinder = new CachedPathFinder(WorldGrid, 
             new PathFinderOptions()
             {
                 SearchLimit = int.MaxValue,
@@ -318,6 +318,11 @@ public static class Controller
 
     private static void ShowDebugAllUnitsList()
     {
+        if (!IsDebug)
+        {
+            return;
+        }
+        
         var allUnits = Controller.Obs.Observation.RawData.Units
             .Where(x => x.Alliance != Alliance.Self )
             .Select(x => new Unit(x))

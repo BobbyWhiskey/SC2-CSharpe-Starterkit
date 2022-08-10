@@ -50,7 +50,7 @@ public class Program
         //return "WorldofSleepersLE.SC2Map";
         //return "HardwireAIE.SC2Map";
         //return "2000AtmospheresAIE.SC2Map";
-        return "CuriousMindsAIE.SC2Map";
+        //return "CuriousMindsAIE.SC2Map";
         
         var files = Directory.GetFiles(@"D:\Games\BattleNet\StarCraft II\Maps");
         var random = new Random();

@@ -23,6 +23,6 @@ public static class IsTimeForExpandQuery
 
         return rcs.All(rc => rc.AssignedWorkers >= rc.IdealWorkers)
                && !rcs.Any(rc => rc.BuildProgress < 1)
-               && idealWorkerTotal < 35;
+               && idealWorkerTotal < 36;
     }
 }
