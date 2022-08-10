@@ -33,13 +33,14 @@ public static class MineralLinesQueries
             }
             
             _mineralLinesInfo = new List<MineralOwnershipInfo>();
-            
-            var infos = mineralClusters.Select(x => new MineralOwnershipInfo()
-            {
-                CenterPosition = x,
-                WalkingDistanceToStartingLocation =  Controller.PathFinder!.FindPath(Controller.StartingLocation with{ X= Controller.StartingLocation.X}, x).Length,
-                WalkingDistanceToEnemyLocation =  Controller.PathFinder!.FindPath(Controller.EnemyLocations.First() with{ X= Controller.EnemyLocations.First().X}, x).Length
-            });
+            var infos = mineralClusters.Select(CreateMineralOwnershipInfo);
+            //
+            // var infos = mineralClusters.Select(x => new MineralOwnershipInfo()
+            // {
+            //     CenterPosition = x,
+            //     WalkingDistanceToStartingLocation =  Controller.PathFinder!.FindPath(Controller.StartingLocation with{ X= Controller.StartingLocation.X}, x).Length,
+            //     WalkingDistanceToEnemyLocation =  Controller.PathFinder!.FindPath(Controller.EnemyLocations.First() with{ X= Controller.EnemyLocations.First().X}, x).Length
+            // });
 
             foreach (var mineralOwnershipInfo in infos)
             {
@@ -74,6 +75,26 @@ public static class MineralLinesQueries
         }
 
         return _mineralLinesInfo;
+    }
+
+    private static MineralOwnershipInfo CreateMineralOwnershipInfo(Vector3 clusterPosition)
+    {
+        var walkingDistanceToStartingLocation = Controller.PathFinder!.FindPath(Controller.StartingLocation with
+        {
+            X = Controller.StartingLocation.X
+        }, clusterPosition).Length;
+
+        var walkingDistanceToEnemyLocation = Controller.PathFinder!.FindPath(Controller.EnemyLocations.First() with
+        {
+            X = Controller.EnemyLocations.First().X
+        }, clusterPosition).Length;
+        
+        return new MineralOwnershipInfo()
+        {
+            CenterPosition = clusterPosition,
+            WalkingDistanceToStartingLocation = walkingDistanceToStartingLocation == 0 ? 9999 : walkingDistanceToStartingLocation,
+            WalkingDistanceToEnemyLocation = walkingDistanceToEnemyLocation == 0 ? 9999 : walkingDistanceToEnemyLocation
+        };
     }
 
     public static MineralOwnershipInfo GetLastExpension()

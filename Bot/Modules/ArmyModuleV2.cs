@@ -276,6 +276,7 @@ public class ArmyModuleV2
         
         var myArmy = Controller.GetUnits(Units.ArmyUnits);
         var retreatTo = MineralLinesQueries.GetLastExpension().CenterPosition;
+        // TODO MC Use pathfinding here instead of just move to base?
         Controller.Move(myArmy, retreatTo);
         // foreach (var unit in myArmy)
         // {
@@ -474,7 +475,7 @@ public class ArmyModuleV2
     }
 
     private int GetOwnArmyValue()
-    { // TODO MC Should we only count army that is
+    { // TODO MC Should we exclude army that is on the way to the front line here?
         var myArmy = Controller.GetUnits(Units.ArmyUnits.Except(Units.SupportUnits));
         return (int)myArmy.Sum(u => Controller.GameData.Units[(int)u.UnitType].MineralCost);
     }

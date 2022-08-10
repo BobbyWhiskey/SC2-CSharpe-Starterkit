@@ -259,9 +259,9 @@ public static class Controller
         }
 
         //ShowPlayerPosisions();
-        //ShowDebugAStarGrid();
+        ShowDebugAStarGrid();
         ShowDebugMineralLines();
-        //ShowDebugNeutralUnits();
+        ShowDebugNeutralUnits();
         ShowDebugAllUnitsList();
 
         var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
