@@ -156,6 +156,17 @@ internal static class Units
     public static uint SPACE_PLATFORM_GEYSER = 343;
     public static uint RICH_VESPENE_GEYSER = 344;
     public static uint MINERAL_FIELD_750 = 483;
+    public static uint SWARM_HOST_BURROWED = 493;
+    public static uint SWARM_HOST = 494;
+    public static uint ORACLE = 495;
+    public static uint TEMPEST = 496;
+    public static uint VIPER = 499;
+    public static uint LURKER = 502;
+    public static uint LURKER_BURROWED = 503;
+    public static uint LURKER_DEN = 504;
+    public static uint RAVAGER = 688;
+    public static uint RAVAGER_BURROWED = 690;
+    public static uint DISRUPTOR = 694;
     public static uint PROTOSS_VESPENE_GEYSER = 608;
     public static uint LAB_MINERAL_FIELD = 665;
     public static uint LAB_MINERAL_FIELD_750 = 666;
@@ -338,7 +349,18 @@ internal static class Units
         PURIFIER_MINERAL_FIELD,
         PURIFIER_MINERAL_FIELD_750,
         BATTLE_STATION_MINERAL_FIELD,
-        BATTLE_STATION_MINERAL_FIELD_750
+        BATTLE_STATION_MINERAL_FIELD_750,
+        SWARM_HOST_BURROWED,
+        SWARM_HOST,
+        VIPER,
+        LURKER,
+        LURKER_BURROWED,
+        LURKER_DEN,
+        RAVAGER,
+        RAVAGER_BURROWED,
+        DISRUPTOR,
+        ORACLE,
+        TEMPEST,
     };
 
 
@@ -400,7 +422,15 @@ internal static class Units
         SPORE_CRAWLER_UPROOTED,
         NYDUS_CANAL,
         BROODLING_ESCORT,
-        LARVA
+        LARVA,
+        SWARM_HOST_BURROWED,
+        SWARM_HOST,
+        VIPER,
+        LURKER,
+        LURKER_BURROWED,
+        LURKER_DEN,
+        RAVAGER,
+        RAVAGER_BURROWED,
     };
 
 
@@ -497,7 +527,10 @@ internal static class Units
         FORCE_FIELD,
         WARP_PRISM_PHASING,
         ARCHON,
-        PROTOSS_VESPENE_GEYSER
+        PROTOSS_VESPENE_GEYSER,
+        DISRUPTOR,
+        ORACLE,
+        TEMPEST,
     };
 
 

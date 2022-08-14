@@ -259,9 +259,9 @@ public static class Controller
         }
 
         //ShowPlayerPosisions();
-        ShowDebugAStarGrid();
+        //ShowDebugAStarGrid();
         ShowDebugMineralLines();
-        ShowDebugNeutralUnits();
+        //ShowDebugNeutralUnits();
         ShowDebugAllUnitsList();
 
         var nextBuildStep = BuildOrderQueries.GetNextStep() as BuildingStep;
@@ -352,6 +352,11 @@ public static class Controller
 
     private static void ShowDebugNeutralUnits()
     {
+        if (!IsDebug)
+        {
+            return;
+        }
+        
         //var neutrals = Controller.GetUnits(Units.ALL_UNITS_UINT, Alliance.Neutral);
         var neutrals = Controller.Obs.Observation.RawData.Units.Select(x => new Unit(x));
 

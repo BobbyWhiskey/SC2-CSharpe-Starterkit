@@ -124,7 +124,6 @@ public class Unit
         Controller.AddAction(action);
 
         var targetName = Controller.GetUnitName(unitType);
-        Logger.Info("Started training: {0}", targetName);
     }
 
     private void FocusCamera()

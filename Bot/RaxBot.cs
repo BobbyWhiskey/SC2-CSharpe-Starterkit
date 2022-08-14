@@ -2,6 +2,7 @@
 using Bot.Micro;
 using Bot.Modules;
 using Bot.Queries;
+using Bot.Simulation;
 using SC2APIProtocol;
 using Action = SC2APIProtocol.Action;
 
@@ -35,6 +36,7 @@ internal class RaxBot : Bot
     private readonly ScoutingModule _scoutingModule = new();
     private readonly RepairUnitModule _repairUnitModule = new();
     private readonly ScvDefenseModule _scvDefenseModule = new();
+    //private ZerglingRushSimulation _simulation = new ZerglingRushSimulation();
 
 
     //the following will be called every frame
@@ -115,6 +117,10 @@ internal class RaxBot : Bot
         }
 
         _catFactModule.OnFrame();
+        
+        // Simulation
+        //_simulation.OnFrame();
+
 
         return Controller.CloseFrame();
     }

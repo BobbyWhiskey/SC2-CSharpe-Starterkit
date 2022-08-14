@@ -76,6 +76,7 @@ public static class BuildOrderQueries
             if (!_detectedBuildStick)
             {
                 Logger.Warning("Build order stuck! Fallback on autopilot mode");
+                Controller.Chat("Tag:BuildStuck");
                 _detectedBuildStick = true;
             }
             

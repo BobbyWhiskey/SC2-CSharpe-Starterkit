@@ -21,8 +21,8 @@ public class ScvDefenseModule
         foreach (var cc in ccs)
         {
             //var closeArmy = enemyArmy.Where(x => (x.Position - cc.Position).LengthSquared() < Math.Pow(10, 2));
-            var closeEnemy = Controller.GetInRange(cc.Position, enemyArmy, 10).ToList();
-            var closeArmy = Controller.GetInRange(cc.Position, Controller.GetUnits(Units.ArmyUnits), 10).ToList();
+            var closeEnemy = Controller.GetInRange(cc.Position, enemyArmy, 6).ToList();
+            //var closeArmy = Controller.GetInRange(cc.Position, Controller.GetUnits(Units.ArmyUnits), 10).ToList();
 
             if (closeEnemy.Any())
             {
@@ -31,7 +31,7 @@ public class ScvDefenseModule
                     .Where(x => (x.Position - cc.Position).LengthSquared() < Math.Pow(12, 2));
 
                 // If the CC or scvs are under attack we make them all attack
-                if (cc.Integrity < 0.5 && closeEnemy.Count < 6)
+                if (closeEnemy.Count < 6)
                 {
                     foreach (var unit in scv)
                     {
